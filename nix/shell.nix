@@ -29,6 +29,27 @@
         solc
         foundry
       ];
+
+      commands = let
+        category = "foundry";
+        package = foundry;
+      in [
+        {
+          inherit category package;
+          name = "anvil";
+          help = "A fast local Ethereum development node";
+        }
+        {
+          inherit category package;
+          name = "cast";
+          help = "Perform Ethereum RPC calls from the comfort of your command line";
+        }
+        {
+          inherit category package;
+          name = "forge";
+          help = "Build, test, fuzz, debug and deploy Solidity contracts";
+        }
+      ];
     };
   };
 }

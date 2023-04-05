@@ -26,6 +26,12 @@ You will then be met with the following prompt:
 
   fmt   - format the repo
 
+[foundry]
+
+  anvil - A fast local Ethereum development node
+  cast  - Perform Ethereum RPC calls from the comfort of your command line
+  forge - Build, test, fuzz, debug and deploy Solidity contracts
+
 [general commands]
 
   menu  - prints this menu
