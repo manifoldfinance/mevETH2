@@ -4,13 +4,42 @@ pragma solidity ^0.8.15;
 import {ERC20} from "solmate/tokens/ERC20.sol";
 import {TwoStepOwnable} from "./auth/TwoStepOwnable.sol";
 import {NonblockingLzApp} from "./layerzero/NonblockingLzApp.sol";
+import {FixedPointMathLib} from "solmate/utils/FixedPointMathLib.sol";
 
 // omni-chain rewards token
 // minted from manifoldLSD
 contract MevETH is ERC20, TwoStepOwnable, NonblockingLzApp {
+    using FixedPointMathLib for uint256;
+
     error OnlyManifoldLSDCallable();
 
+    event SendToChain(
+        uint16 indexed _dstChainId,
+        address indexed _from,
+        address _toAddress,
+        uint _amount
+    );
+
+    /**
+     * @dev Emitted when `_amount` tokens are received from `_srcChainId` into the `_toAddress` on the local chain.
+     * `_nonce` is the inbound nonce.
+     */
+    event ReceiveFromChain(
+        uint16 indexed _srcChainId,
+        address indexed _to,
+        uint _amount
+    );
+
+    event SetUseCustomAdapterParams(bool _useCustomAdapterParams);
+    uint256 public constant NO_EXTRA_GAS = 0;
+    // packet type
+    uint16 public constant PT_SEND = 0;
+
     address public manifoldLSD;
+    bool public useCustomAdapterParams;
+
+    address public bridgeFeeReceiver;
+    uint256 public bridgeFeeBPS;
 
     /**
      * @dev Throws if called by any account other than manifoldLSD.
@@ -106,11 +135,124 @@ contract MevETH is ERC20, TwoStepOwnable, NonblockingLzApp {
         _setPayloadSizeLimit(_dstChainId, _size);
     }
 
-    // todo: implement credit/debit omnichain funcs
+    // view func to estimate fees
+    function estimateSendFee(
+        uint16 _dstChainId,
+        bytes calldata _toAddress,
+        uint _amount,
+        bool _useZro,
+        bytes calldata _adapterParams
+    ) public view returns (uint nativeFee, uint zroFee) {
+        // mock the payload for sendFrom()
+        bytes memory payload = abi.encode(PT_SEND, _toAddress, _amount);
+        return
+            lzEndpoint.estimateFees(
+                _dstChainId,
+                address(this),
+                payload,
+                _useZro,
+                _adapterParams
+            );
+    }
+
+    function setUseCustomAdapterParams(
+        bool _useCustomAdapterParams
+    ) external onlyOwner {
+        useCustomAdapterParams = _useCustomAdapterParams;
+        emit SetUseCustomAdapterParams(_useCustomAdapterParams);
+    }
+
+    function _calculateFee(uint256 amount) internal returns (uint256) {
+        return amount.mulDivDown(bridgeFeeBPS, 1e18);
+    }
+
+    function sendCrossChain(
+        address _from,
+        uint16 _dstChainId,
+        address _toAddress,
+        uint256 amount,
+        address payable _refundAddress,
+        address _zroPaymentAddress,
+        bytes memory _adapterParams
+    ) internal {
+        _checkAdapterParams(_dstChainId, PT_SEND, _adapterParams, NO_EXTRA_GAS);
+
+        if (_from != msg.sender) {
+            uint256 allowed = allowance[_from][msg.sender]; // Saves gas for limited approvals.
+
+            if (allowed != type(uint256).max)
+                allowance[_from][msg.sender] = allowed - amount;
+        }
+
+        uint256 fee = _calculateFee(amount);
+
+        _burn(_from, amount);
+
+        // mint fee to receiver
+        _mint(bridgeFeeReceiver, fee);
+
+        // bridge amount - fee
+        bytes memory lzPayload = abi.encode(PT_SEND, _toAddress, amount - fee);
+
+        _lzSend(
+            _dstChainId,
+            lzPayload,
+            _refundAddress,
+            _zroPaymentAddress,
+            _adapterParams,
+            msg.value
+        );
+
+        emit SendToChain(_dstChainId, _from, _toAddress, amount);
+    }
+
+    function _checkAdapterParams(
+        uint16 _dstChainId,
+        uint16 _pkType,
+        bytes memory _adapterParams,
+        uint256 _extraGas
+    ) internal view {
+        if (useCustomAdapterParams) {
+            _checkGasLimit(_dstChainId, _pkType, _adapterParams, _extraGas);
+        } else {
+            require(
+                _adapterParams.length == 0,
+                "OFTCore: _adapterParams must be empty."
+            );
+        }
+    }
+
+    //bytes memory lzPayload = abi.encode(PT_SEND, _toAddress, amount);
     function _nonblockingLzReceive(
         uint16 _srcChainId,
         bytes memory _srcAddress,
         uint64 _nonce,
         bytes memory _payload
-    ) internal override {}
+    ) internal override {
+        // uint16 packetType;
+        // assembly {
+        //     packetType := mload(add(_payload, 32))
+        // }
+
+        (uint16 packetType, address to, uint256 amount) = abi.decode(
+            _payload,
+            (uint16, address, uint256)
+        );
+
+        if (packetType == PT_SEND) {
+            _mint(to, amount);
+        } else {
+            revert("OFTCore: unknown packet type");
+        }
+
+        emit ReceiveFromChain(_srcChainId, to, amount);
+    }
+
+    function setFee(uint256 bps) external onlyOwner {
+        bridgeFeeBPS = bps;
+    }
+
+    function setFeeReceiver(address receiver) external onlyOwner {
+        bridgeFeeReceiver = receiver;
+    }
 }
