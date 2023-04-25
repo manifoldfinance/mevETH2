@@ -12,8 +12,6 @@ import {IOperatorRegistery} from "./interfaces/IOperatorRegistery.sol";
 
 // todo: init pool with shares minted to 0 address to prevent donation attacks
 
-// todo: staking limit
-
 /// @notice Manager that takes care of minting proper shares of mevETH and staking
 contract ManifoldLSD is ERC20, TwoStepOwnable {
     using SafeTransferLib for ERC20;
@@ -22,7 +20,17 @@ contract ManifoldLSD is ERC20, TwoStepOwnable {
     error InsufficientBufferedEth();
     error TooManyValidatorRegistrations();
     error ExceedsStakingAllowance();
-    error StakingPaused();
+    error StakingIsPaused();
+    error DepositTooLow();
+    error ZeroShares();
+    error ReportedBeaconValidatorsGreaterThanTotalValidators();
+    error ReportedBeaconValidatorsDecreased();
+    error BeaconDepositFailed();
+
+    modifier stakingNotPaused() {
+        if (stakingPaused) revert StakingIsPaused();
+        _;
+    }
 
     /*//////////////////////////////////////////////////////////////
                                  EVENTS
@@ -43,18 +51,33 @@ contract ManifoldLSD is ERC20, TwoStepOwnable {
         uint256 shares
     );
 
+    event OracleUpdate(
+        uint256 indexed prevBalance,
+        uint256 prevValidators,
+        uint256 newBalance,
+        uint256 newValidators
+    );
+
+    event NewValidator(
+        address indexed operator,
+        bytes indexed pubkey,
+        bytes indexed withdrawalCredentials,
+        bytes signature,
+        bytes32 deposit_data_root
+    );
+
+    event RewardsMinted(address indexed rewardsReceiver, uint256 feesAccrued);
+    event StakingPaused();
+    event StakingUnpaused();
+    event FeeSet(uint256 indexed newFee);
+    event FeeReceiverSet(address indexed newFeeReciever);
+    event MevEthSet(address indexed mevEthAddress);
+
     struct ValidatorsInfo {
         // current number of beacon validators
         uint128 beaconValidators;
         // total validators, includes pending + beacon validators
         uint128 totalValidators;
-    }
-
-    struct LSDInfo {
-        // pause staking
-        bool stakingIsPaused;
-        // set max amount of buffered eth in this contract at a time
-        uint248 maxStakeLimit;
     }
 
     // total staked ether on beacon
@@ -85,7 +108,7 @@ contract ManifoldLSD is ERC20, TwoStepOwnable {
     ValidatorsInfo public validatorsInfo;
 
     // used for pausing staking and setting max limits
-    LSDInfo public lsdInfo;
+    bool public stakingPaused;
 
     // max amount of validators we can register at once
     uint256 public maxValidatorRegistration;
@@ -111,13 +134,10 @@ contract ManifoldLSD is ERC20, TwoStepOwnable {
                         DEPOSIT/WITHDRAWAL LOGIC
     //////////////////////////////////////////////////////////////*/
 
-    function deposit(address receiver) public payable returns (uint256) {
-        require(msg.value > MIN_DEPOSIT, "VALUE TOO LOW");
-
-        // todo: do we actually want a stake limit?
-        if (totalBufferedEther + msg.value > stakeLimit())
-            revert ExceedsStakingAllowance();
-        if (stakingIsPaused()) revert StakingPaused();
+    function deposit(
+        address receiver
+    ) public payable stakingNotPaused returns (uint256) {
+        if (msg.value < MIN_DEPOSIT) revert DepositTooLow();
 
         return _deposit(msg.value, receiver);
     }
@@ -127,7 +147,7 @@ contract ManifoldLSD is ERC20, TwoStepOwnable {
         address receiver
     ) internal returns (uint256 shares) {
         // Check for rounding error since we round down in previewDeposit.
-        require((shares = previewDeposit(value)) != 0, "ZERO_SHARES");
+        if ((shares = previewDeposit(value)) == 0) revert ZeroShares();
 
         totalBufferedEther += value;
 
@@ -142,19 +162,18 @@ contract ManifoldLSD is ERC20, TwoStepOwnable {
         uint128 beaconValidators
     ) external onlyOwner {
         uint256 oldBeaconBalance = totalBeaconBalance;
+        uint256 oldBeaconValidators = validatorsInfo.beaconValidators;
+        uint256 totalValidators = validatorsInfo.totalValidators;
 
-        require(
-            beaconValidators <= validatorsInfo.totalValidators,
-            "REPORTED_MORE_DEPOSITED"
-        );
+        // reported validators must be strictly <= to totalValidatosr
+        if (beaconValidators > totalValidators)
+            revert ReportedBeaconValidatorsGreaterThanTotalValidators();
 
-        require(
-            beaconValidators >= validatorsInfo.beaconValidators,
-            "REPORTED_LESS_VALIDATORS"
-        );
+        // validators must be strictly increasing before withdrawals come live
+        if (beaconValidators < oldBeaconValidators)
+            revert ReportedBeaconValidatorsDecreased();
 
-        uint256 appearedValidators = beaconValidators -
-            validatorsInfo.beaconValidators;
+        uint256 appearedValidators = beaconValidators - oldBeaconValidators;
 
         // RewardBase is the amount of money that is not included in the reward calculation
         // Just appeared validators * 32 added to the previously reported beacon balance
@@ -175,9 +194,16 @@ contract ManifoldLSD is ERC20, TwoStepOwnable {
             );
 
             _deposit(feesAccrued, rewardsReceiver);
+
+            emit RewardsMinted(rewardsReceiver, feesAccrued);
         }
 
-        // todo: emit event
+        emit OracleUpdate(
+            oldBeaconBalance,
+            oldBeaconValidators,
+            beaconBalance,
+            beaconValidators
+        );
     }
 
     // amount of ETH that has been staked to a validator but has yet to be accruing rewards
@@ -208,15 +234,20 @@ contract ManifoldLSD is ERC20, TwoStepOwnable {
 
         operatorRegistry.registerValidator(validatorData);
 
-        require(
-            address(this).balance == targetBalance,
-            "EXPECTING_DEPOSIT_TO_HAPPEN"
-        );
+        if (address(this).balance != targetBalance)
+            revert BeaconDepositFailed();
 
-        // todo emit event
+        emit NewValidator(
+            validatorData.operator,
+            validatorData.pubkey,
+            validatorData.withdrawal_credentials,
+            validatorData.signature,
+            validatorData.deposit_data_root
+        );
     }
 
     // allocate 32 ETH * X to X new validators
+    // todo: can abstract this functionality in an internal function so above function uses same logic
     function registerNewValidators(
         IOperatorRegistery.ValidatorData[] calldata validatorData
     ) external onlyOwner {
@@ -243,14 +274,17 @@ contract ManifoldLSD is ERC20, TwoStepOwnable {
             );
 
             operatorRegistry.registerValidator(validatorData[i]);
+            emit NewValidator(
+                validatorData[i].operator,
+                validatorData[i].pubkey,
+                validatorData[i].withdrawal_credentials,
+                validatorData[i].signature,
+                validatorData[i].deposit_data_root
+            );
         }
 
-        require(
-            address(this).balance == targetBalance,
-            "EXPECTING_DEPOSIT_TO_HAPPEN"
-        );
-
-        // todo emit event
+        if (address(this).balance != targetBalance)
+            revert BeaconDepositFailed();
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -260,61 +294,37 @@ contract ManifoldLSD is ERC20, TwoStepOwnable {
     function setMevETH(address _mevETH) external onlyOwner {
         mevETH = _mevETH;
 
-        // todo emit event
+        emit MevEthSet(_mevETH);
     }
 
     function setMaxValidatorRegistration(uint256 max) external onlyOwner {
         maxValidatorRegistration = max;
     }
 
-    // set max amount of buffered eth in this contract
-    // ie if we only want 1000 ETH deposits at a time
-    function setStakeLimit(uint248 stakeLimit) external onlyOwner {
-        lsdInfo.maxStakeLimit = stakeLimit;
-
-        // todo: emit event
-    }
-
-    function removeStakeLimit() external onlyOwner {
-        lsdInfo.maxStakeLimit = 0;
-
-        // todo: emit event
-    }
-
     function pauseStaking() external onlyOwner {
-        lsdInfo.stakingIsPaused = true;
+        stakingPaused = true;
 
-        // todo: emit event
+        emit StakingPaused();
     }
 
     function unpauseStaking() external onlyOwner {
-        lsdInfo.stakingIsPaused = false;
+        stakingPaused = false;
 
-        // todo: emit event
-    }
-
-    function stakeLimit() public view returns (uint256) {
-        uint256 limit = uint256(lsdInfo.maxStakeLimit);
-
-        return limit == 0 ? type(uint256).max : limit;
-    }
-
-    function stakingIsPaused() public view returns (bool) {
-        return lsdInfo.stakingIsPaused;
+        emit StakingUnpaused();
     }
 
     // set management fee
     function setFee(uint64 fee) external onlyOwner {
         managementFee = fee;
 
-        // todo: emit fee set
+        emit FeeSet(fee);
     }
 
     // todo: receiver for fee rewards
     function setRewardsReceiver(address receiver) external onlyOwner {
         rewardsReceiver = receiver;
 
-        // todo: emit change receiver set
+        emit FeeReceiverSet(receiver);
     }
 
     /*//////////////////////////////////////////////////////////////

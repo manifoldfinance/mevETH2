@@ -12,6 +12,7 @@ contract MevETH is ERC20, TwoStepOwnable, NonblockingLzApp {
     using FixedPointMathLib for uint256;
 
     error OnlyManifoldLSDCallable();
+    error AdapterParamsNotEmpty();
 
     event SendToChain(
         uint16 indexed _dstChainId,
@@ -31,6 +32,9 @@ contract MevETH is ERC20, TwoStepOwnable, NonblockingLzApp {
     );
 
     event SetUseCustomAdapterParams(bool _useCustomAdapterParams);
+
+    event ManifoldLsdSet(address indexed manifoldLSD);
+
     uint256 public constant NO_EXTRA_GAS = 0;
     // packet type
     uint16 public constant PT_SEND = 0;
@@ -63,7 +67,7 @@ contract MevETH is ERC20, TwoStepOwnable, NonblockingLzApp {
 
     function setManifoldLSD(address _manifoldLSD) external onlyOwner {
         manifoldLSD = _manifoldLSD;
-        // todo: emit event
+        emit ManifoldLsdSet(_manifoldLSD);
     }
 
     function mint(address to, uint256 amount) external onlyManifoldLSD {
@@ -162,7 +166,7 @@ contract MevETH is ERC20, TwoStepOwnable, NonblockingLzApp {
         emit SetUseCustomAdapterParams(_useCustomAdapterParams);
     }
 
-    function _calculateFee(uint256 amount) internal returns (uint256) {
+    function _calculateFee(uint256 amount) internal view returns (uint256) {
         return amount.mulDivDown(bridgeFeeBPS, 1e18);
     }
 
@@ -194,6 +198,8 @@ contract MevETH is ERC20, TwoStepOwnable, NonblockingLzApp {
         // bridge amount - fee
         bytes memory lzPayload = abi.encode(PT_SEND, _toAddress, amount - fee);
 
+        // require todo
+
         _lzSend(
             _dstChainId,
             lzPayload,
@@ -215,10 +221,7 @@ contract MevETH is ERC20, TwoStepOwnable, NonblockingLzApp {
         if (useCustomAdapterParams) {
             _checkGasLimit(_dstChainId, _pkType, _adapterParams, _extraGas);
         } else {
-            require(
-                _adapterParams.length == 0,
-                "OFTCore: _adapterParams must be empty."
-            );
+            if (_adapterParams.length != 0) revert AdapterParamsNotEmpty();
         }
     }
 
