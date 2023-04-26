@@ -57,9 +57,6 @@ contract OperatorRegistery is IOperatorRegistery, TwoStepOwnable {
         emit OperatorUncommited(operator);
     }
 
-    /**
-     * @dev See {IPoolValidators-removeOperator}.
-     */
     function removeOperator(address operator) external onlyOwner {
         delete operators[operator];
 
