@@ -6,6 +6,8 @@ import {TwoStepOwnable} from "./auth/TwoStepOwnable.sol";
 import {NonblockingLzApp} from "./layerzero/NonblockingLzApp.sol";
 import {FixedPointMathLib} from "solmate/utils/FixedPointMathLib.sol";
 
+// todo: send event with nonce - check opengate
+
 // omni-chain rewards token
 // minted from manifoldLSD
 contract MevETH is ERC20, TwoStepOwnable, NonblockingLzApp {

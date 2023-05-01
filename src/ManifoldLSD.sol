@@ -184,7 +184,6 @@ contract ManifoldLSD is ERC20, TwoStepOwnable {
         totalBeaconBalance = beaconBalance;
 
         // skim fee
-        // todo: recheck that this math is correct
         if (beaconBalance > rewardBase) {
             uint256 balanceDifference = beaconBalance - rewardBase;
 
@@ -320,7 +319,6 @@ contract ManifoldLSD is ERC20, TwoStepOwnable {
         emit FeeSet(fee);
     }
 
-    // todo: receiver for fee rewards
     function setRewardsReceiver(address receiver) external onlyOwner {
         rewardsReceiver = receiver;
 

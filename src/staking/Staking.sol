@@ -7,6 +7,8 @@ import {SafeTransferLib} from "solmate/utils/SafeTransferLib.sol";
 import {FixedPointMathLib} from "solmate/utils/FixedPointMathLib.sol";
 import {TwoStepOwnable} from "../auth/TwoStepOwnable.sol";
 
+// todo use balancers re-entrancy
+
 /// modified ERC20StakingPool from zefram.eth
 contract ERC20StakingPool is TwoStepOwnable {
     /// -----------------------------------------------------------------------
