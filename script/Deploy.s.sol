@@ -14,6 +14,7 @@ contract DeployScript is Script {
         address crossChainEndpoint = address(0);
         ManifoldLSD lsd = new ManifoldLSD("Manifold LSD", "mLSD", 18, _beaconDepositAddress);
         MevETH mevETH = new MevETH("Mev staked Ethereum", "mevETH", 18, address(lsd), crossChainEndpoint);
+        lsd.setMevETH(address(mevETH));
         OperatorRegistery op = new OperatorRegistery(address(lsd));
         vm.stopBroadcast();
     }
