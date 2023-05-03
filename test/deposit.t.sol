@@ -22,8 +22,10 @@ contract DepositTest is Test {
         op = new OperatorRegistery(address(lsd));
     }
  
-    function testDeposit() public {
-        lsd.deposit{value: 1100000000000000000}(address(this));
+    function testDeposit(uint256 amount) public {
+        vm.assume(amount > 1000000000000000000); // 1 eth min limit
+        vm.assume(amount < address(this).balance);
+        lsd.deposit{value: amount}(address(this));
         assertGt(ERC20(mevETH).balanceOf(address(this)), 0);
     }
 
