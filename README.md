@@ -1,5 +1,1 @@
-CONTRACTS CURRENTLY HAVE NOT UNDERGONE ANY SORT OF GAS OPTIMIZATIONS YET.
-
-STILL NEED TO ADD NATSPEC/DOCS + GAS OPTIMIZATIONS + TESTS - large refactor getting pushed.
-
-In general, this LSD is a modified version of erc4626.
+in progress: NATSPEC + optimizations + tests
