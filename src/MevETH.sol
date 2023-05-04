@@ -7,7 +7,7 @@ import {NonblockingLzApp} from "./layerzero/NonblockingLzApp.sol";
 import {FixedPointMathLib} from "solmate/utils/FixedPointMathLib.sol";
 
 // todo: send event with nonce - check opengate
-
+// todo: add burn function permissioned to lsd
 // omni-chain rewards token
 // minted from manifoldLSD
 contract MevETH is ERC20, TwoStepOwnable, NonblockingLzApp {

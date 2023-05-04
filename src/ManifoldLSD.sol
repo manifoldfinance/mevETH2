@@ -12,6 +12,10 @@ import {IOperatorRegistery} from "./interfaces/IOperatorRegistery.sol";
 
 // todo: init pool with shares minted to 0 address to prevent donation attacks
 
+// todo: have an auth registry that has all the roles
+
+// todo: update recieve() to add to buffered eth
+
 /// @notice Manager that takes care of minting proper shares of mevETH and staking
 contract ManifoldLSD is ERC20, TwoStepOwnable {
     using SafeTransferLib for ERC20;
@@ -26,6 +30,7 @@ contract ManifoldLSD is ERC20, TwoStepOwnable {
     error ReportedBeaconValidatorsGreaterThanTotalValidators();
     error ReportedBeaconValidatorsDecreased();
     error BeaconDepositFailed();
+    error InvalidWithdrawalCredentials();
 
     modifier stakingNotPaused() {
         if (stakingPaused) revert StakingIsPaused();
@@ -61,7 +66,7 @@ contract ManifoldLSD is ERC20, TwoStepOwnable {
     event NewValidator(
         address indexed operator,
         bytes indexed pubkey,
-        bytes indexed withdrawalCredentials,
+        bytes32 indexed withdrawalCredentials,
         bytes signature,
         bytes32 deposit_data_root
     );
@@ -72,6 +77,7 @@ contract ManifoldLSD is ERC20, TwoStepOwnable {
     event FeeSet(uint256 indexed newFee);
     event FeeReceiverSet(address indexed newFeeReciever);
     event MevEthSet(address indexed mevEthAddress);
+    event OperatorRegistrySet(address indexed operatorRegistry);
 
     struct ValidatorsInfo {
         // current number of beacon validators
@@ -86,9 +92,6 @@ contract ManifoldLSD is ERC20, TwoStepOwnable {
     // current staked ether in this contract (deposits)
     uint256 public totalBufferedEther;
 
-    // total amount of ether that can be withdrawn from this system
-    uint256 public totalWithdrawQueueEther;
-
     // LSD fee
     uint256 public managementFee;
 
@@ -97,6 +100,9 @@ contract ManifoldLSD is ERC20, TwoStepOwnable {
 
     // erc20 address
     address public mevETH;
+
+    // validator withdrawal credentials.
+    bytes32 public withdrawalCredentials;
 
     // beacon deposit contract
     IBeaconDepositContract public immutable BEACON_DEPOSIT_CONTRACT;
@@ -219,6 +225,9 @@ contract ManifoldLSD is ERC20, TwoStepOwnable {
         if (totalBufferedEther < VALIDATOR_DEPOSIT_SIZE)
             revert InsufficientBufferedEth();
 
+        if (validatorData.withdrawal_credentials != withdrawalCredentials)
+            revert InvalidWithdrawalCredentials();
+
         validatorsInfo.totalValidators++;
         totalBufferedEther -= VALIDATOR_DEPOSIT_SIZE;
 
@@ -265,6 +274,10 @@ contract ManifoldLSD is ERC20, TwoStepOwnable {
             VALIDATOR_DEPOSIT_SIZE;
 
         for (uint256 i = 0; i < validatorData.length; ++i) {
+            if (
+                validatorData[i].withdrawal_credentials != withdrawalCredentials
+            ) revert InvalidWithdrawalCredentials();
+
             BEACON_DEPOSIT_CONTRACT.deposit{value: VALIDATOR_DEPOSIT_SIZE}(
                 validatorData[i].pubkey,
                 abi.encodePacked(validatorData[i].withdrawal_credentials),
@@ -323,6 +336,12 @@ contract ManifoldLSD is ERC20, TwoStepOwnable {
         rewardsReceiver = receiver;
 
         emit FeeReceiverSet(receiver);
+    }
+
+    function setOperatorRegistry(address _operatorRegistry) external onlyOwner {
+        operatorRegistry = IOperatorRegistery(_operatorRegistry);
+
+        emit OperatorRegistrySet(_operatorRegistry);
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -402,6 +421,10 @@ contract ManifoldLSD is ERC20, TwoStepOwnable {
     function beforeWithdraw(uint256 assets, uint256 shares) internal virtual {}
 
     function afterDeposit(uint256 assets, uint256 shares) internal virtual {}
+
+    receive() external payable {
+        totalBufferedEther += msg.value;
+    }
 
     // ======== withdraw logic TBD ==========
 

@@ -20,7 +20,7 @@ interface IOperatorRegistery {
     struct ValidatorData {
         address operator;
         bytes pubkey;
-        bytes withdrawal_credentials;
+        bytes32 withdrawal_credentials;
         bytes signature;
         bytes32 deposit_data_root; // more efficient to be calculated off-chain
     }
