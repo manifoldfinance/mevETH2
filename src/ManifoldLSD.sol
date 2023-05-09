@@ -65,8 +65,8 @@ contract ManifoldLSD is ERC20, TwoStepOwnable {
 
     event NewValidator(
         address indexed operator,
-        bytes indexed pubkey,
-        bytes32 indexed withdrawalCredentials,
+        bytes pubkey,
+        bytes32 withdrawalCredentials,
         bytes signature,
         bytes32 deposit_data_root
     );
