@@ -25,5 +25,9 @@ interface IOperatorRegistery {
         bytes32 deposit_data_root; // more efficient to be calculated off-chain
     }
 
+    /**
+     * @notice This function is used to register a validator with the contract.
+     * @dev The function takes in a ValidatorData calldata depositData as an argument. This data is used to register the validator with the contract. 
+     */
     function registerValidator(ValidatorData calldata depositData) external;
 }
