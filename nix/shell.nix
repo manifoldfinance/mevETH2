@@ -52,6 +52,24 @@
           name = "forge";
           help = "Build, test, fuzz, debug and deploy Solidity contracts";
         }
+        {
+          category = "deployments";
+          name = "deploy";
+          help = "Deploy the Smart Contracts";
+          command = ''
+            forge script $PRJ_ROOT/script/Deploy.s.sol:DeployScript \
+              --broadcast \
+              --private-key $PRIVATE_KEY \
+              --verify \
+              -vvv
+          '';
+        }
+        {
+          category = "tests";
+          name = "tests";
+          help = "Test the Smart Contracts";
+          command = ''forge test -vvvv'';
+        }
       ];
     };
   };
