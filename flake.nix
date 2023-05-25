@@ -17,6 +17,7 @@
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     flake-parts.url = "github:hercules-ci/flake-parts";
     flake-root.url = "github:srid/flake-root";
+    process-compose-flake.url = "github:Platonic-Systems/process-compose-flake";
     flake-compat = {
       url = "github:edolstra/flake-compat";
       flake = false;
