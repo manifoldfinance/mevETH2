@@ -5,8 +5,6 @@
   perSystem = {
     config,
     pkgs,
-    lib,
-    inputs',
     ...
   }: {
     treefmt.config = {
@@ -15,6 +13,7 @@
 
       programs = {
         alejandra.enable = true; # nix
+        deadnix.enable = true; # nix
         prettier.enable = true; # json,html,markdown and so on
       };
 
