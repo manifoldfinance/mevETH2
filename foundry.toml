@@ -20,6 +20,11 @@ libs = ['lib']
 chain_id = 5
 eth_rpc_url = "${RPC_MAINNET}"
 
+[profile.ci]
+src = 'src'
+out = 'out'
+libs = ['lib']
+
 [etherscan]
 mainnet = { key = "${ETHERSCAN_API_KEY}" }
 goerli = { key = "${ETHERSCAN_API_KEY}" }
