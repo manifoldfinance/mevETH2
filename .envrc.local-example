@@ -1,3 +1,6 @@
+# specify default foundry profile to use (by default local dev network)
+export FOUNDRY_PROFILE=default
+
 ## RPC Endpoints / Mainnet
 # Use a provider like Alchemy, Infura or use our custom one.
 export RPC_MAINNET=<TODO>
