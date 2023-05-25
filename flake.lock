@@ -531,7 +531,7 @@
         "type": "github"
       }
     },
-    "openzeppelin-contracts": {
+    "openzeppelin": {
       "flake": false,
       "locked": {
         "lastModified": 1677798193,
@@ -540,11 +540,11 @@
         "rev": "d00acef4059807535af0bd0dd0ddf619747a044b",
         "revCount": 2965,
         "type": "git",
-        "url": "file:./lib/openzeppelin-contracts"
+        "url": "file:./lib/openzeppelin"
       },
       "original": {
         "type": "git",
-        "url": "file:./lib/openzeppelin-contracts"
+        "url": "file:./lib/openzeppelin"
       }
     },
     "pre-commit-hooks-nix": {
@@ -584,7 +584,7 @@
         "forge-std": "forge-std",
         "nixpkgs": "nixpkgs_3",
         "nixpkgs-unstable": "nixpkgs-unstable_2",
-        "openzeppelin-contracts": "openzeppelin-contracts",
+        "openzeppelin": "openzeppelin",
         "solady": "solady",
         "solmate": "solmate",
         "treefmt-nix": "treefmt-nix_2"

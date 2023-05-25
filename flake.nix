@@ -51,8 +51,8 @@
       flake = false;
     };
 
-    openzeppelin-contracts = {
-      url = "git+file:./lib/openzeppelin-contracts";
+    openzeppelin = {
+      url = "git+file:./lib/openzeppelin";
       flake = false;
     };
   };

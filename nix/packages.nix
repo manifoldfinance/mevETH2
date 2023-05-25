@@ -10,9 +10,10 @@
     inherit (inputs'.nixpkgs-unstable.legacyPackages) solc;
   in {
     config.packages.mevETH = mkDerivation {
-      src = lib.cleanSource ../.;
       pname = "mevETH";
       version = "0.0.1";
+
+      src = lib.cleanSource ../.;
 
       buildInputs = [
         solc
@@ -26,9 +27,9 @@
       # submodules will not get copied in so we rebuild the lib directory using `git+file` based inputs
       configurePhase = ''
         cp -r ${inputs.forge-std} lib/forge-std
+        cp -r ${inputs.openzeppelin} lib/openzeppelin
         cp -r ${inputs.solady} lib/solady
         cp -r ${inputs.solmate} lib/solmate
-        cp -r ${inputs.openzeppelin-contracts} lib/openzeppelin-contracts
       '';
 
       buildPhase = ''
