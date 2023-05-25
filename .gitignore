@@ -20,4 +20,8 @@ remappings.txt
 .idea
 
 # Nix
-result
+**/result*
+
+# direnv
+**/.direnv
+.envrc.local
