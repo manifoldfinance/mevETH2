@@ -534,11 +534,11 @@
     "openzeppelin-contracts": {
       "flake": false,
       "locked": {
-        "lastModified": 1684935420,
-        "narHash": "sha256-AYy09GcLHTOwQYB1Omnsa6DNzDrgtKNok9SMsXuYCo4=",
-        "ref": "refs/heads/master",
-        "rev": "09329f8a18f08df65863a5060f6e776bf7fccacf",
-        "revCount": 3192,
+        "lastModified": 1677798193,
+        "narHash": "sha256-LuDja4HGJVKPy3xmGTemRBwdG+msQF+gBY4w3JULrDs=",
+        "ref": "d00acef4059807535af0bd0dd0ddf619747a044b",
+        "rev": "d00acef4059807535af0bd0dd0ddf619747a044b",
+        "revCount": 2965,
         "type": "git",
         "url": "file:./lib/openzeppelin-contracts"
       },
@@ -574,6 +574,21 @@
         "type": "github"
       }
     },
+    "process-compose-flake": {
+      "locked": {
+        "lastModified": 1680797953,
+        "narHash": "sha256-lFYbfId1IX6jh/wUf+gt3LyvE9HblS4hcBQcougSzX0=",
+        "owner": "Platonic-Systems",
+        "repo": "process-compose-flake",
+        "rev": "aee1b8d126a5efe5945513eb2fb343f3d68dca4b",
+        "type": "github"
+      },
+      "original": {
+        "owner": "Platonic-Systems",
+        "repo": "process-compose-flake",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "devshell": "devshell",
@@ -585,6 +600,7 @@
         "nixpkgs": "nixpkgs_3",
         "nixpkgs-unstable": "nixpkgs-unstable_2",
         "openzeppelin-contracts": "openzeppelin-contracts",
+        "process-compose-flake": "process-compose-flake",
         "solady": "solady",
         "solmate": "solmate",
         "treefmt-nix": "treefmt-nix_2"

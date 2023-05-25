@@ -1,6 +1,30 @@
+# See more config options https://github.com/foundry-rs/foundry/tree/master/config
+
 [profile.default]
 src = 'src'
 out = 'out'
 libs = ['lib']
+eth_rpc_url = "http://localhost:8545"
 
-# See more config options https://github.com/foundry-rs/foundry/tree/master/config
+[profile.mainnet]
+src = 'src'
+out = 'out'
+libs = ['lib']
+chain_id = 1
+eth_rpc_url = "${RPC_GOERLI}"
+
+[profile.goerli]
+src = 'src'
+out = 'out'
+libs = ['lib']
+chain_id = 5
+eth_rpc_url = "${RPC_MAINNET}"
+
+[profile.ci]
+src = 'src'
+out = 'out'
+libs = ['lib']
+
+[etherscan]
+mainnet = { key = "${ETHERSCAN_API_KEY}" }
+goerli = { key = "${ETHERSCAN_API_KEY}" }
