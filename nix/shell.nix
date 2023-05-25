@@ -24,10 +24,13 @@
         }
       ];
 
-      packages = [
-        pkgs.statix
-        solc
+      packages = with pkgs; [
+        age
         foundry
+        solc
+        sops
+        ssh-to-age
+        statix
       ];
 
       commands = let
