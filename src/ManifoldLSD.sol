@@ -9,7 +9,7 @@ import {TwoStepOwnable} from "./auth/TwoStepOwnable.sol";
 
 import {IMevETH} from "./interfaces/IMevETH.sol";
 import {IBeaconDepositContract} from "./interfaces/IBeaconDepositContract.sol";
-import {IOperatorRegistery} from "./interfaces/IOperatorRegistery.sol";
+import {IOperatorRegistry} from "./interfaces/IOperatorRegistry.sol";
 
 // todo: init pool with shares minted to 0 address to prevent donation attacks
 
@@ -95,7 +95,7 @@ contract ManifoldLSD is ERC20, TwoStepOwnable {
     IBeaconDepositContract public immutable BEACON_DEPOSIT_CONTRACT;
 
     // operator registry
-    IOperatorRegistery public operatorRegistry;
+    IOperatorRegistry public operatorRegistry;
 
     // used to calculate transient ETH and rewards
     ValidatorsInfo public validatorsInfo;
@@ -190,7 +190,7 @@ contract ManifoldLSD is ERC20, TwoStepOwnable {
     }
 
     // take 32 buffered eth and allocate 1 new validator
-    function registerNewValidator(IOperatorRegistery.ValidatorData calldata validatorData) external onlyOwner {
+    function registerNewValidator(IOperatorRegistry.ValidatorData calldata validatorData) external onlyOwner {
         if (totalBufferedEther < VALIDATOR_DEPOSIT_SIZE) {
             revert InsufficientBufferedEth();
         }
@@ -228,7 +228,7 @@ contract ManifoldLSD is ERC20, TwoStepOwnable {
 
     // allocate 32 ETH * X to X new validators
     // todo: can abstract this functionality in an internal function so above function uses same logic
-    function registerNewValidators(IOperatorRegistery.ValidatorData[] calldata validatorData) external onlyOwner {
+    function registerNewValidators(IOperatorRegistry.ValidatorData[] calldata validatorData) external onlyOwner {
         if (validatorData.length > maxValidatorRegistration) {
             revert TooManyValidatorRegistrations();
         }
@@ -328,7 +328,7 @@ contract ManifoldLSD is ERC20, TwoStepOwnable {
     }
 
     function setOperatorRegistry(address _operatorRegistry) external onlyOwner {
-        operatorRegistry = IOperatorRegistery(_operatorRegistry);
+        operatorRegistry = IOperatorRegistry(_operatorRegistry);
 
         emit OperatorRegistrySet(_operatorRegistry);
     }

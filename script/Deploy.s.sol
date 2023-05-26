@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 import "forge-std/Script.sol";
 import "../src/ManifoldLSD.sol";
 import "../src/MevETH.sol";
-import "../src/OperatorRegistery.sol";
+import "../src/OperatorRegistry.sol";
 
 contract DeployScript is Script {
     function run() public {
@@ -14,7 +14,7 @@ contract DeployScript is Script {
         ManifoldLSD lsd = new ManifoldLSD("Manifold LSD", "mLSD", 18, _beaconDepositAddress);
         MevETH mevETH = new MevETH("Mev staked Ethereum", "mevETH", 18, address(lsd), crossChainEndpoint);
         lsd.setMevETH(address(mevETH));
-        OperatorRegistery op = new OperatorRegistery(address(lsd));
+        OperatorRegistry op = new OperatorRegistry(address(lsd));
         vm.stopBroadcast();
     }
 }

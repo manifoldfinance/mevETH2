@@ -4,14 +4,14 @@ pragma solidity ^0.8.17;
 import "forge-std/Test.sol";
 import "../src/ManifoldLSD.sol";
 import "../src/MevETH.sol";
-import "../src/OperatorRegistery.sol";
+import "../src/OperatorRegistry.sol";
 
 contract DepositTest is Test {
     using SafeTransferLib for ERC20;
 
     ManifoldLSD lsd;
     MevETH mevETH;
-    OperatorRegistery op;
+    OperatorRegistry op;
 
     function setUp() public {
         address _beaconDepositAddress = 0xff50ed3d0ec03aC01D4C79aAd74928BFF48a7b2b;
@@ -19,7 +19,7 @@ contract DepositTest is Test {
         lsd = new ManifoldLSD("Manifold LSD", "mLSD", 18, _beaconDepositAddress);
         mevETH = new MevETH("Mev staked Ethereum", "mevETH", 18, address(lsd), crossChainEndpoint);
         lsd.setMevETH(address(mevETH));
-        op = new OperatorRegistery(address(lsd));
+        op = new OperatorRegistry(address(lsd));
     }
 
     function testDeposit(uint256 amount) public {

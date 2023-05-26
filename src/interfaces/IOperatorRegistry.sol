@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.15;
 
-interface IOperatorRegistery {
+interface IOperatorRegistry {
     /// @dev Node Operator parameters and internal state
     struct Operator {
         bool commited; // a flag indicating if the operator can participate in further staking

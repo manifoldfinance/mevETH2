@@ -3,11 +3,11 @@
 pragma solidity ^0.8.15;
 
 import {TwoStepOwnable} from "./auth/TwoStepOwnable.sol";
-import {IOperatorRegistery} from "./interfaces/IOperatorRegistery.sol";
+import {IOperatorRegistry} from "./interfaces/IOperatorRegistry.sol";
 
 // todo: ensure withdrawal addresses are the same. check tg
 
-contract OperatorRegistery is IOperatorRegistery, TwoStepOwnable {
+contract OperatorRegistry is IOperatorRegistry, TwoStepOwnable {
     error OperatorsNotCommitted();
     error OperatorMaxValidatorsReached();
     error OperatorNotCommitted();
