@@ -124,6 +124,10 @@ contract ManifoldLSD is ERC20, TwoStepOwnable {
                         DEPOSIT/WITHDRAWAL LOGIC
     //////////////////////////////////////////////////////////////*/
 
+    /**
+     * @notice This function allows users to deposit funds to the contract.
+     * @dev The function requires a minimum deposit amount and will revert if the deposit is too low.
+     */
     function deposit(address receiver) public payable stakingNotPaused returns (uint256) {
         if (msg.value < MIN_DEPOSIT) revert DepositTooLow();
 
@@ -272,29 +276,51 @@ contract ManifoldLSD is ERC20, TwoStepOwnable {
         emit MevEthSet(_mevETH);
     }
 
+    /**
+     * @notice Sets the maximum number of validator registrations allowed
+     * @dev This function should only be called by the owner of the contract
+     * @param max The maximum number of validator registrations allowed
+     */
     function setMaxValidatorRegistration(uint256 max) external onlyOwner {
         maxValidatorRegistration = max;
     }
 
+    /**
+     * @notice This function pauses staking for the contract.
+     * @dev Only the owner of the contract can call this function.
+     */
     function pauseStaking() external onlyOwner {
         stakingPaused = true;
 
         emit StakingPaused();
     }
 
+    /**
+     * @notice This function unpauses staking
+     * @dev This function is only callable by the owner and sets the stakingPaused variable to false. It also emits the StakingUnpaused event.
+     */
     function unpauseStaking() external onlyOwner {
         stakingPaused = false;
 
         emit StakingUnpaused();
     }
 
-    // set management fee
+    /**
+     * @notice Sets the management fee for the contract.
+     * @dev This function sets the management fee for the contract. It can only be called by the contract owner.
+     * @param fee The fee to be set.
+     */
     function setFee(uint64 fee) external onlyOwner {
         managementFee = fee;
 
         emit FeeSet(fee);
     }
 
+    /**
+     * @notice Sets the rewards receiver address.
+     * @dev This function sets the rewards receiver address. It can only be called by the owner.
+     * @param receiver The address of the rewards receiver.
+     */
     function setRewardsReceiver(address receiver) external onlyOwner {
         rewardsReceiver = receiver;
 
@@ -311,10 +337,18 @@ contract ManifoldLSD is ERC20, TwoStepOwnable {
                             ACCOUNTING LOGIC
     //////////////////////////////////////////////////////////////*/
 
+    /**
+     * @notice This function returns the total assets of the contract.
+     * @dev The total assets are calculated by adding the total beacon balance, total buffered ether, and transient ether.
+     */
     function totalAssets() public view virtual returns (uint256) {
         return totalBeaconBalance + totalBufferedEther + transientEth();
     }
 
+    /**
+     * @notice convertToShares() function is used to convert a given amount of assets to the corresponding amount of shares.
+     * @dev The function takes in a uint256 representing the amount of assets and returns a uint256 representing the amount of shares. The totalSupply and totalAssets() are used to calculate the conversion rate.
+     */
     function convertToShares(uint256 assets) public view virtual returns (uint256) {
         uint256 supply = totalSupply; // Saves an extra SLOAD if totalSupply is non-zero.
 
@@ -327,22 +361,38 @@ contract ManifoldLSD is ERC20, TwoStepOwnable {
         return supply == 0 ? shares : shares.mulDivDown(totalAssets(), supply);
     }
 
+    /**
+     * @notice This function allows users to preview the amount of shares they will receive when they deposit a certain amount of assets.
+     * @dev This function takes in an amount of assets and returns the amount of shares that will be received when the deposit is made.
+     */
     function previewDeposit(uint256 assets) public view virtual returns (uint256) {
         return convertToShares(assets);
     }
 
+    /**
+     * @notice This function is used to preview the amount of tokens that will be minted when the mint function is called.
+     * @dev The function takes in the amount of shares that will be minted and returns the amount of tokens that will be minted. It does this by calculating the total supply of tokens and the total assets and then multiplying the two together.
+     */
     function previewMint(uint256 shares) public view virtual returns (uint256) {
         uint256 supply = totalSupply; // Saves an extra SLOAD if totalSupply is non-zero.
 
         return supply == 0 ? shares : shares.mulDivUp(totalAssets(), supply);
     }
 
+    /**
+     * @notice This function allows users to preview the amount of tokens they will receive when withdrawing assets.
+     * @dev This function takes in the amount of assets to be withdrawn and returns the amount of tokens that will be received. It first checks if the total supply is 0, and if it is, it returns the amount of assets that were passed in. Otherwise, it calculates the amount of tokens to be received by multiplying the amount of assets by the total supply and dividing it by the total assets.
+     */
     function previewWithdraw(uint256 assets) public view virtual returns (uint256) {
         uint256 supply = totalSupply; // Saves an extra SLOAD if totalSupply is non-zero.
 
         return supply == 0 ? assets : assets.mulDivUp(supply, totalAssets());
     }
 
+    /**
+     * @notice This function allows a user to preview the amount of assets they will receive when redeeming a certain amount of shares.
+     * @dev This function takes in a uint256 representing the amount of shares to be redeemed and returns a uint256 representing the amount of assets that will be received.
+     */
     function previewRedeem(uint256 shares) public view virtual returns (uint256) {
         return convertToAssets(shares);
     }
@@ -355,14 +405,26 @@ contract ManifoldLSD is ERC20, TwoStepOwnable {
         return type(uint256).max;
     }
 
+    /**
+     * @notice This function returns the maximum value of a uint256 type.
+     * @dev This function takes in an address as an argument and returns the maximum value of a uint256 type.
+     */
     function maxMint(address) public view virtual returns (uint256) {
         return type(uint256).max;
     }
 
+    /**
+     * @notice This function allows the owner to withdraw the maximum amount of assets from their account.
+     * @dev The function converts the balance of the owner to assets and returns the amount.
+     */
     function maxWithdraw(address owner) public view virtual returns (uint256) {
         return convertToAssets(balanceOf[owner]);
     }
 
+    /**
+     * @notice This function allows the owner to redeem the maximum amount of tokens from their balance.
+     * @dev This function returns the balance of the owner.
+     */
     function maxRedeem(address owner) public view virtual returns (uint256) {
         return balanceOf[owner];
     }
