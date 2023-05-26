@@ -80,12 +80,7 @@ contract ERC20StakingPool is TwoStepOwnable {
     // BPT
     ERC20 public stakeToken;
 
-    constructor(
-        ERC20 _rewardToken,
-        ERC20 _stakeToken,
-        uint64 _duration,
-        uint64 _cooldown
-    ) {
+    constructor(ERC20 _rewardToken, ERC20 _stakeToken, uint64 _duration, uint64 _cooldown) {
         _initializeOwner(msg.sender);
 
         rewardToken = _rewardToken;
@@ -101,21 +96,14 @@ contract ERC20StakingPool is TwoStepOwnable {
     // return cooldown for staker of when they can unstake
     // if they have staked before, return weighted avg of cooldowns
     // based on stake amounts
-    function getNextCooldownTimestamp(
-        address toAddress,
-        uint256 toBalance
-    ) public view returns (uint256) {
+    function getNextCooldownTimestamp(address toAddress, uint256 toBalance) public view returns (uint256) {
         uint256 toCooldownTimestamp = stakerCommitcooldown[toAddress];
         if (toCooldownTimestamp == 0) {
             return block.timestamp + cooldown;
         }
 
-        return
-            (balanceOf[toAddress] *
-                toCooldownTimestamp +
-                toBalance *
-                (block.timestamp + cooldown)) /
-            (balanceOf[toAddress] + toBalance);
+        return (balanceOf[toAddress] * toCooldownTimestamp + toBalance * (block.timestamp + cooldown))
+            / (balanceOf[toAddress] + toBalance);
     }
 
     /// @notice Stakes tokens in the pool to earn rewards
@@ -133,19 +121,12 @@ contract ERC20StakingPool is TwoStepOwnable {
         /// Storage loads
         /// -----------------------------------------------------------------------
 
-        stakerCommitcooldown[msg.sender] = getNextCooldownTimestamp(
-            msg.sender,
-            amount
-        );
+        stakerCommitcooldown[msg.sender] = getNextCooldownTimestamp(msg.sender, amount);
 
         uint256 accountBalance = balanceOf[msg.sender];
         uint64 lastTimeRewardApplicable_ = lastTimeRewardApplicable();
         uint256 totalSupply_ = totalSupply;
-        uint256 rewardPerToken_ = _rewardPerToken(
-            totalSupply_,
-            lastTimeRewardApplicable_,
-            rewardRate
-        );
+        uint256 rewardPerToken_ = _rewardPerToken(totalSupply_, lastTimeRewardApplicable_, rewardRate);
 
         /// -----------------------------------------------------------------------
         /// State updates
@@ -154,12 +135,7 @@ contract ERC20StakingPool is TwoStepOwnable {
         // accrue rewards
         rewardPerTokenStored = rewardPerToken_;
         lastUpdateTime = lastTimeRewardApplicable_;
-        rewards[msg.sender] = _earned(
-            msg.sender,
-            accountBalance,
-            rewardPerToken_,
-            rewards[msg.sender]
-        );
+        rewards[msg.sender] = _earned(msg.sender, accountBalance, rewardPerToken_, rewards[msg.sender]);
         userRewardPerTokenPaid[msg.sender] = rewardPerToken_;
 
         // stake
@@ -186,8 +162,9 @@ contract ERC20StakingPool is TwoStepOwnable {
             return;
         }
 
-        if (block.timestamp < stakerCommitcooldown[msg.sender])
+        if (block.timestamp < stakerCommitcooldown[msg.sender]) {
             revert CooldownNotFinished();
+        }
 
         /// -----------------------------------------------------------------------
         /// Storage loads
@@ -196,11 +173,7 @@ contract ERC20StakingPool is TwoStepOwnable {
         uint256 accountBalance = balanceOf[msg.sender];
         uint64 lastTimeRewardApplicable_ = lastTimeRewardApplicable();
         uint256 totalSupply_ = totalSupply;
-        uint256 rewardPerToken_ = _rewardPerToken(
-            totalSupply_,
-            lastTimeRewardApplicable_,
-            rewardRate
-        );
+        uint256 rewardPerToken_ = _rewardPerToken(totalSupply_, lastTimeRewardApplicable_, rewardRate);
 
         /// -----------------------------------------------------------------------
         /// State updates
@@ -209,12 +182,7 @@ contract ERC20StakingPool is TwoStepOwnable {
         // accrue rewards
         rewardPerTokenStored = rewardPerToken_;
         lastUpdateTime = lastTimeRewardApplicable_;
-        rewards[msg.sender] = _earned(
-            msg.sender,
-            accountBalance,
-            rewardPerToken_,
-            rewards[msg.sender]
-        );
+        rewards[msg.sender] = _earned(msg.sender, accountBalance, rewardPerToken_, rewards[msg.sender]);
         userRewardPerTokenPaid[msg.sender] = rewardPerToken_;
 
         // withdraw stake
@@ -240,8 +208,9 @@ contract ERC20StakingPool is TwoStepOwnable {
         /// Validation
         /// -----------------------------------------------------------------------
 
-        if (block.timestamp < stakerCommitcooldown[msg.sender])
+        if (block.timestamp < stakerCommitcooldown[msg.sender]) {
             revert CooldownNotFinished();
+        }
 
         uint256 accountBalance = balanceOf[msg.sender];
 
@@ -251,23 +220,14 @@ contract ERC20StakingPool is TwoStepOwnable {
 
         uint64 lastTimeRewardApplicable_ = lastTimeRewardApplicable();
         uint256 totalSupply_ = totalSupply;
-        uint256 rewardPerToken_ = _rewardPerToken(
-            totalSupply_,
-            lastTimeRewardApplicable_,
-            rewardRate
-        );
+        uint256 rewardPerToken_ = _rewardPerToken(totalSupply_, lastTimeRewardApplicable_, rewardRate);
 
         /// -----------------------------------------------------------------------
         /// State updates
         /// -----------------------------------------------------------------------
 
         // give rewards
-        uint256 reward = _earned(
-            msg.sender,
-            accountBalance,
-            rewardPerToken_,
-            rewards[msg.sender]
-        );
+        uint256 reward = _earned(msg.sender, accountBalance, rewardPerToken_, rewards[msg.sender]);
         if (reward > 0) {
             rewards[msg.sender] = 0;
         }
@@ -309,22 +269,13 @@ contract ERC20StakingPool is TwoStepOwnable {
         uint256 accountBalance = balanceOf[msg.sender];
         uint64 lastTimeRewardApplicable_ = lastTimeRewardApplicable();
         uint256 totalSupply_ = totalSupply;
-        uint256 rewardPerToken_ = _rewardPerToken(
-            totalSupply_,
-            lastTimeRewardApplicable_,
-            rewardRate
-        );
+        uint256 rewardPerToken_ = _rewardPerToken(totalSupply_, lastTimeRewardApplicable_, rewardRate);
 
         /// -----------------------------------------------------------------------
         /// State updates
         /// -----------------------------------------------------------------------
 
-        uint256 reward = _earned(
-            msg.sender,
-            accountBalance,
-            rewardPerToken_,
-            rewards[msg.sender]
-        );
+        uint256 reward = _earned(msg.sender, accountBalance, rewardPerToken_, rewards[msg.sender]);
 
         // accrue rewards
         rewardPerTokenStored = rewardPerToken_;
@@ -350,36 +301,23 @@ contract ERC20StakingPool is TwoStepOwnable {
 
     /// @notice The latest time at which stakers are earning rewards.
     function lastTimeRewardApplicable() public view returns (uint64) {
-        return
-            block.timestamp < periodFinish
-                ? uint64(block.timestamp)
-                : periodFinish;
+        return block.timestamp < periodFinish ? uint64(block.timestamp) : periodFinish;
     }
 
     /// @notice The amount of reward tokens each staked token has earned so far
     function rewardPerToken() external view returns (uint256) {
-        return
-            _rewardPerToken(
-                totalSupply,
-                lastTimeRewardApplicable(),
-                rewardRate
-            );
+        return _rewardPerToken(totalSupply, lastTimeRewardApplicable(), rewardRate);
     }
 
     /// @notice The amount of reward tokens an account has accrued so far. Does not
     /// include already withdrawn rewards.
     function earned(address account) external view returns (uint256) {
-        return
-            _earned(
-                account,
-                balanceOf[account],
-                _rewardPerToken(
-                    totalSupply,
-                    lastTimeRewardApplicable(),
-                    rewardRate
-                ),
-                rewards[account]
-            );
+        return _earned(
+            account,
+            balanceOf[account],
+            _rewardPerToken(totalSupply, lastTimeRewardApplicable(), rewardRate),
+            rewards[account]
+        );
     }
 
     /// -----------------------------------------------------------------------
@@ -412,9 +350,7 @@ contract ERC20StakingPool is TwoStepOwnable {
 
         uint256 rewardRate_ = rewardRate;
         uint64 periodFinish_ = periodFinish;
-        uint64 lastTimeRewardApplicable_ = block.timestamp < periodFinish_
-            ? uint64(block.timestamp)
-            : periodFinish_;
+        uint64 lastTimeRewardApplicable_ = block.timestamp < periodFinish_ ? uint64(block.timestamp) : periodFinish_;
         uint64 DURATION_ = duration;
         uint256 totalSupply_ = totalSupply;
 
@@ -423,11 +359,7 @@ contract ERC20StakingPool is TwoStepOwnable {
         /// -----------------------------------------------------------------------
 
         // accrue rewards
-        rewardPerTokenStored = _rewardPerToken(
-            totalSupply_,
-            lastTimeRewardApplicable_,
-            rewardRate_
-        );
+        rewardPerTokenStored = _rewardPerToken(totalSupply_, lastTimeRewardApplicable_, rewardRate_);
         lastUpdateTime = lastTimeRewardApplicable_;
 
         // record new reward
@@ -454,10 +386,7 @@ contract ERC20StakingPool is TwoStepOwnable {
     /// Reward distributors can call notifyRewardAmount()
     /// @param rewardDistributor The account to add/remove
     /// @param isRewardDistributor_ True to add the account, false to remove the account
-    function setRewardDistributor(
-        address rewardDistributor,
-        bool isRewardDistributor_
-    ) external onlyOwner {
+    function setRewardDistributor(address rewardDistributor, bool isRewardDistributor_) external onlyOwner {
         isRewardDistributor[rewardDistributor] = isRewardDistributor_;
     }
 
@@ -465,34 +394,27 @@ contract ERC20StakingPool is TwoStepOwnable {
     /// Internal functions
     /// -----------------------------------------------------------------------
 
-    function _earned(
-        address account,
-        uint256 accountBalance,
-        uint256 rewardPerToken_,
-        uint256 accountRewards
-    ) internal view returns (uint256) {
-        return
-            FixedPointMathLib.mulDivDown(
-                accountBalance,
-                rewardPerToken_ - userRewardPerTokenPaid[account],
-                PRECISION
-            ) + accountRewards;
+    function _earned(address account, uint256 accountBalance, uint256 rewardPerToken_, uint256 accountRewards)
+        internal
+        view
+        returns (uint256)
+    {
+        return FixedPointMathLib.mulDivDown(
+            accountBalance, rewardPerToken_ - userRewardPerTokenPaid[account], PRECISION
+        ) + accountRewards;
     }
 
-    function _rewardPerToken(
-        uint256 totalSupply_,
-        uint256 lastTimeRewardApplicable_,
-        uint256 rewardRate_
-    ) internal view returns (uint256) {
+    function _rewardPerToken(uint256 totalSupply_, uint256 lastTimeRewardApplicable_, uint256 rewardRate_)
+        internal
+        view
+        returns (uint256)
+    {
         if (totalSupply_ == 0) {
             return rewardPerTokenStored;
         }
-        return
-            rewardPerTokenStored +
-            FixedPointMathLib.mulDivDown(
-                (lastTimeRewardApplicable_ - lastUpdateTime) * PRECISION,
-                rewardRate_,
-                totalSupply_
+        return rewardPerTokenStored
+            + FixedPointMathLib.mulDivDown(
+                (lastTimeRewardApplicable_ - lastUpdateTime) * PRECISION, rewardRate_, totalSupply_
             );
     }
 }

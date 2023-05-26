@@ -8,7 +8,7 @@ import "../src/OperatorRegistery.sol";
 
 contract DepositTest is Test {
     using SafeTransferLib for ERC20;
-    
+
     ManifoldLSD lsd;
     MevETH mevETH;
     OperatorRegistery op;
@@ -21,7 +21,7 @@ contract DepositTest is Test {
         lsd.setMevETH(address(mevETH));
         op = new OperatorRegistery(address(lsd));
     }
- 
+
     function testDeposit(uint256 amount) public {
         vm.assume(amount > 1000000000000000000); // 1 eth min limit
         vm.assume(amount < address(this).balance);

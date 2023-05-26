@@ -10,9 +10,7 @@ contract TwoStepOwnable is Ownable {
     /// prevent renounce ownership as that will brick the mevETH accounting
 
     /// @dev Allows the owner to transfer the ownership to `newOwner`.
-    function transferOwnership(
-        address newOwner
-    ) public payable override onlyOwner {
+    function transferOwnership(address newOwner) public payable override onlyOwner {
         revert();
     }
 

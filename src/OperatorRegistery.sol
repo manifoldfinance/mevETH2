@@ -17,10 +17,7 @@ contract OperatorRegistery is IOperatorRegistery, TwoStepOwnable {
     event OperatorCommited(address indexed operator);
     event OperatorUncommited(address indexed operator);
     event OperatorRemoved(address indexed operator);
-    event OperatorMaxValidatorsSet(
-        address indexed operator,
-        uint256 maxValidators
-    );
+    event OperatorMaxValidatorsSet(address indexed operator, uint256 maxValidators);
 
     uint256 public totalValidators;
     address public manifoldLSD;
@@ -65,10 +62,7 @@ contract OperatorRegistery is IOperatorRegistery, TwoStepOwnable {
         emit OperatorRemoved(operator);
     }
 
-    function setMaxValidators(
-        address operator,
-        uint64 maxValidators
-    ) external onlyOwner {
+    function setMaxValidators(address operator, uint64 maxValidators) external onlyOwner {
         Operator storage op = operators[operator];
         if (!op.commited) revert OperatorNotCommitted();
         if (op.validatorsActive > maxValidators) revert MaxValidatorError();
@@ -78,14 +72,13 @@ contract OperatorRegistery is IOperatorRegistery, TwoStepOwnable {
         emit OperatorMaxValidatorsSet(operator, maxValidators);
     }
 
-    function registerValidator(
-        ValidatorData calldata depositData
-    ) external onlyManifoldLSD {
+    function registerValidator(ValidatorData calldata depositData) external onlyManifoldLSD {
         Operator storage op = operators[depositData.operator];
 
         if (!op.commited) revert OperatorsNotCommitted();
-        if (op.validatorsActive + 1 > op.maxValidators)
+        if (op.validatorsActive + 1 > op.maxValidators) {
             revert OperatorMaxValidatorsReached();
+        }
 
         // mark validator as registered -> prevents from registering the same validator twice
         bytes32 validatorId = keccak256(abi.encode(depositData.pubkey));

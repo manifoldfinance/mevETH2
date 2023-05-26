@@ -7,7 +7,6 @@ import "../src/MevETH.sol";
 import "../src/OperatorRegistery.sol";
 
 contract DeployScript is Script {
-
     function run() public {
         vm.startBroadcast();
         address _beaconDepositAddress = 0xff50ed3d0ec03aC01D4C79aAd74928BFF48a7b2b;
