@@ -7,6 +7,8 @@ on:
     types: [opened, reopened, synchronize, ready_for_review]
 env:
   FOUNDRY_PROFILE: ci
+  RPC_MAINNET: ${{ secrets.RPC_MAINNET }}
+  ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
 jobs:
   check:
     strategy:
@@ -22,7 +24,7 @@ jobs:
         uses: cachix/install-nix-action@v20
       - name: Execute direnv
         uses: HatsuneMiku3939/direnv-action@v1
-      - name: Ensure formatting
+      - name: Check formatting
         run: forge fmt --check
       - name: Run Forge build
         run: |
@@ -31,5 +33,5 @@ jobs:
         id: build
       - name: Run Forge tests
         run: |
-          forge test -vvv
+          forge test --fork-url "$RPC_MAINNET" --etherscan-api-key $ETHERSCAN_API_KEY -vvv
         id: test
