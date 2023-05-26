@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+
 pragma solidity ^0.8.15;
 
 interface IOperatorRegistery {
@@ -27,7 +28,7 @@ interface IOperatorRegistery {
 
     /**
      * @notice This function is used to register a validator with the contract.
-     * @dev The function takes in a ValidatorData calldata depositData as an argument. This data is used to register the validator with the contract. 
+     * @dev The function takes in a ValidatorData calldata depositData as an argument. This data is used to register the validator with the contract.
      */
     function registerValidator(ValidatorData calldata depositData) external;
 }
