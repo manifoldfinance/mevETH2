@@ -2,8 +2,13 @@
   imports = [
     inputs.process-compose-flake.flakeModule
   ];
-  
-  perSystem = {config, self', inputs', ...}: let
+
+  perSystem = {
+    config,
+    self',
+    inputs',
+    ...
+  }: let
     inherit (inputs'.ethereum-nix.packages) foundry;
   in {
     config.process-compose.configs = {
