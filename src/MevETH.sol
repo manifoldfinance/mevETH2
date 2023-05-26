@@ -16,22 +16,13 @@ contract MevETH is ERC20, TwoStepOwnable, NonblockingLzApp {
     error OnlyManifoldLSDCallable();
     error AdapterParamsNotEmpty();
 
-    event SendToChain(
-        uint16 indexed _dstChainId,
-        address indexed _from,
-        address _toAddress,
-        uint _amount
-    );
+    event SendToChain(uint16 indexed _dstChainId, address indexed _from, address _toAddress, uint256 _amount);
 
     /**
      * @dev Emitted when `_amount` tokens are received from `_srcChainId` into the `_toAddress` on the local chain.
      * `_nonce` is the inbound nonce.
      */
-    event ReceiveFromChain(
-        uint16 indexed _srcChainId,
-        address indexed _to,
-        uint _amount
-    );
+    event ReceiveFromChain(uint16 indexed _srcChainId, address indexed _to, uint256 _amount);
 
     event SetUseCustomAdapterParams(bool _useCustomAdapterParams);
 
@@ -55,13 +46,10 @@ contract MevETH is ERC20, TwoStepOwnable, NonblockingLzApp {
         _;
     }
 
-    constructor(
-        string memory _name,
-        string memory _symbol,
-        uint8 _decimals,
-        address _manifoldLSD,
-        address _endpoint
-    ) ERC20(_name, _symbol, _decimals) NonblockingLzApp(_endpoint) {
+    constructor(string memory _name, string memory _symbol, uint8 _decimals, address _manifoldLSD, address _endpoint)
+        ERC20(_name, _symbol, _decimals)
+        NonblockingLzApp(_endpoint)
+    {
         // todo: maybe have this be a param
         _initializeOwner(msg.sender);
         manifoldLSD = _manifoldLSD;
@@ -83,12 +71,11 @@ contract MevETH is ERC20, TwoStepOwnable, NonblockingLzApp {
     // ======= OMNI CHAIN LAYERZERO FUNCS ==============
 
     // generic config for LayerZero user Application
-    function setConfig(
-        uint16 _version,
-        uint16 _chainId,
-        uint _configType,
-        bytes calldata _config
-    ) external override onlyOwner {
+    function setConfig(uint16 _version, uint16 _chainId, uint256 _configType, bytes calldata _config)
+        external
+        override
+        onlyOwner
+    {
         _setConfig(_version, _chainId, _configType, _config);
     }
 
@@ -100,24 +87,15 @@ contract MevETH is ERC20, TwoStepOwnable, NonblockingLzApp {
         _setReceiveVersion(_version);
     }
 
-    function forceResumeReceive(
-        uint16 _srcChainId,
-        bytes calldata _srcAddress
-    ) external override onlyOwner {
+    function forceResumeReceive(uint16 _srcChainId, bytes calldata _srcAddress) external override onlyOwner {
         _forceResumeReceive(_srcChainId, _srcAddress);
     }
 
-    function setTrustedRemote(
-        uint16 _srcChainId,
-        bytes calldata _path
-    ) external onlyOwner {
+    function setTrustedRemote(uint16 _srcChainId, bytes calldata _path) external onlyOwner {
         _setTrustedRemote(_srcChainId, _path);
     }
 
-    function setTrustedRemoteAddress(
-        uint16 _remoteChainId,
-        bytes calldata _remoteAddress
-    ) external onlyOwner {
+    function setTrustedRemoteAddress(uint16 _remoteChainId, bytes calldata _remoteAddress) external onlyOwner {
         _setTrustedRemoteAddress(_remoteChainId, _remoteAddress);
     }
 
@@ -125,19 +103,12 @@ contract MevETH is ERC20, TwoStepOwnable, NonblockingLzApp {
         _setPrecrime(_precrime);
     }
 
-    function setMinDstGas(
-        uint16 _dstChainId,
-        uint16 _packetType,
-        uint _minGas
-    ) external onlyOwner {
+    function setMinDstGas(uint16 _dstChainId, uint16 _packetType, uint256 _minGas) external onlyOwner {
         _setMinDstGas(_dstChainId, _packetType, _minGas);
     }
 
     // // if the size is 0, it means default size limit
-    function setPayloadSizeLimit(
-        uint16 _dstChainId,
-        uint _size
-    ) external onlyOwner {
+    function setPayloadSizeLimit(uint16 _dstChainId, uint256 _size) external onlyOwner {
         _setPayloadSizeLimit(_dstChainId, _size);
     }
 
@@ -145,25 +116,16 @@ contract MevETH is ERC20, TwoStepOwnable, NonblockingLzApp {
     function estimateSendFee(
         uint16 _dstChainId,
         bytes calldata _toAddress,
-        uint _amount,
+        uint256 _amount,
         bool _useZro,
         bytes calldata _adapterParams
-    ) public view returns (uint nativeFee, uint zroFee) {
+    ) public view returns (uint256 nativeFee, uint256 zroFee) {
         // mock the payload for sendFrom()
         bytes memory payload = abi.encode(PT_SEND, _toAddress, _amount);
-        return
-            lzEndpoint.estimateFees(
-                _dstChainId,
-                address(this),
-                payload,
-                _useZro,
-                _adapterParams
-            );
+        return lzEndpoint.estimateFees(_dstChainId, address(this), payload, _useZro, _adapterParams);
     }
 
-    function setUseCustomAdapterParams(
-        bool _useCustomAdapterParams
-    ) external onlyOwner {
+    function setUseCustomAdapterParams(bool _useCustomAdapterParams) external onlyOwner {
         useCustomAdapterParams = _useCustomAdapterParams;
         emit SetUseCustomAdapterParams(_useCustomAdapterParams);
     }
@@ -186,8 +148,9 @@ contract MevETH is ERC20, TwoStepOwnable, NonblockingLzApp {
         if (_from != msg.sender) {
             uint256 allowed = allowance[_from][msg.sender]; // Saves gas for limited approvals.
 
-            if (allowed != type(uint256).max)
+            if (allowed != type(uint256).max) {
                 allowance[_from][msg.sender] = allowed - amount;
+            }
         }
 
         uint256 fee = _calculateFee(amount);
@@ -202,24 +165,15 @@ contract MevETH is ERC20, TwoStepOwnable, NonblockingLzApp {
 
         // require todo
 
-        _lzSend(
-            _dstChainId,
-            lzPayload,
-            _refundAddress,
-            _zroPaymentAddress,
-            _adapterParams,
-            msg.value
-        );
+        _lzSend(_dstChainId, lzPayload, _refundAddress, _zroPaymentAddress, _adapterParams, msg.value);
 
         emit SendToChain(_dstChainId, _from, _toAddress, amount);
     }
 
-    function _checkAdapterParams(
-        uint16 _dstChainId,
-        uint16 _pkType,
-        bytes memory _adapterParams,
-        uint256 _extraGas
-    ) internal view {
+    function _checkAdapterParams(uint16 _dstChainId, uint16 _pkType, bytes memory _adapterParams, uint256 _extraGas)
+        internal
+        view
+    {
         if (useCustomAdapterParams) {
             _checkGasLimit(_dstChainId, _pkType, _adapterParams, _extraGas);
         } else {
@@ -228,21 +182,16 @@ contract MevETH is ERC20, TwoStepOwnable, NonblockingLzApp {
     }
 
     //bytes memory lzPayload = abi.encode(PT_SEND, _toAddress, amount);
-    function _nonblockingLzReceive(
-        uint16 _srcChainId,
-        bytes memory _srcAddress,
-        uint64 _nonce,
-        bytes memory _payload
-    ) internal override {
+    function _nonblockingLzReceive(uint16 _srcChainId, bytes memory _srcAddress, uint64 _nonce, bytes memory _payload)
+        internal
+        override
+    {
         // uint16 packetType;
         // assembly {
         //     packetType := mload(add(_payload, 32))
         // }
 
-        (uint16 packetType, address to, uint256 amount) = abi.decode(
-            _payload,
-            (uint16, address, uint256)
-        );
+        (uint16 packetType, address to, uint256 amount) = abi.decode(_payload, (uint16, address, uint256));
 
         if (packetType == PT_SEND) {
             _mint(to, amount);

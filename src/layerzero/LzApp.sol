@@ -15,41 +15,36 @@ abstract contract LzApp is ILayerZeroReceiver, ILayerZeroUserApplicationConfig {
     using BytesLib for bytes;
 
     // ua can not send payload larger than this by default, but it can be changed by the ua owner
-    uint public constant DEFAULT_PAYLOAD_SIZE_LIMIT = 10000;
+    uint256 public constant DEFAULT_PAYLOAD_SIZE_LIMIT = 10000;
 
     ILayerZeroEndpoint public immutable lzEndpoint;
     mapping(uint16 => bytes) public trustedRemoteLookup;
-    mapping(uint16 => mapping(uint16 => uint)) public minDstGasLookup;
-    mapping(uint16 => uint) public payloadSizeLimitLookup;
+    mapping(uint16 => mapping(uint16 => uint256)) public minDstGasLookup;
+    mapping(uint16 => uint256) public payloadSizeLimitLookup;
     address public precrime;
 
     event SetPrecrime(address precrime);
     event SetTrustedRemote(uint16 _remoteChainId, bytes _path);
     event SetTrustedRemoteAddress(uint16 _remoteChainId, bytes _remoteAddress);
-    event SetMinDstGas(uint16 _dstChainId, uint16 _type, uint _minDstGas);
+    event SetMinDstGas(uint16 _dstChainId, uint16 _type, uint256 _minDstGas);
 
     constructor(address _endpoint) {
         lzEndpoint = ILayerZeroEndpoint(_endpoint);
     }
 
-    function lzReceive(
-        uint16 _srcChainId,
-        bytes calldata _srcAddress,
-        uint64 _nonce,
-        bytes calldata _payload
-    ) public virtual override {
+    function lzReceive(uint16 _srcChainId, bytes calldata _srcAddress, uint64 _nonce, bytes calldata _payload)
+        public
+        virtual
+        override
+    {
         // lzReceive must be called by the endpoint for security
-        require(
-            msg.sender == address(lzEndpoint),
-            "LzApp: invalid endpoint caller"
-        );
+        require(msg.sender == address(lzEndpoint), "LzApp: invalid endpoint caller");
 
         bytes memory trustedRemote = trustedRemoteLookup[_srcChainId];
         // if will still block the message pathway from (srcChainId, srcAddress). should not receive message from untrusted remote.
         require(
-            _srcAddress.length == trustedRemote.length &&
-                trustedRemote.length > 0 &&
-                keccak256(_srcAddress) == keccak256(trustedRemote),
+            _srcAddress.length == trustedRemote.length && trustedRemote.length > 0
+                && keccak256(_srcAddress) == keccak256(trustedRemote),
             "LzApp: invalid source sending contract"
         );
 
@@ -57,12 +52,9 @@ abstract contract LzApp is ILayerZeroReceiver, ILayerZeroUserApplicationConfig {
     }
 
     // abstract function - the default behaviour of LayerZero is blocking. See: NonblockingLzApp if you dont need to enforce ordered messaging
-    function _blockingLzReceive(
-        uint16 _srcChainId,
-        bytes memory _srcAddress,
-        uint64 _nonce,
-        bytes memory _payload
-    ) internal virtual;
+    function _blockingLzReceive(uint16 _srcChainId, bytes memory _srcAddress, uint64 _nonce, bytes memory _payload)
+        internal
+        virtual;
 
     function _lzSend(
         uint16 _dstChainId,
@@ -70,74 +62,50 @@ abstract contract LzApp is ILayerZeroReceiver, ILayerZeroUserApplicationConfig {
         address payable _refundAddress,
         address _zroPaymentAddress,
         bytes memory _adapterParams,
-        uint _nativeFee
+        uint256 _nativeFee
     ) internal virtual {
         bytes memory trustedRemote = trustedRemoteLookup[_dstChainId];
-        require(
-            trustedRemote.length != 0,
-            "LzApp: destination chain is not a trusted source"
-        );
+        require(trustedRemote.length != 0, "LzApp: destination chain is not a trusted source");
         _checkPayloadSize(_dstChainId, _payload.length);
         lzEndpoint.send{value: _nativeFee}(
-            _dstChainId,
-            trustedRemote,
-            _payload,
-            _refundAddress,
-            _zroPaymentAddress,
-            _adapterParams
+            _dstChainId, trustedRemote, _payload, _refundAddress, _zroPaymentAddress, _adapterParams
         );
     }
 
-    function _checkGasLimit(
-        uint16 _dstChainId,
-        uint16 _type,
-        bytes memory _adapterParams,
-        uint _extraGas
-    ) internal view virtual {
-        uint providedGasLimit = _getGasLimit(_adapterParams);
-        uint minGasLimit = minDstGasLookup[_dstChainId][_type] + _extraGas;
+    function _checkGasLimit(uint16 _dstChainId, uint16 _type, bytes memory _adapterParams, uint256 _extraGas)
+        internal
+        view
+        virtual
+    {
+        uint256 providedGasLimit = _getGasLimit(_adapterParams);
+        uint256 minGasLimit = minDstGasLookup[_dstChainId][_type] + _extraGas;
         require(minGasLimit > 0, "LzApp: minGasLimit not set");
         require(providedGasLimit >= minGasLimit, "LzApp: gas limit is too low");
     }
 
-    function _getGasLimit(
-        bytes memory _adapterParams
-    ) internal pure virtual returns (uint gasLimit) {
+    function _getGasLimit(bytes memory _adapterParams) internal pure virtual returns (uint256 gasLimit) {
         require(_adapterParams.length >= 34, "LzApp: invalid adapterParams");
         assembly {
             gasLimit := mload(add(_adapterParams, 34))
         }
     }
 
-    function _checkPayloadSize(
-        uint16 _dstChainId,
-        uint _payloadSize
-    ) internal view virtual {
-        uint payloadSizeLimit = payloadSizeLimitLookup[_dstChainId];
+    function _checkPayloadSize(uint16 _dstChainId, uint256 _payloadSize) internal view virtual {
+        uint256 payloadSizeLimit = payloadSizeLimitLookup[_dstChainId];
         if (payloadSizeLimit == 0) {
             // use default if not set
             payloadSizeLimit = DEFAULT_PAYLOAD_SIZE_LIMIT;
         }
-        require(
-            _payloadSize <= payloadSizeLimit,
-            "LzApp: payload size is too large"
-        );
+        require(_payloadSize <= payloadSizeLimit, "LzApp: payload size is too large");
     }
 
     //---------------------------UserApplication config----------------------------------------
-    function getConfig(
-        uint16 _version,
-        uint16 _chainId,
-        address,
-        uint _configType
-    ) external view returns (bytes memory) {
-        return
-            lzEndpoint.getConfig(
-                _version,
-                _chainId,
-                address(this),
-                _configType
-            );
+    function getConfig(uint16 _version, uint16 _chainId, address, uint256 _configType)
+        external
+        view
+        returns (bytes memory)
+    {
+        return lzEndpoint.getConfig(_version, _chainId, address(this), _configType);
     }
 
     /// HAD TO CONVERT ALL THESE TO INTERNALS AS ONLYOWNER WAS CLASHING WITH MEVETH
@@ -153,12 +121,7 @@ abstract contract LzApp is ILayerZeroReceiver, ILayerZeroUserApplicationConfig {
     // }
 
     // generic config for LayerZero user Application
-    function _setConfig(
-        uint16 _version,
-        uint16 _chainId,
-        uint _configType,
-        bytes calldata _config
-    ) internal {
+    function _setConfig(uint16 _version, uint16 _chainId, uint256 _configType, bytes calldata _config) internal {
         lzEndpoint.setConfig(_version, _chainId, _configType, _config);
     }
 
@@ -185,10 +148,7 @@ abstract contract LzApp is ILayerZeroReceiver, ILayerZeroUserApplicationConfig {
     //     lzEndpoint.forceResumeReceive(_srcChainId, _srcAddress);
     // }
 
-    function _forceResumeReceive(
-        uint16 _srcChainId,
-        bytes calldata _srcAddress
-    ) internal {
+    function _forceResumeReceive(uint16 _srcChainId, bytes calldata _srcAddress) internal {
         lzEndpoint.forceResumeReceive(_srcChainId, _srcAddress);
     }
 
@@ -202,10 +162,7 @@ abstract contract LzApp is ILayerZeroReceiver, ILayerZeroUserApplicationConfig {
     //     emit SetTrustedRemote(_srcChainId, _path);
     // }
 
-    function _setTrustedRemote(
-        uint16 _srcChainId,
-        bytes calldata _path
-    ) internal {
+    function _setTrustedRemote(uint16 _srcChainId, bytes calldata _path) internal {
         trustedRemoteLookup[_srcChainId] = _path;
         emit SetTrustedRemote(_srcChainId, _path);
     }
@@ -221,20 +178,12 @@ abstract contract LzApp is ILayerZeroReceiver, ILayerZeroUserApplicationConfig {
     //     emit SetTrustedRemoteAddress(_remoteChainId, _remoteAddress);
     // }
 
-    function _setTrustedRemoteAddress(
-        uint16 _remoteChainId,
-        bytes calldata _remoteAddress
-    ) internal {
-        trustedRemoteLookup[_remoteChainId] = abi.encodePacked(
-            _remoteAddress,
-            address(this)
-        );
+    function _setTrustedRemoteAddress(uint16 _remoteChainId, bytes calldata _remoteAddress) internal {
+        trustedRemoteLookup[_remoteChainId] = abi.encodePacked(_remoteAddress, address(this));
         emit SetTrustedRemoteAddress(_remoteChainId, _remoteAddress);
     }
 
-    function getTrustedRemoteAddress(
-        uint16 _remoteChainId
-    ) external view returns (bytes memory) {
+    function getTrustedRemoteAddress(uint16 _remoteChainId) external view returns (bytes memory) {
         bytes memory path = trustedRemoteLookup[_remoteChainId];
         require(path.length != 0, "LzApp: no trusted path record");
         return path.slice(0, path.length - 20); // the last 20 bytes should be address(this)
@@ -260,11 +209,7 @@ abstract contract LzApp is ILayerZeroReceiver, ILayerZeroUserApplicationConfig {
     //     emit SetMinDstGas(_dstChainId, _packetType, _minGas);
     // }
 
-    function _setMinDstGas(
-        uint16 _dstChainId,
-        uint16 _packetType,
-        uint _minGas
-    ) internal {
+    function _setMinDstGas(uint16 _dstChainId, uint16 _packetType, uint256 _minGas) internal {
         require(_minGas > 0, "LzApp: invalid minGas");
         minDstGasLookup[_dstChainId][_packetType] = _minGas;
         emit SetMinDstGas(_dstChainId, _packetType, _minGas);
@@ -278,15 +223,12 @@ abstract contract LzApp is ILayerZeroReceiver, ILayerZeroUserApplicationConfig {
     //     payloadSizeLimitLookup[_dstChainId] = _size;
     // }
 
-    function _setPayloadSizeLimit(uint16 _dstChainId, uint _size) internal {
+    function _setPayloadSizeLimit(uint16 _dstChainId, uint256 _size) internal {
         payloadSizeLimitLookup[_dstChainId] = _size;
     }
 
     //--------------------------- VIEW FUNCTION ----------------------------------------
-    function isTrustedRemote(
-        uint16 _srcChainId,
-        bytes calldata _srcAddress
-    ) external view returns (bool) {
+    function isTrustedRemote(uint16 _srcChainId, bytes calldata _srcAddress) external view returns (bool) {
         bytes memory trustedSource = trustedRemoteLookup[_srcChainId];
         return keccak256(trustedSource) == keccak256(_srcAddress);
     }

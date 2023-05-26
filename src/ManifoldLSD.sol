@@ -41,27 +41,13 @@ contract ManifoldLSD is ERC20, TwoStepOwnable {
                                  EVENTS
     //////////////////////////////////////////////////////////////*/
 
-    event Deposit(
-        address indexed caller,
-        address indexed owner,
-        uint256 assets,
-        uint256 shares
-    );
+    event Deposit(address indexed caller, address indexed owner, uint256 assets, uint256 shares);
 
     event Withdraw(
-        address indexed caller,
-        address indexed receiver,
-        address indexed owner,
-        uint256 assets,
-        uint256 shares
+        address indexed caller, address indexed receiver, address indexed owner, uint256 assets, uint256 shares
     );
 
-    event OracleUpdate(
-        uint256 indexed prevBalance,
-        uint256 prevValidators,
-        uint256 newBalance,
-        uint256 newValidators
-    );
+    event OracleUpdate(uint256 indexed prevBalance, uint256 prevValidators, uint256 newBalance, uint256 newValidators);
 
     event NewValidator(
         address indexed operator,
@@ -126,12 +112,9 @@ contract ManifoldLSD is ERC20, TwoStepOwnable {
     uint256 public constant MIN_DEPOSIT = 1 ether;
     uint256 public constant VALIDATOR_DEPOSIT_SIZE = 32 ether;
 
-    constructor(
-        string memory _name,
-        string memory _symbol,
-        uint8 _decimals,
-        address _beaconDepositAddress
-    ) ERC20(_name, _symbol, _decimals) {
+    constructor(string memory _name, string memory _symbol, uint8 _decimals, address _beaconDepositAddress)
+        ERC20(_name, _symbol, _decimals)
+    {
         _initializeOwner(msg.sender);
         BEACON_DEPOSIT_CONTRACT = IBeaconDepositContract(_beaconDepositAddress);
     }
@@ -140,18 +123,13 @@ contract ManifoldLSD is ERC20, TwoStepOwnable {
                         DEPOSIT/WITHDRAWAL LOGIC
     //////////////////////////////////////////////////////////////*/
 
-    function deposit(
-        address receiver
-    ) public payable stakingNotPaused returns (uint256) {
+    function deposit(address receiver) public payable stakingNotPaused returns (uint256) {
         if (msg.value < MIN_DEPOSIT) revert DepositTooLow();
 
         return _deposit(msg.value, receiver);
     }
 
-    function _deposit(
-        uint256 value,
-        address receiver
-    ) internal returns (uint256 shares) {
+    function _deposit(uint256 value, address receiver) internal returns (uint256 shares) {
         // Check for rounding error since we round down in previewDeposit.
         if ((shares = previewDeposit(value)) == 0) revert ZeroShares();
 
@@ -163,28 +141,26 @@ contract ManifoldLSD is ERC20, TwoStepOwnable {
     }
 
     // called by manifold to update the beacon balance + number of validators successfully validating
-    function oracleUpdate(
-        uint256 beaconBalance,
-        uint128 beaconValidators
-    ) external onlyOwner {
+    function oracleUpdate(uint256 beaconBalance, uint128 beaconValidators) external onlyOwner {
         uint256 oldBeaconBalance = totalBeaconBalance;
         uint256 oldBeaconValidators = validatorsInfo.beaconValidators;
         uint256 totalValidators = validatorsInfo.totalValidators;
 
         // reported validators must be strictly <= to totalValidatosr
-        if (beaconValidators > totalValidators)
+        if (beaconValidators > totalValidators) {
             revert ReportedBeaconValidatorsGreaterThanTotalValidators();
+        }
 
         // validators must be strictly increasing before withdrawals come live
-        if (beaconValidators < oldBeaconValidators)
+        if (beaconValidators < oldBeaconValidators) {
             revert ReportedBeaconValidatorsDecreased();
+        }
 
         uint256 appearedValidators = beaconValidators - oldBeaconValidators;
 
         // RewardBase is the amount of money that is not included in the reward calculation
         // Just appeared validators * 32 added to the previously reported beacon balance
-        uint256 rewardBase = (appearedValidators * VALIDATOR_DEPOSIT_SIZE) +
-            oldBeaconBalance;
+        uint256 rewardBase = (appearedValidators * VALIDATOR_DEPOSIT_SIZE) + oldBeaconBalance;
 
         validatorsInfo.beaconValidators = beaconValidators;
         totalBeaconBalance = beaconBalance;
@@ -193,40 +169,30 @@ contract ManifoldLSD is ERC20, TwoStepOwnable {
         if (beaconBalance > rewardBase) {
             uint256 balanceDifference = beaconBalance - rewardBase;
 
-            uint256 feesAccrued = balanceDifference.mulDivDown(
-                managementFee,
-                1e18
-            );
+            uint256 feesAccrued = balanceDifference.mulDivDown(managementFee, 1e18);
 
             _deposit(feesAccrued, rewardsReceiver);
 
             emit RewardsMinted(rewardsReceiver, feesAccrued);
         }
 
-        emit OracleUpdate(
-            oldBeaconBalance,
-            oldBeaconValidators,
-            beaconBalance,
-            beaconValidators
-        );
+        emit OracleUpdate(oldBeaconBalance, oldBeaconValidators, beaconBalance, beaconValidators);
     }
 
     // amount of ETH that has been staked to a validator but has yet to be accruing rewards
     function transientEth() public view returns (uint256) {
-        return
-            (validatorsInfo.totalValidators - validatorsInfo.beaconValidators) *
-            VALIDATOR_DEPOSIT_SIZE;
+        return (validatorsInfo.totalValidators - validatorsInfo.beaconValidators) * VALIDATOR_DEPOSIT_SIZE;
     }
 
     // take 32 buffered eth and allocate 1 new validator
-    function registerNewValidator(
-        IOperatorRegistery.ValidatorData calldata validatorData
-    ) external onlyOwner {
-        if (totalBufferedEther < VALIDATOR_DEPOSIT_SIZE)
+    function registerNewValidator(IOperatorRegistery.ValidatorData calldata validatorData) external onlyOwner {
+        if (totalBufferedEther < VALIDATOR_DEPOSIT_SIZE) {
             revert InsufficientBufferedEth();
+        }
 
-        if (validatorData.withdrawal_credentials != withdrawalCredentials)
+        if (validatorData.withdrawal_credentials != withdrawalCredentials) {
             revert InvalidWithdrawalCredentials();
+        }
 
         validatorsInfo.totalValidators++;
         totalBufferedEther -= VALIDATOR_DEPOSIT_SIZE;
@@ -242,8 +208,9 @@ contract ManifoldLSD is ERC20, TwoStepOwnable {
 
         operatorRegistry.registerValidator(validatorData);
 
-        if (address(this).balance != targetBalance)
+        if (address(this).balance != targetBalance) {
             revert BeaconDepositFailed();
+        }
 
         emit NewValidator(
             validatorData.operator,
@@ -256,27 +223,21 @@ contract ManifoldLSD is ERC20, TwoStepOwnable {
 
     // allocate 32 ETH * X to X new validators
     // todo: can abstract this functionality in an internal function so above function uses same logic
-    function registerNewValidators(
-        IOperatorRegistery.ValidatorData[] calldata validatorData
-    ) external onlyOwner {
-        if (validatorData.length > maxValidatorRegistration)
+    function registerNewValidators(IOperatorRegistery.ValidatorData[] calldata validatorData) external onlyOwner {
+        if (validatorData.length > maxValidatorRegistration) {
             revert TooManyValidatorRegistrations();
-        if (
-            totalBufferedEther <
-            uint256(validatorData.length * VALIDATOR_DEPOSIT_SIZE)
-        ) revert InsufficientBufferedEth();
+        }
+        if (totalBufferedEther < uint256(validatorData.length * VALIDATOR_DEPOSIT_SIZE)) {
+            revert InsufficientBufferedEth();
+        }
 
         totalBufferedEther -= validatorData.length * VALIDATOR_DEPOSIT_SIZE;
         validatorsInfo.totalValidators += uint128(validatorData.length);
 
-        uint256 targetBalance = address(this).balance -
-            validatorData.length *
-            VALIDATOR_DEPOSIT_SIZE;
+        uint256 targetBalance = address(this).balance - validatorData.length * VALIDATOR_DEPOSIT_SIZE;
 
         for (uint256 i = 0; i < validatorData.length; ++i) {
-            if (
-                validatorData[i].withdrawal_credentials != withdrawalCredentials
-            ) revert InvalidWithdrawalCredentials();
+            if (validatorData[i].withdrawal_credentials != withdrawalCredentials) revert InvalidWithdrawalCredentials();
 
             BEACON_DEPOSIT_CONTRACT.deposit{value: VALIDATOR_DEPOSIT_SIZE}(
                 validatorData[i].pubkey,
@@ -295,8 +256,9 @@ contract ManifoldLSD is ERC20, TwoStepOwnable {
             );
         }
 
-        if (address(this).balance != targetBalance)
+        if (address(this).balance != targetBalance) {
             revert BeaconDepositFailed();
+        }
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -352,25 +314,19 @@ contract ManifoldLSD is ERC20, TwoStepOwnable {
         return totalBeaconBalance + totalBufferedEther + transientEth();
     }
 
-    function convertToShares(
-        uint256 assets
-    ) public view virtual returns (uint256) {
+    function convertToShares(uint256 assets) public view virtual returns (uint256) {
         uint256 supply = totalSupply; // Saves an extra SLOAD if totalSupply is non-zero.
 
         return supply == 0 ? assets : assets.mulDivDown(supply, totalAssets());
     }
 
-    function convertToAssets(
-        uint256 shares
-    ) public view virtual returns (uint256) {
+    function convertToAssets(uint256 shares) public view virtual returns (uint256) {
         uint256 supply = totalSupply; // Saves an extra SLOAD if totalSupply is non-zero.
 
         return supply == 0 ? shares : shares.mulDivDown(totalAssets(), supply);
     }
 
-    function previewDeposit(
-        uint256 assets
-    ) public view virtual returns (uint256) {
+    function previewDeposit(uint256 assets) public view virtual returns (uint256) {
         return convertToShares(assets);
     }
 
@@ -380,17 +336,13 @@ contract ManifoldLSD is ERC20, TwoStepOwnable {
         return supply == 0 ? shares : shares.mulDivUp(totalAssets(), supply);
     }
 
-    function previewWithdraw(
-        uint256 assets
-    ) public view virtual returns (uint256) {
+    function previewWithdraw(uint256 assets) public view virtual returns (uint256) {
         uint256 supply = totalSupply; // Saves an extra SLOAD if totalSupply is non-zero.
 
         return supply == 0 ? assets : assets.mulDivUp(supply, totalAssets());
     }
 
-    function previewRedeem(
-        uint256 shares
-    ) public view virtual returns (uint256) {
+    function previewRedeem(uint256 shares) public view virtual returns (uint256) {
         return convertToAssets(shares);
     }
 

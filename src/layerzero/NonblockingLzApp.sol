@@ -15,50 +15,25 @@ abstract contract NonblockingLzApp is LzApp {
 
     constructor(address _endpoint) LzApp(_endpoint) {}
 
-    mapping(uint16 => mapping(bytes => mapping(uint64 => bytes32)))
-        public failedMessages;
+    mapping(uint16 => mapping(bytes => mapping(uint64 => bytes32))) public failedMessages;
 
-    event MessageFailed(
-        uint16 _srcChainId,
-        bytes _srcAddress,
-        uint64 _nonce,
-        bytes _payload,
-        bytes _reason
-    );
-    event RetryMessageSuccess(
-        uint16 _srcChainId,
-        bytes _srcAddress,
-        uint64 _nonce,
-        bytes32 _payloadHash
-    );
+    event MessageFailed(uint16 _srcChainId, bytes _srcAddress, uint64 _nonce, bytes _payload, bytes _reason);
+    event RetryMessageSuccess(uint16 _srcChainId, bytes _srcAddress, uint64 _nonce, bytes32 _payloadHash);
 
     // overriding the virtual function in LzReceiver
-    function _blockingLzReceive(
-        uint16 _srcChainId,
-        bytes memory _srcAddress,
-        uint64 _nonce,
-        bytes memory _payload
-    ) internal virtual override {
+    function _blockingLzReceive(uint16 _srcChainId, bytes memory _srcAddress, uint64 _nonce, bytes memory _payload)
+        internal
+        virtual
+        override
+    {
         (bool success, bytes memory reason) = address(this).excessivelySafeCall(
             gasleft(),
             150,
-            abi.encodeWithSelector(
-                this.nonblockingLzReceive.selector,
-                _srcChainId,
-                _srcAddress,
-                _nonce,
-                _payload
-            )
+            abi.encodeWithSelector(this.nonblockingLzReceive.selector, _srcChainId, _srcAddress, _nonce, _payload)
         );
         // try-catch all errors/exceptions
         if (!success) {
-            _storeFailedMessage(
-                _srcChainId,
-                _srcAddress,
-                _nonce,
-                _payload,
-                reason
-            );
+            _storeFailedMessage(_srcChainId, _srcAddress, _nonce, _payload, reason);
         }
     }
 
@@ -80,37 +55,24 @@ abstract contract NonblockingLzApp is LzApp {
         bytes calldata _payload
     ) public virtual {
         // only internal transaction
-        require(
-            msg.sender == address(this),
-            "NonblockingLzApp: caller must be LzApp"
-        );
+        require(msg.sender == address(this), "NonblockingLzApp: caller must be LzApp");
         _nonblockingLzReceive(_srcChainId, _srcAddress, _nonce, _payload);
     }
 
     //@notice override this function
-    function _nonblockingLzReceive(
-        uint16 _srcChainId,
-        bytes memory _srcAddress,
-        uint64 _nonce,
-        bytes memory _payload
-    ) internal virtual;
+    function _nonblockingLzReceive(uint16 _srcChainId, bytes memory _srcAddress, uint64 _nonce, bytes memory _payload)
+        internal
+        virtual;
 
-    function retryMessage(
-        uint16 _srcChainId,
-        bytes calldata _srcAddress,
-        uint64 _nonce,
-        bytes calldata _payload
-    ) public payable virtual {
+    function retryMessage(uint16 _srcChainId, bytes calldata _srcAddress, uint64 _nonce, bytes calldata _payload)
+        public
+        payable
+        virtual
+    {
         // assert there is message to retry
         bytes32 payloadHash = failedMessages[_srcChainId][_srcAddress][_nonce];
-        require(
-            payloadHash != bytes32(0),
-            "NonblockingLzApp: no stored message"
-        );
-        require(
-            keccak256(_payload) == payloadHash,
-            "NonblockingLzApp: invalid payload"
-        );
+        require(payloadHash != bytes32(0), "NonblockingLzApp: no stored message");
+        require(keccak256(_payload) == payloadHash, "NonblockingLzApp: invalid payload");
         // clear the stored message
         failedMessages[_srcChainId][_srcAddress][_nonce] = bytes32(0);
         // execute the message. revert if it fails again
