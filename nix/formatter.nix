@@ -11,6 +11,8 @@
       inherit (config.flake-root) projectRootFile;
       package = pkgs.treefmt;
 
+      flakeFormatter = true;
+
       programs = {
         alejandra.enable = true; # nix
         deadnix.enable = true; # nix
@@ -24,8 +26,6 @@
         prettier.excludes = excludes;
       };
     };
-
-    formatter = config.treefmt.build.wrapper;
 
     devshells.default = {
       commands = [
