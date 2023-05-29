@@ -1,7 +1,3 @@
-CONTRACTS CURRENTLY HAVE NOT UNDERGONE ANY SORT OF GAS OPTIMIZATIONS YET.
-
-STILL NEED TO ADD NATSPEC/DOCS + GAS OPTIMIZATIONS
-
 ## Getting started
 
 To make the most of this repository, you should have the following installed:
