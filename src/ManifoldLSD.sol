@@ -2,7 +2,8 @@
 
 pragma solidity ^0.8.15;
 
-import {ERC20} from "solmate/tokens/ERC20.sol";
+import {IERC4626} from "./interfaces/IERC4626.sol";
+import {ERC20} from "solmate/token/ERC20.sol";
 import {SafeTransferLib} from "solmate/utils/SafeTransferLib.sol";
 import {FixedPointMathLib} from "solmate/utils/FixedPointMathLib.sol";
 import {TwoStepOwnable} from "./auth/TwoStepOwnable.sol";
@@ -17,8 +18,10 @@ import {IOperatorRegistry} from "./interfaces/IOperatorRegistry.sol";
 
 // todo: update recieve() to add to buffered eth
 
-/// @notice Manager that takes care of minting proper shares of mevETH and staking
-contract ManifoldLSD is ERC20, TwoStepOwnable {
+/// @title ManifoldLSD
+/// @author Manifold Finance
+/// @dev Manager that takes care of minting proper shares of mevETH and staking
+contract ManifoldLSD is IERC4626, TwoStepOwnable {
     using SafeTransferLib for ERC20;
     using FixedPointMathLib for uint256;
 
@@ -65,6 +68,11 @@ contract ManifoldLSD is ERC20, TwoStepOwnable {
     event FeeReceiverSet(address indexed newFeeReciever);
     event MevEthSet(address indexed mevEthAddress);
     event OperatorRegistrySet(address indexed operatorRegistry);
+
+
+    /*//////////////////////////////////////////////////////////////
+                            STORAGE VARIABLES
+    //////////////////////////////////////////////////////////////*/
 
     struct ValidatorsInfo {
         // current number of beacon validators
@@ -123,27 +131,6 @@ contract ManifoldLSD is ERC20, TwoStepOwnable {
     /*//////////////////////////////////////////////////////////////
                         DEPOSIT/WITHDRAWAL LOGIC
     //////////////////////////////////////////////////////////////*/
-
-    /**
-     * @notice This function allows users to deposit funds to the contract.
-     * @dev The function requires a minimum deposit amount and will revert if the deposit is too low.
-     */
-    function deposit(address receiver) public payable stakingNotPaused returns (uint256) {
-        if (msg.value < MIN_DEPOSIT) revert DepositTooLow();
-
-        return _deposit(msg.value, receiver);
-    }
-
-    function _deposit(uint256 value, address receiver) internal returns (uint256 shares) {
-        // Check for rounding error since we round down in previewDeposit.
-        if ((shares = previewDeposit(value)) == 0) revert ZeroShares();
-
-        totalBufferedEther += value;
-
-        IMevETH(mevETH).mint(receiver, shares);
-
-        emit Deposit(msg.sender, receiver, value, shares);
-    }
 
     // called by manifold to update the beacon balance + number of validators successfully validating
     function oracleUpdate(uint256 beaconBalance, uint128 beaconValidators) external onlyOwner {
@@ -334,8 +321,31 @@ contract ManifoldLSD is ERC20, TwoStepOwnable {
     }
 
     /*//////////////////////////////////////////////////////////////
-                            ACCOUNTING LOGIC
+                            ERC4626 LOGIC
     //////////////////////////////////////////////////////////////*/
+
+
+    /**
+     * @notice This function allows users to deposit funds to the contract.
+     * @dev The function requires a minimum deposit amount and will revert if the deposit is too low.
+     */
+    function deposit(address receiver) public payable stakingNotPaused returns (uint256) {
+        if (msg.value < MIN_DEPOSIT) revert DepositTooLow();
+
+        return _deposit(msg.value, receiver);
+    }
+
+    function _deposit(uint256 value, address receiver) internal returns (uint256 shares) {
+        // Check for rounding error since we round down in previewDeposit.
+        if ((shares = previewDeposit(value)) == 0) revert ZeroShares();
+
+        totalBufferedEther += value;
+
+        IMevETH(mevETH).mint(receiver, shares);
+
+        emit Deposit(msg.sender, receiver, value, shares);
+    }
+
 
     /**
      * @notice This function returns the total assets of the contract.
