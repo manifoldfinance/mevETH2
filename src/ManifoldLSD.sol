@@ -66,6 +66,7 @@ contract ManifoldLSD is IERC4626, TwoStepOwnable {
     event StakingUnpaused();
     event FeeSet(uint256 indexed newFee);
     event FeeReceiverSet(address indexed newFeeReciever);
+    event WithdrawalCredentialsSet(bytes32 indexed withdrawalCredentials);
     event MevEthSet(address indexed mevEthAddress);
     event OperatorRegistrySet(address indexed operatorRegistry);
 
@@ -125,7 +126,18 @@ contract ManifoldLSD is IERC4626, TwoStepOwnable {
         ERC20(_name, _symbol, _decimals)
     {
         _initializeOwner(msg.sender);
+        _initializeWithdrawalCredentials();
         BEACON_DEPOSIT_CONTRACT = IBeaconDepositContract(_beaconDepositAddress);
+    }
+
+    /**
+     * @notice Sets the withdrawal credentials of the contract (automatically to itself)
+     * @dev This function must be called only upon initialization as there are no authorization guards.
+     */
+    function _initializeWithdrawalCredentials() internal {
+        withdrawalCredentials = bytes32(abi.encodePacked(bytes12(0x010000000000000000000000), address(this)));
+
+        emit WithdrawalCredentialsSet(withdrawalCredentials);
     }
 
     /*//////////////////////////////////////////////////////////////
