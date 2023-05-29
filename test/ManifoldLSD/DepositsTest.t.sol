@@ -2,9 +2,9 @@
 pragma solidity ^0.8.17;
 
 import "forge-std/Test.sol";
-import "../src/ManifoldLSD.sol";
-import "../src/MevETH.sol";
-import "../src/OperatorRegistry.sol";
+import "../../src/ManifoldLSD.sol";
+import "../../src/MevETH.sol";
+import "../../src/OperatorRegistry.sol";
 
 contract DepositTest is Test {
     using SafeTransferLib for ERC20;
@@ -22,7 +22,7 @@ contract DepositTest is Test {
         op = new OperatorRegistry(address(lsd));
     }
 
-    function testDeposit(uint256 amount) public {
+    function test_Deposit(uint256 amount) public {
         vm.assume(amount > 1000000000000000000); // 1 eth min limit
         vm.assume(amount < address(this).balance);
         lsd.deposit{value: amount}(address(this));
