@@ -4,6 +4,7 @@ pragma solidity 0.8.19;
 contract auth {
     error Unauthorized();
 
+    /// The address with upgrade authority, should be a multisig controlled by Manifold
     address public source_of_authority;
 
     constructor(address _source_of_authority) {

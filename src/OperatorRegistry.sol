@@ -42,9 +42,6 @@ contract OperatorRegistry {
 
     uint256 public totalValidators;
 
-    /// The address with upgrade authority, should be a multisig controlled by Manifold
-    address source_of_authority;
-
     // Maps address to authorized Keepers
     mapping(address => bool) public keepers;
 
@@ -54,9 +51,6 @@ contract OperatorRegistry {
     // Maps hash of the validator data to whether it is registered.
     mapping(bytes32 => bool) public validators;
 
-    constructor(address _source_of_authority) {
-        source_of_authority = _source_of_authority;
-    }
     
     modifier onlyKeeper() {
         if (!keepers[msg.sender]) revert NotAuthorized();

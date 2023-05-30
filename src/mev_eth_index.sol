@@ -26,4 +26,16 @@ contract mev_eth_index {
     event WithdrawalCredentialsSet(bytes32 indexed withdrawalCredentials);
     event MevEthSet(address indexed mevEthAddress);
     event OperatorRegistrySet(address indexed operatorRegistry);
+
+    /// Errors
+    error InsufficientBufferedEth();
+    error TooManyValidatorRegistrations();
+    error ExceedsStakingAllowance();
+    error StakingIsPaused();
+    error DepositTooLow();
+    error ZeroShares();
+    error ReportedBeaconValidatorsGreaterThanTotalValidators();
+    error ReportedBeaconValidatorsDecreased();
+    error BeaconDepositFailed();
+    error InvalidWithdrawalCredentials();
 }

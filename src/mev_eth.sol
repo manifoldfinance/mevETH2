@@ -4,8 +4,7 @@ pragma solidity 0.8.19;
 import {OperatorRegistry} from "./OperatorRegistry.sol";
 import {Owned} from "lib/solmate/src/auth/Owned.sol";
 
-/*         
-////////////// Manifold Mev Ether /////////////                                        
+/*///////////// Manifold Mev Ether /////////////                                        
                                         -|-_
                                         | _
 
@@ -28,9 +27,11 @@ import {Owned} from "lib/solmate/src/auth/Owned.sol";
         @##\ \##/   =   `"=" ,;mm/
         `\##>.____,...,____,<####@
                                 ""'
-/////////////////////////////////////////////    
-*/
+/////////////////////////////////////////////*/
 
+
+import {SafeTransferLib} from "solmate/utils/SafeTransferLib.sol";
+import {FixedPointMathLib} from "solmate/utils/FixedPointMathLib.sol";
 import {ERC20} from "solmate/tokens/ERC20.sol";
 import {OperatorRegistry} from "./OperatorRegistry.sol";
 import {auth} from "./libraries/auth.sol";
@@ -58,12 +59,17 @@ interface IBeaconDepositContract {
 /// @dev Contract that allows deposit of ETH, for a Liquid Staking Reciept (LSR) in return.
 /// @dev LSR is represented through an ERC4626 token and interface
 contract mev_eth is OperatorRegistry, mev_eth_index, auth {
-    struct TotalAssets {
+    using SafeTransferLib for ERC20;
+    using FixedPointMathLib for uint256;
+
+    struct AssetsRebase {
         uint256 elastic; // Represents total amount of staked ether, including rewards accrued / slashed
         uint256 base; // Represents claims to ownership of the staked ether
     }
 
-    constructor(address _authority) Owned(_authority) {
+    AssetsRebase public total_assets;
+
+    constructor(address _authority) auth(_authority) {
         source_of_authority = _authority;
     }
 
@@ -72,7 +78,7 @@ contract mev_eth is OperatorRegistry, mev_eth_index, auth {
     //////////////////////////////////////////////////////////////*/
 
     /// The address of the Beacon Chain Deposit Contract
-    address constant beacon_chain_deposit_contract = 0x00000000219ab540356cBB839Cbe05303d7705Fa;
+    IBeaconDepositContract constant beacon_chain_deposit_contract = IBeaconDepositContract(0x00000000219ab540356cBB839Cbe05303d7705Fa);
 
     /// The amount of Ether required to mint a validator on the Beacon Chain
     uint256 constant VALIDATOR_DEPOSIT_SIZE = 32 ether;
@@ -92,6 +98,18 @@ contract mev_eth is OperatorRegistry, mev_eth_index, auth {
     uint256 public maxValidatorRegistration;
 
     bytes32 public withdrawalCredentials;
+
+    // Amount of Ether held current;y as a fraction of 32 eth awaiting a new validator
+    uint256 public totalBufferedEther;
+
+    // Balance of mev-eth contract on the Beacon Chain
+    uint256 public totalBeaconBalance;
+
+    // Reciever of Beacon Chain Validator Rewards 
+    address public rewardsReceiver;
+
+    // Management fee
+    uint256 public managementFee;
 
     /*//////////////////////////////////////////////////////////////
                             Registry For Validators
@@ -124,7 +142,7 @@ contract mev_eth is OperatorRegistry, mev_eth_index, auth {
 
         validatorsInfo.totalValidators++;
 
-        BEACON_DEPOSIT_CONTRACT.deposit{value: VALIDATOR_DEPOSIT_SIZE}(
+        beacon_chain_deposit_contract.deposit{value: VALIDATOR_DEPOSIT_SIZE}(
             validatorData.pubkey,
             abi.encodePacked(validatorData.withdrawal_credentials),
             validatorData.signature,
@@ -183,7 +201,7 @@ contract mev_eth is OperatorRegistry, mev_eth_index, auth {
         for (uint256 i = 0; i < validatorData.length; ++i) {
             if (validatorData[i].withdrawal_credentials != withdrawalCredentials) revert InvalidWithdrawalCredentials();
 
-            BEACON_DEPOSIT_CONTRACT.deposit{value: VALIDATOR_DEPOSIT_SIZE}(
+            beacon_chain_deposit_contract.deposit{value: VALIDATOR_DEPOSIT_SIZE}(
                 validatorData[i].pubkey,
                 abi.encodePacked(validatorData[i].withdrawal_credentials),
                 validatorData[i].signature,
@@ -212,7 +230,7 @@ contract mev_eth is OperatorRegistry, mev_eth_index, auth {
         uint256 oldBeaconValidators = validatorsInfo.beaconValidators;
         uint256 totalValidators = validatorsInfo.totalValidators;
 
-        // reported validators must be strictly <= to totalValidatosr
+        // reported validators must be strictly <= to totalValidators
         if (beaconValidators > totalValidators) {
             revert ReportedBeaconValidatorsGreaterThanTotalValidators();
         }
@@ -232,7 +250,7 @@ contract mev_eth is OperatorRegistry, mev_eth_index, auth {
 
             uint256 feesAccrued = balanceDifference.mulDivDown(managementFee, 1e18);
 
-            _deposit(feesAccrued, rewardsReceiver);
+            //_deposit(feesAccrued, rewardsReceiver);
 
             emit RewardsMinted(rewardsReceiver, feesAccrued);
         }
@@ -252,19 +270,19 @@ contract mev_eth is OperatorRegistry, mev_eth_index, auth {
     function totalAssets() external view returns (uint256 totalManagedAssets) {
         // Should return the total amount of Ether managed by the contract
         //
-        totalManagedAssets = totalAssets.elastic;
+        totalManagedAssets = total_assets.elastic;
     }
 
     function convertToShares(uint256 assets) public view returns (uint256 shares) {
         // So if there are no shares, then they will mint 1:1 with assets
         // Otherwise, shares will mint proportional to the amount of assets
-        shares = totalAssets.elastic == 0 ? assets : assets * totalAssets.base / totalAssets.elastic;
+        shares = total_assets.elastic == 0 ? assets : assets * total_assets.base / total_assets.elastic;
     }
 
     function convertToAssets(uint256 shares) public view returns (uint256 assets) {
         // So if there are no shares, then they will mint 1:1 with assets
         // Otherwise, shares will mint proportional to the amount of assets
-        assets = totalAssets.elastic == 0 ? shares : shares * totalAssets.elastic / totalAssets.base;
+        assets = total_assets.elastic == 0 ? shares : shares * total_assets.elastic / total_assets.base;
     }
 
     function maxDeposit(address receiver) external view returns (uint256 maxAssets) {
