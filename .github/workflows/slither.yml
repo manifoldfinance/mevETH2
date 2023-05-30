@@ -1,0 +1,70 @@
+name: slither
+
+on:
+  push:
+    paths:
+      - "**.sol"
+      - ".github/workflows/slither.yml"
+
+  pull_request_target:
+    branches:
+      - main
+      - develop
+
+# ensure permissions are explicitly defined
+# by configuring one we disable the remaining permissions
+# see: https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idpermissions
+# permissions:
+#  contents: read
+
+# ensure multiple CI processes are not running analysis on contracts
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request_target' && github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+env:
+  COMMIT_SHA: ${{ github.event.pull_request.head.sha }}
+  PULL_NUMBER: ${{ github.event.pull_request.number }}
+  RUN_ID: ${{ github.run_id }}
+
+jobs:
+  slither:
+    runs-on: ubuntu-latest
+    outputs:
+      SLITHER_COVERAGE: ${{ steps.slither.outputs.sarif }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ["16.x"]
+        os: ["ubuntu-latest"]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
+
+      - name: forge install contract
+        id: forge
+        run: forge install
+
+      - name: Compile contracts
+        run: forge build --sizes
+
+      - name: Run Slither
+        uses: crytic/slither-action@v0.3.0
+        id: slither
+        with:
+          sarif: results.sarif
+          fail-on: none
+
+      - name: Upload SARIF file
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: ${{ steps.slither.outputs.sarif }}
