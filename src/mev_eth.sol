@@ -29,7 +29,6 @@ import {Owned} from "lib/solmate/src/auth/Owned.sol";
                                 ""'
 /////////////////////////////////////////////*/
 
-
 import {SafeTransferLib} from "solmate/utils/SafeTransferLib.sol";
 import {FixedPointMathLib} from "solmate/utils/FixedPointMathLib.sol";
 import {ERC20} from "solmate/tokens/ERC20.sol";
@@ -78,7 +77,8 @@ contract mev_eth is OperatorRegistry, mev_eth_index, auth {
     //////////////////////////////////////////////////////////////*/
 
     /// The address of the Beacon Chain Deposit Contract
-    IBeaconDepositContract constant beacon_chain_deposit_contract = IBeaconDepositContract(0x00000000219ab540356cBB839Cbe05303d7705Fa);
+    IBeaconDepositContract constant beacon_chain_deposit_contract =
+        IBeaconDepositContract(0x00000000219ab540356cBB839Cbe05303d7705Fa);
 
     /// The amount of Ether required to mint a validator on the Beacon Chain
     uint256 constant VALIDATOR_DEPOSIT_SIZE = 32 ether;
@@ -105,7 +105,7 @@ contract mev_eth is OperatorRegistry, mev_eth_index, auth {
     // Balance of mev-eth contract on the Beacon Chain
     uint256 public totalBeaconBalance;
 
-    // Reciever of Beacon Chain Validator Rewards 
+    // Reciever of Beacon Chain Validator Rewards
     address public rewardsReceiver;
 
     // Management fee
@@ -161,7 +161,7 @@ contract mev_eth is OperatorRegistry, mev_eth_index, auth {
     }
 
     // take 32 buffered eth and allocate 1 new validator
-    function registerNewValidator(ValidatorData calldata validatorData) external  {
+    function registerNewValidator(ValidatorData calldata validatorData) external {
         if (totalBufferedEther < VALIDATOR_DEPOSIT_SIZE) {
             revert InsufficientBufferedEth();
         }
@@ -287,7 +287,7 @@ contract mev_eth is OperatorRegistry, mev_eth_index, auth {
 
     function maxDeposit(address receiver) external view returns (uint256 maxAssets) {
         // No practical limit on deposit for Ether
-        return 2**256-1;
+        return 2 ** 256 - 1;
     }
 
     function previewDeposit(uint256 assets) external view returns (uint256 shares) {}

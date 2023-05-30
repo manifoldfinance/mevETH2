@@ -2,7 +2,6 @@
 
 pragma solidity ^0.8.15;
 
-
 contract OperatorRegistry {
     error OperatorsNotCommitted();
     error OperatorMaxValidatorsReached();
@@ -51,7 +50,6 @@ contract OperatorRegistry {
     // Maps hash of the validator data to whether it is registered.
     mapping(bytes32 => bool) public validators;
 
-    
     modifier onlyKeeper() {
         if (!keepers[msg.sender]) revert NotAuthorized();
         _;

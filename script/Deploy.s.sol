@@ -5,7 +5,5 @@ import "forge-std/Script.sol";
 import "../src/OperatorRegistry.sol";
 
 contract DeployScript is Script {
-    function run() public {
-
-    }
+    function run() public {}
 }
