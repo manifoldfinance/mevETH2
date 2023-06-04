@@ -30,7 +30,6 @@ import {SafeTransferLib} from "solmate/utils/SafeTransferLib.sol";
 import {FixedPointMathLib} from "solmate/utils/FixedPointMathLib.sol";
 import {ERC20} from "solmate/tokens/ERC20.sol";
 import {IERC20} from "./interfaces/IERC20.sol";
-import {OperatorRegistry} from "./OperatorRegistry.sol";
 import {Auth} from "./libraries/Auth.sol";
 import {MevEthIndex} from "./MevEthIndex.sol";
 
@@ -55,7 +54,7 @@ interface IBeaconDepositContract {
 /// @author Manifold Finance, Chef Copypasta
 /// @dev Contract that allows deposit of ETH, for a Liquid Staking Reciept (LSR) in return.
 /// @dev LSR is represented through an ERC4626 token and interface
-contract MevEth is OperatorRegistry, MevEthIndex, Auth {
+contract MevEth is MevEthIndex, Auth {
     using SafeTransferLib for ERC20;
     using FixedPointMathLib for uint256;
 
@@ -129,7 +128,7 @@ contract MevEth is OperatorRegistry, MevEthIndex, Auth {
      * @notice This function pauses staking for the contract.
      * @dev Only the owner of the contract can call this function.
      */
-    function pauseStaking() external authorized {
+    function pauseStaking() external onlyAdmin {
         stakingPaused = true;
 
         emit StakingPaused();
@@ -139,7 +138,7 @@ contract MevEth is OperatorRegistry, MevEthIndex, Auth {
      * @notice This function unpauses staking
      * @dev This function is only callable by the owner and sets the stakingPaused variable to false. It also emits the StakingUnpaused event.
      */
-    function unpauseStaking() external authorized {
+    function unpauseStaking() external onlyAdmin {
         stakingPaused = false;
 
         emit StakingUnpaused();
@@ -196,7 +195,7 @@ contract MevEth is OperatorRegistry, MevEthIndex, Auth {
 
     // allocate 32 ETH * X to X new validators
     // todo: can abstract this functionality in an internal function so above function uses same logic
-    function registerNewValidators(ValidatorData[] calldata validatorData) external onlyKeeper {
+    function registerNewValidators(ValidatorData[] calldata validatorData) external onlyOperator {
         if (validatorData.length > maxValidatorRegistration) {
             revert TooManyValidatorRegistrations();
         }
@@ -236,7 +235,7 @@ contract MevEth is OperatorRegistry, MevEthIndex, Auth {
     }
 
     // called by manifold to update the beacon balance + number of validators successfully validating
-    function oracleUpdate(uint256 beaconBalance, uint128 beaconValidators) external onlyKeeper {
+    function oracleUpdate(uint256 beaconBalance, uint128 beaconValidators) external onlyOperator {
         uint256 oldBeaconBalance = totalBeaconBalance;
         uint256 oldBeaconValidators = validatorsInfo.beaconValidators;
         uint256 totalValidators = validatorsInfo.totalValidators;
@@ -276,6 +275,66 @@ contract MevEth is OperatorRegistry, MevEthIndex, Auth {
         // Should allow rewards to be send here, and validator withdrawls
     }
 
+
+    /*//////////////////////////////////////////////////////////////
+                        Operator Handling Functions
+    //////////////////////////////////////////////////////////////*/
+
+    function commitOperator(address newOperator) external onlyOperator {
+        if (newOperator == address(0)) revert InvalidOperator();
+        Operator storage operator = operatorData[newOperator];
+
+        operator.commited = true;
+
+        emit OperatorCommited(newOperator);
+    }
+
+    function uncommitOperator(address operator) external onlyOperator {
+        if (operator == address(0)) revert InvalidOperator();
+        Operator storage operatorToUncommit = operatorData[operator];
+
+        operatorToUncommit.commited = false;
+
+        emit OperatorUncommited(operator);
+    }
+
+    function removeOperator(address operator) external onlyOperator {
+        delete operatorData[operator];
+
+        emit OperatorRemoved(operator);
+    }
+
+    function setMaxValidators(address operator, uint64 maxValidators) external onlyOperator {
+        Operator storage op = operatorData[operator];
+        if (!op.commited) revert OperatorNotCommitted();
+        if (op.validatorsActive > maxValidators) revert MaxValidatorError();
+
+        op.maxValidators = maxValidators;
+
+        emit OperatorMaxValidatorsSet(operator, maxValidators);
+    }
+
+    /**
+     * @notice This function is used to register a validator with the contract.
+     * @dev The function takes in a ValidatorData calldata depositData as an argument. This data is used to register the validator with the contract.
+     */
+    function registerValidator(ValidatorData calldata depositData) internal {
+        Operator storage op = operatorData[depositData.operator];
+
+        if (!op.commited) revert OperatorsNotCommitted();
+        if (op.validatorsActive + 1 > op.maxValidators) {
+            revert OperatorMaxValidatorsReached();
+        }
+
+        // mark validator as registered -> prevents from registering the same validator twice
+        bytes32 validatorId = keccak256(abi.encode(depositData.pubkey));
+
+        if (validators[validatorId]) revert ValidatorPreviouslyRegistered();
+
+        validators[validatorId] = true;
+        op.validatorsActive++;
+        totalValidators++;
+    }
 
     /*//////////////////////////////////////////////////////////////
                             ERC4626 Support
