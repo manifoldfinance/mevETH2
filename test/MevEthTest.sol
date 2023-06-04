@@ -29,6 +29,7 @@ contract MevEthTest is Test {
 
     function setup() public virtual {
         // Deploy the BeaconChainDepositContract 
+        // Can't etch because https://github.com/foundry-rs/foundry/issues/4707
         depositContract = new DepositContract();
 
         // Deploy the mevETH contract
