@@ -1,0 +1,18 @@
+# specify default foundry profile to use (by default local dev network)
+export FOUNDRY_PROFILE=default
+
+## RPC Endpoints / Mainnet
+# Use a provider like Alchemy, Infura or use our custom one.
+export RPC_MAINNET=<TODO>
+
+## RPC Endpoints / Goerli
+# Use a provider like Alchemy, Infura or use our custom one.
+export RPC_GOERLI=<TODO>
+
+## Etherscan API / Mainnet
+# 1. Create an account on Etherscan
+# 2. Create an API
+export ETHERSCAN_API_KEY=<TODO>
+
+## Deployer account
+export PRIVATE_KEY=<TODO>
