@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-only
-pragma solidity 0.8.19;
+pragma solidity 0.8.20;
 
 /*///////////// Manifold Mev Ether /////////////                                        
                                         -|-_
@@ -26,12 +26,12 @@ pragma solidity 0.8.19;
                                 ""'
 /////////////////////////////////////////////*/
 
-import {SafeTransferLib} from "solmate/utils/SafeTransferLib.sol";
-import {FixedPointMathLib} from "solmate/utils/FixedPointMathLib.sol";
-import {ERC20} from "solmate/tokens/ERC20.sol";
-import {IERC20} from "./interfaces/IERC20.sol";
-import {Auth} from "./libraries/Auth.sol";
-import {MevEthIndex} from "./MevEthIndex.sol";
+import { SafeTransferLib } from "solmate/utils/SafeTransferLib.sol";
+import { FixedPointMathLib } from "solmate/utils/FixedPointMathLib.sol";
+import { ERC20 } from "solmate/tokens/ERC20.sol";
+import { IERC20 } from "./interfaces/IERC20.sol";
+import { Auth } from "./libraries/Auth.sol";
+import { MevEthIndex } from "./MevEthIndex.sol";
 
 /// Interface for the Beacon Chain Deposit Contract
 interface IBeaconDepositContract {
@@ -42,12 +42,7 @@ interface IBeaconDepositContract {
     /// @param deposit_data_root The SHA-256 hash of the SSZ-encoded DepositData object.
 
     /// Used as a protection against malformed input.
-    function deposit(
-        bytes calldata pubkey,
-        bytes calldata withdrawal_credentials,
-        bytes calldata signature,
-        bytes32 deposit_data_root
-    ) external payable;
+    function deposit(bytes calldata pubkey, bytes calldata withdrawal_credentials, bytes calldata signature, bytes32 deposit_data_root) external payable;
 }
 
 /// @title MevEth
@@ -70,7 +65,7 @@ contract MevEth is MevEthIndex, Auth {
         assembly {
             chainId := chainid()
         }
-        IBeaconDepositContract _BEACON_CHAIN_DEPOSIT_CONTRACT; 
+        IBeaconDepositContract _BEACON_CHAIN_DEPOSIT_CONTRACT;
         if (chainId != 1) {
             _BEACON_CHAIN_DEPOSIT_CONTRACT = IBeaconDepositContract(0x00000000219ab540356cBB839Cbe05303d7705Fa);
         } else {
@@ -117,7 +112,7 @@ contract MevEth is MevEthIndex, Auth {
 
     // Management fee
     uint256 public managementFee;
-    
+
     // WETH
     IERC20 public WETH = IERC20(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
 
@@ -152,21 +147,14 @@ contract MevEth is MevEthIndex, Auth {
 
         validatorsInfo.totalValidators++;
 
-        BEACON_CHAIN_DEPOSIT_CONTRACT.deposit{value: VALIDATOR_DEPOSIT_SIZE}(
-            validatorData.pubkey,
-            abi.encodePacked(validatorData.withdrawal_credentials),
-            validatorData.signature,
-            validatorData.deposit_data_root
+        BEACON_CHAIN_DEPOSIT_CONTRACT.deposit{ value: VALIDATOR_DEPOSIT_SIZE }(
+            validatorData.pubkey, abi.encodePacked(validatorData.withdrawal_credentials), validatorData.signature, validatorData.deposit_data_root
         );
 
         registerValidator(validatorData);
 
         emit NewValidator(
-            validatorData.operator,
-            validatorData.pubkey,
-            validatorData.withdrawal_credentials,
-            validatorData.signature,
-            validatorData.deposit_data_root
+            validatorData.operator, validatorData.pubkey, validatorData.withdrawal_credentials, validatorData.signature, validatorData.deposit_data_root
         );
     }
 
@@ -185,11 +173,7 @@ contract MevEth is MevEthIndex, Auth {
         }
 
         emit NewValidator(
-            validatorData.operator,
-            validatorData.pubkey,
-            validatorData.withdrawal_credentials,
-            validatorData.signature,
-            validatorData.deposit_data_root
+            validatorData.operator, validatorData.pubkey, validatorData.withdrawal_credentials, validatorData.signature, validatorData.deposit_data_root
         );
     }
 
@@ -211,7 +195,7 @@ contract MevEth is MevEthIndex, Auth {
         for (uint256 i = 0; i < validatorData.length; ++i) {
             if (validatorData[i].withdrawal_credentials != withdrawalCredentials) revert InvalidWithdrawalCredentials();
 
-            BEACON_CHAIN_DEPOSIT_CONTRACT.deposit{value: VALIDATOR_DEPOSIT_SIZE}(
+            BEACON_CHAIN_DEPOSIT_CONTRACT.deposit{ value: VALIDATOR_DEPOSIT_SIZE }(
                 validatorData[i].pubkey,
                 abi.encodePacked(validatorData[i].withdrawal_credentials),
                 validatorData[i].signature,
@@ -274,7 +258,6 @@ contract MevEth is MevEthIndex, Auth {
     receive() external payable {
         // Should allow rewards to be send here, and validator withdrawls
     }
-
 
     /*//////////////////////////////////////////////////////////////
                         Operator Handling Functions
@@ -366,23 +349,23 @@ contract MevEth is MevEthIndex, Auth {
         return 2 ** 256 - 1;
     }
 
-    function previewDeposit(uint256 assets) external view returns (uint256 shares) {}
+    function previewDeposit(uint256 assets) external view returns (uint256 shares) { }
 
-    function deposit(uint256 assets, address receiver) external returns (uint256 shares) {}
+    function deposit(uint256 assets, address receiver) external returns (uint256 shares) { }
 
-    function maxMint(address receiver) external view returns (uint256 maxShares) {}
+    function maxMint(address receiver) external view returns (uint256 maxShares) { }
 
-    function previewMint(uint256 shares) external view returns (uint256 assets) {}
+    function previewMint(uint256 shares) external view returns (uint256 assets) { }
 
-    function mint(uint256 shares, address receiver) external returns (uint256 assets) {}
+    function mint(uint256 shares, address receiver) external returns (uint256 assets) { }
 
-    function maxWithdraw(address owner) external view returns (uint256 maxAssets) {}
+    function maxWithdraw(address owner) external view returns (uint256 maxAssets) { }
 
-    function previewWithdraw(uint256 assets) external view returns (uint256 shares) {}
+    function previewWithdraw(uint256 assets) external view returns (uint256 shares) { }
 
-    function withdraw(uint256 assets, address receiver, address owner) external returns (uint256 shares) {}
+    function withdraw(uint256 assets, address receiver, address owner) external returns (uint256 shares) { }
 
-    function maxRedeem(address owner) external view returns (uint256 maxShares) {}
+    function maxRedeem(address owner) external view returns (uint256 maxShares) { }
 
-    function previewRedeem(uint256 shares) external view returns (uint256 assets) {}
+    function previewRedeem(uint256 shares) external view returns (uint256 assets) { }
 }
