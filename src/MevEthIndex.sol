@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity 0.8.19;
 
-/// @title mev_eth_index
+/// @title MevEthIndex
 /// @notice This contract is used to store the events, and other data needed for off-chain indexing systems
-contract mev_eth_index {
+contract MevEthIndex {
     /// ERC4626 events
     event Deposit(address indexed caller, address indexed owner, uint256 assets, uint256 shares);
     event Withdraw(

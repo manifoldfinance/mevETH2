@@ -1,9 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity 0.8.19;
 
-import {OperatorRegistry} from "./OperatorRegistry.sol";
-import {Owned} from "lib/solmate/src/auth/Owned.sol";
-
 /*///////////// Manifold Mev Ether /////////////                                        
                                         -|-_
                                         | _
@@ -32,9 +29,10 @@ import {Owned} from "lib/solmate/src/auth/Owned.sol";
 import {SafeTransferLib} from "solmate/utils/SafeTransferLib.sol";
 import {FixedPointMathLib} from "solmate/utils/FixedPointMathLib.sol";
 import {ERC20} from "solmate/tokens/ERC20.sol";
+import {IERC20} from "./interfaces/IERC20.sol";
 import {OperatorRegistry} from "./OperatorRegistry.sol";
-import {auth} from "./libraries/auth.sol";
-import {mev_eth_index} from "./mev_eth_index.sol";
+import {Auth} from "./libraries/Auth.sol";
+import {MevEthIndex} from "./MevEthIndex.sol";
 
 /// Interface for the Beacon Chain Deposit Contract
 interface IBeaconDepositContract {
@@ -53,11 +51,11 @@ interface IBeaconDepositContract {
     ) external payable;
 }
 
-/// @title mev_eth
+/// @title MevEth
 /// @author Manifold Finance, Chef Copypasta
 /// @dev Contract that allows deposit of ETH, for a Liquid Staking Reciept (LSR) in return.
 /// @dev LSR is represented through an ERC4626 token and interface
-contract mev_eth is OperatorRegistry, mev_eth_index, auth {
+contract MevEth is OperatorRegistry, MevEthIndex, Auth {
     using SafeTransferLib for ERC20;
     using FixedPointMathLib for uint256;
 
@@ -68,8 +66,19 @@ contract mev_eth is OperatorRegistry, mev_eth_index, auth {
 
     AssetsRebase public total_assets;
 
-    constructor(address _authority) auth(_authority) {
-        source_of_authority = _authority;
+    constructor(address _authority, address depositContract) Auth(_authority) {
+        uint256 chainId;
+        assembly {
+            chainId := chainid()
+        }
+        IBeaconDepositContract _BEACON_CHAIN_DEPOSIT_CONTRACT; 
+        if (chainId != 1) {
+            _BEACON_CHAIN_DEPOSIT_CONTRACT = IBeaconDepositContract(0x00000000219ab540356cBB839Cbe05303d7705Fa);
+        } else {
+            _BEACON_CHAIN_DEPOSIT_CONTRACT = IBeaconDepositContract(depositContract);
+        }
+
+        BEACON_CHAIN_DEPOSIT_CONTRACT = _BEACON_CHAIN_DEPOSIT_CONTRACT;
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -77,8 +86,7 @@ contract mev_eth is OperatorRegistry, mev_eth_index, auth {
     //////////////////////////////////////////////////////////////*/
 
     /// The address of the Beacon Chain Deposit Contract
-    IBeaconDepositContract constant beacon_chain_deposit_contract =
-        IBeaconDepositContract(0x00000000219ab540356cBB839Cbe05303d7705Fa);
+    IBeaconDepositContract immutable BEACON_CHAIN_DEPOSIT_CONTRACT;
 
     /// The amount of Ether required to mint a validator on the Beacon Chain
     uint256 constant VALIDATOR_DEPOSIT_SIZE = 32 ether;
@@ -110,6 +118,9 @@ contract mev_eth is OperatorRegistry, mev_eth_index, auth {
 
     // Management fee
     uint256 public managementFee;
+    
+    // WETH
+    IERC20 public WETH = IERC20(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
 
     /*//////////////////////////////////////////////////////////////
                             Registry For Validators
@@ -142,7 +153,7 @@ contract mev_eth is OperatorRegistry, mev_eth_index, auth {
 
         validatorsInfo.totalValidators++;
 
-        beacon_chain_deposit_contract.deposit{value: VALIDATOR_DEPOSIT_SIZE}(
+        BEACON_CHAIN_DEPOSIT_CONTRACT.deposit{value: VALIDATOR_DEPOSIT_SIZE}(
             validatorData.pubkey,
             abi.encodePacked(validatorData.withdrawal_credentials),
             validatorData.signature,
@@ -201,7 +212,7 @@ contract mev_eth is OperatorRegistry, mev_eth_index, auth {
         for (uint256 i = 0; i < validatorData.length; ++i) {
             if (validatorData[i].withdrawal_credentials != withdrawalCredentials) revert InvalidWithdrawalCredentials();
 
-            beacon_chain_deposit_contract.deposit{value: VALIDATOR_DEPOSIT_SIZE}(
+            BEACON_CHAIN_DEPOSIT_CONTRACT.deposit{value: VALIDATOR_DEPOSIT_SIZE}(
                 validatorData[i].pubkey,
                 abi.encodePacked(validatorData[i].withdrawal_credentials),
                 validatorData[i].signature,
@@ -259,12 +270,18 @@ contract mev_eth is OperatorRegistry, mev_eth_index, auth {
     }
 
     /*//////////////////////////////////////////////////////////////
+                            RecieveSupport
+    //////////////////////////////////////////////////////////////*/
+    recieve() external payable {
+        // Should allow rewards to be send here, and validator withdrawls
+    }
+
+
+    /*//////////////////////////////////////////////////////////////
                             ERC4626 Support
     //////////////////////////////////////////////////////////////*/
     function asset() external view returns (address assetTokenAddress) {
-        // Returns the zero address because the asset is Ether, but should we consider
-        // returning WETH?
-        assetTokenAddress = address(0);
+        assetTokenAddress = address(WETH);
     }
 
     function totalAssets() external view returns (uint256 totalManagedAssets) {
