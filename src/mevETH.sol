@@ -72,7 +72,7 @@ contract MevEth is OperatorRegistry, MevEthIndex, Auth {
             chainId := chainid()
         }
         IBeaconDepositContract _BEACON_CHAIN_DEPOSIT_CONTRACT; 
-        if (chainId != 1) {
+        if (chainId == 1) {
             _BEACON_CHAIN_DEPOSIT_CONTRACT = IBeaconDepositContract(0x00000000219ab540356cBB839Cbe05303d7705Fa);
         } else {
             _BEACON_CHAIN_DEPOSIT_CONTRACT = IBeaconDepositContract(depositContract);
