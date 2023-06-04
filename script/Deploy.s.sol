@@ -6,8 +6,8 @@ import "../src/OperatorRegistry.sol";
 import "src/mevETH.sol";
 
 contract DeployScript is Script {
-    function run() public {        
-        address _authority = tx.origin; 
+    function run() public {
+        address _authority = tx.origin;
         address depositContractGoerli = 0xff50ed3d0ec03aC01D4C79aAd74928BFF48a7b2b;
         vm.startBroadcast();
         MevEth mevETH = new MevEth(_authority, depositContractGoerli);

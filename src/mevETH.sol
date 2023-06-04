@@ -71,7 +71,7 @@ contract MevEth is OperatorRegistry, MevEthIndex, Auth {
         assembly {
             chainId := chainid()
         }
-        IBeaconDepositContract _BEACON_CHAIN_DEPOSIT_CONTRACT; 
+        IBeaconDepositContract _BEACON_CHAIN_DEPOSIT_CONTRACT;
         if (chainId == 1) {
             _BEACON_CHAIN_DEPOSIT_CONTRACT = IBeaconDepositContract(0x00000000219ab540356cBB839Cbe05303d7705Fa);
         } else {
@@ -118,7 +118,7 @@ contract MevEth is OperatorRegistry, MevEthIndex, Auth {
 
     // Management fee
     uint256 public managementFee;
-    
+
     // WETH
     IERC20 public WETH = IERC20(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
 
@@ -275,7 +275,6 @@ contract MevEth is OperatorRegistry, MevEthIndex, Auth {
     receive() external payable {
         // Should allow rewards to be send here, and validator withdrawls
     }
-
 
     /*//////////////////////////////////////////////////////////////
                             ERC4626 Support
