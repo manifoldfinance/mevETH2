@@ -272,7 +272,7 @@ contract MevEth is OperatorRegistry, MevEthIndex, Auth {
     /*//////////////////////////////////////////////////////////////
                             RecieveSupport
     //////////////////////////////////////////////////////////////*/
-    recieve() external payable {
+    receive() external payable {
         // Should allow rewards to be send here, and validator withdrawls
     }
 
