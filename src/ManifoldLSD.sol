@@ -12,35 +12,45 @@ import {IBeaconDepositContract} from "./interfaces/IBeaconDepositContract.sol";
 import {IOperatorRegistry} from "./interfaces/IOperatorRegistry.sol";
 
 // todo: init pool with shares minted to 0 address to prevent donation attacks
-
 // todo: have an auth registry that has all the roles
 
-// todo: update recieve() to add to buffered eth
-
-/// @notice Manager that takes care of minting proper shares of mevETH and staking
+/// @notice Manager that takes care of minting proper shares of mevETH and staking.
+/// @dev Modified implementation from original Solmate's code (https://github.com/transmissions11/solmate/blob/main/src/mixins/ERC4626.sol)
 contract ManifoldLSD is ERC20, TwoStepOwnable {
+    /// -----------------------------------------------------------------------
+    /// Library usage
+    /// -----------------------------------------------------------------------
+
     using SafeTransferLib for ERC20;
     using FixedPointMathLib for uint256;
 
-    error InsufficientBufferedEth();
-    error TooManyValidatorRegistrations();
-    error ExceedsStakingAllowance();
-    error StakingIsPaused();
-    error DepositTooLow();
-    error ZeroShares();
-    error ReportedBeaconValidatorsGreaterThanTotalValidators();
-    error ReportedBeaconValidatorsDecreased();
+    /// -----------------------------------------------------------------------
+    /// Errors
+    /// -----------------------------------------------------------------------
+
     error BeaconDepositFailed();
+    error DepositTooLow();
+    error ExceedsStakingAllowance();
+    error InsufficientBufferedEth();
     error InvalidWithdrawalCredentials();
+    error ReportedBeaconValidatorsDecreased();
+    error ReportedBeaconValidatorsGreaterThanTotalValidators();
+    error StakingIsPaused();
+    error TooManyValidatorRegistrations();
+    error ZeroShares();
+
+    /// -----------------------------------------------------------------------
+    /// Modifiers
+    /// -----------------------------------------------------------------------
 
     modifier stakingNotPaused() {
         if (stakingPaused) revert StakingIsPaused();
         _;
     }
 
-    /*//////////////////////////////////////////////////////////////
-                                 EVENTS
-    //////////////////////////////////////////////////////////////*/
+    /// -----------------------------------------------------------------------
+    /// Events
+    /// -----------------------------------------------------------------------
 
     event Deposit(address indexed caller, address indexed owner, uint256 assets, uint256 shares);
 
@@ -58,14 +68,18 @@ contract ManifoldLSD is ERC20, TwoStepOwnable {
         bytes32 deposit_data_root
     );
 
+    event FeeReceiverSet(address indexed newFeeReciever);
+    event FeeSet(uint256 indexed newFee);
+    event MaxValidatorRegistrationSet(uint256 indexed max);
+    event MevEthSet(address indexed mevEthAddress);
+    event OperatorRegistrySet(address indexed operatorRegistry);
     event RewardsMinted(address indexed rewardsReceiver, uint256 feesAccrued);
     event StakingPaused();
     event StakingUnpaused();
-    event FeeSet(uint256 indexed newFee);
-    event FeeReceiverSet(address indexed newFeeReciever);
-    event WithdrawalCredentialsSet(bytes32 indexed withdrawalCredentials);
-    event MevEthSet(address indexed mevEthAddress);
-    event OperatorRegistrySet(address indexed operatorRegistry);
+
+    /// -----------------------------------------------------------------------
+    /// Structs
+    /// -----------------------------------------------------------------------
 
     struct ValidatorsInfo {
         // current number of beacon validators
@@ -73,6 +87,10 @@ contract ManifoldLSD is ERC20, TwoStepOwnable {
         // total validators, includes pending + beacon validators
         uint128 totalValidators;
     }
+
+    /// -----------------------------------------------------------------------
+    /// Storage variables
+    /// -----------------------------------------------------------------------
 
     // total staked ether on beacon
     uint256 public totalBeaconBalance;
@@ -90,7 +108,7 @@ contract ManifoldLSD is ERC20, TwoStepOwnable {
     address public mevETH;
 
     // validator withdrawal credentials.
-    bytes32 public withdrawalCredentials;
+    bytes32 public immutable withdrawalCredentials;
 
     // beacon deposit contract
     IBeaconDepositContract public immutable BEACON_DEPOSIT_CONTRACT;
@@ -107,9 +125,9 @@ contract ManifoldLSD is ERC20, TwoStepOwnable {
     // max amount of validators we can register at once
     uint256 public maxValidatorRegistration;
 
-    /*//////////////////////////////////////////////////////////////
-                               IMMUTABLES
-    //////////////////////////////////////////////////////////////*/
+    /// -----------------------------------------------------------------------
+    /// Constants
+    /// -----------------------------------------------------------------------
 
     uint256 public constant MIN_DEPOSIT = 1 ether;
     uint256 public constant VALIDATOR_DEPOSIT_SIZE = 32 ether;
@@ -118,23 +136,13 @@ contract ManifoldLSD is ERC20, TwoStepOwnable {
         ERC20(_name, _symbol, _decimals)
     {
         _initializeOwner(msg.sender);
-        _initializeWithdrawalCredentials();
+        withdrawalCredentials = bytes32(abi.encodePacked(bytes12(0x010000000000000000000000), address(this)));
         BEACON_DEPOSIT_CONTRACT = IBeaconDepositContract(_beaconDepositAddress);
     }
 
-    /**
-     * @notice Sets the withdrawal credentials of the contract (automatically to itself)
-     * @dev This function must be called only upon initialization as there are no authorization guards.
-     */
-    function _initializeWithdrawalCredentials() internal {
-        withdrawalCredentials = bytes32(abi.encodePacked(bytes12(0x010000000000000000000000), address(this)));
-
-        emit WithdrawalCredentialsSet(withdrawalCredentials);
-    }
-
-    /*//////////////////////////////////////////////////////////////
-                        DEPOSIT/WITHDRAWAL LOGIC
-    //////////////////////////////////////////////////////////////*/
+    /// -----------------------------------------------------------------------
+    /// Deposit / Withdrawal logic
+    /// -----------------------------------------------------------------------
 
     /**
      * @notice This function allows users to deposit funds to the contract.
@@ -156,6 +164,51 @@ contract ManifoldLSD is ERC20, TwoStepOwnable {
 
         emit Deposit(msg.sender, receiver, value, shares);
     }
+
+    // ======== withdraw logic TBD ==========
+
+    // function withdraw(uint256 assets, address receiver, address owner) public virtual returns (uint256 shares) {
+    //     shares = previewWithdraw(assets); // No need to check for rounding error, previewWithdraw rounds up.
+    //
+    //     if (msg.sender != owner) {
+    //         uint256 allowed = allowance[owner][msg.sender]; // Saves gas for limited approvals.
+    //         if (allowed != type(uint256).max) {
+    //             allowance[owner][msg.sender] = allowed - shares;
+    //         }
+    //     }
+    //
+    //     beforeWithdraw(assets, shares);
+    //
+    //     _burn(owner, shares);
+    //
+    //     emit Withdraw(msg.sender, receiver, owner, assets, shares);
+    //
+    //     asset.safeTransfer(receiver, assets);
+    // }
+
+    // function redeem(uint256 shares, address receiver, address owner) public virtual returns (uint256 assets) {
+    //     if (msg.sender != owner) {
+    //         uint256 allowed = allowance[owner][msg.sender]; // Saves gas for limited approvals.
+    //         if (allowed != type(uint256).max) {
+    //             allowance[owner][msg.sender] = allowed - shares;
+    //         }
+    //     }
+    //
+    //     // Check for rounding error since we round down in previewRedeem.
+    //     require((assets = previewRedeem(shares)) != 0, "ZERO_ASSETS");
+    //
+    //     beforeWithdraw(assets, shares);
+    //
+    //     _burn(owner, shares);
+    //
+    //     emit Withdraw(msg.sender, receiver, owner, assets, shares);
+    //
+    //     asset.safeTransfer(receiver, assets);
+    // }
+
+    /// -----------------------------------------------------------------------
+    /// Oracle Updates
+    /// -----------------------------------------------------------------------
 
     // called by manifold to update the beacon balance + number of validators successfully validating
     function oracleUpdate(uint256 beaconBalance, uint128 beaconValidators) external onlyOwner {
@@ -194,11 +247,6 @@ contract ManifoldLSD is ERC20, TwoStepOwnable {
         }
 
         emit OracleUpdate(oldBeaconBalance, oldBeaconValidators, beaconBalance, beaconValidators);
-    }
-
-    // amount of ETH that has been staked to a validator but has yet to be accruing rewards
-    function transientEth() public view returns (uint256) {
-        return (validatorsInfo.totalValidators - validatorsInfo.beaconValidators) * VALIDATOR_DEPOSIT_SIZE;
     }
 
     // take 32 buffered eth and allocate 1 new validator
@@ -278,10 +326,15 @@ contract ManifoldLSD is ERC20, TwoStepOwnable {
         }
     }
 
-    /*//////////////////////////////////////////////////////////////
-                                SETTERS
-    //////////////////////////////////////////////////////////////*/
+    /// -----------------------------------------------------------------------
+    /// Setters
+    /// -----------------------------------------------------------------------
 
+    /**
+     * @notice Sets the  MevETH token address
+     * @dev This function should only be called by the owner of the contract
+     * @param _mevETH The address of the new MevETH token
+     */
     function setMevETH(address _mevETH) external onlyOwner {
         mevETH = _mevETH;
 
@@ -295,6 +348,8 @@ contract ManifoldLSD is ERC20, TwoStepOwnable {
      */
     function setMaxValidatorRegistration(uint256 max) external onlyOwner {
         maxValidatorRegistration = max;
+
+        emit MaxValidatorRegistrationSet(max);
     }
 
     /**
@@ -345,9 +400,16 @@ contract ManifoldLSD is ERC20, TwoStepOwnable {
         emit OperatorRegistrySet(_operatorRegistry);
     }
 
-    /*//////////////////////////////////////////////////////////////
-                            ACCOUNTING LOGIC
-    //////////////////////////////////////////////////////////////*/
+    /// -----------------------------------------------------------------------
+    /// Accounting Logic
+    /// -----------------------------------------------------------------------
+
+    /**
+     * @dev Amount of ETH that has been staked to a validator but has yet to be accruing rewards
+     */
+    function transientEth() public view returns (uint256) {
+        return (validatorsInfo.totalValidators - validatorsInfo.beaconValidators) * VALIDATOR_DEPOSIT_SIZE;
+    }
 
     /**
      * @notice This function returns the total assets of the contract.
@@ -409,10 +471,14 @@ contract ManifoldLSD is ERC20, TwoStepOwnable {
         return convertToAssets(shares);
     }
 
-    /*//////////////////////////////////////////////////////////////
-                     DEPOSIT/WITHDRAWAL LIMIT LOGIC
-    //////////////////////////////////////////////////////////////*/
+    /// -----------------------------------------------------------------------
+    /// Deposit / Withdrawal Limit Logic
+    /// -----------------------------------------------------------------------
 
+    /**
+     * @notice This function returns the maximum value of a uint256 type.
+     * @dev Maximum amount of the underlying asset that can be deposited into the Vault for the receiver, through a deposit call.
+     */
     function maxDeposit(address) public view virtual returns (uint256) {
         return type(uint256).max;
     }
@@ -441,64 +507,11 @@ contract ManifoldLSD is ERC20, TwoStepOwnable {
         return balanceOf[owner];
     }
 
-    /*//////////////////////////////////////////////////////////////
-                          INTERNAL HOOKS LOGIC
-    //////////////////////////////////////////////////////////////*/
-
-    function beforeWithdraw(uint256 assets, uint256 shares) internal virtual {}
-
-    function afterDeposit(uint256 assets, uint256 shares) internal virtual {}
+    /// -----------------------------------------------------------------------
+    /// Receive / Fallback Logic
+    /// -----------------------------------------------------------------------
 
     receive() external payable {
         totalBufferedEther += msg.value;
     }
-
-    // ======== withdraw logic TBD ==========
-
-    // function withdraw(
-    //     uint256 assets,
-    //     address receiver,
-    //     address owner
-    // ) public virtual returns (uint256 shares) {
-    //     shares = previewWithdraw(assets); // No need to check for rounding error, previewWithdraw rounds up.
-
-    //     if (msg.sender != owner) {
-    //         uint256 allowed = allowance[owner][msg.sender]; // Saves gas for limited approvals.
-
-    //         if (allowed != type(uint256).max)
-    //             allowance[owner][msg.sender] = allowed - shares;
-    //     }
-
-    //     beforeWithdraw(assets, shares);
-
-    //     _burn(owner, shares);
-
-    //     emit Withdraw(msg.sender, receiver, owner, assets, shares);
-
-    //     asset.safeTransfer(receiver, assets);
-    // }
-
-    // function redeem(
-    //     uint256 shares,
-    //     address receiver,
-    //     address owner
-    // ) public virtual returns (uint256 assets) {
-    //     if (msg.sender != owner) {
-    //         uint256 allowed = allowance[owner][msg.sender]; // Saves gas for limited approvals.
-
-    //         if (allowed != type(uint256).max)
-    //             allowance[owner][msg.sender] = allowed - shares;
-    //     }
-
-    //     // Check for rounding error since we round down in previewRedeem.
-    //     require((assets = previewRedeem(shares)) != 0, "ZERO_ASSETS");
-
-    //     beforeWithdraw(assets, shares);
-
-    //     _burn(owner, shares);
-
-    //     emit Withdraw(msg.sender, receiver, owner, assets, shares);
-
-    //     asset.safeTransfer(receiver, assets);
-    // }
 }
