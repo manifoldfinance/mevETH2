@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity 0.8.20;
 
+import "./libraries/Errors.sol";
+
 /// @title MevEthIndex
 /// @notice This contract is used to store the events, and other data needed for off-chain indexing systems
 contract MevEthIndex {
@@ -18,26 +20,6 @@ contract MevEthIndex {
     event WithdrawalCredentialsSet(bytes32 indexed withdrawalCredentials);
     event MevEthSet(address indexed mevEthAddress);
     event OperatorRegistrySet(address indexed operatorRegistry);
-
-    /// Errors
-    error InsufficientBufferedEth();
-    error TooManyValidatorRegistrations();
-    error ExceedsStakingAllowance();
-    error StakingIsPaused();
-    error DepositTooLow();
-    error ZeroShares();
-    error ReportedBeaconValidatorsGreaterThanTotalValidators();
-    error ReportedBeaconValidatorsDecreased();
-    error BeaconDepositFailed();
-    error InvalidWithdrawalCredentials();
-
-    error OperatorsNotCommitted();
-    error OperatorMaxValidatorsReached();
-    error OperatorNotCommitted();
-    error MaxValidatorError();
-    error InvalidOperator();
-    error ValidatorPreviouslyRegistered();
-    error NotAuthorized();
 
     event OperatorCommited(address indexed operator);
     event OperatorUncommited(address indexed operator);

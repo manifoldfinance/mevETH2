@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-only
-pragma solidity 0.8.19;
+pragma solidity 0.8.20;
 
 /*///////////// Manifold Mev Ether /////////////                                        
                                         -|-_
@@ -30,9 +30,11 @@ import {SafeTransferLib} from "solmate/utils/SafeTransferLib.sol";
 import {FixedPointMathLib} from "solmate/utils/FixedPointMathLib.sol";
 import {ERC20} from "solmate/tokens/ERC20.sol";
 import {IERC20} from "./interfaces/IERC20.sol";
-import {OperatorRegistry} from "./OperatorRegistry.sol";
 import {Auth} from "./libraries/Auth.sol";
+import {IWETH} from "./interfaces/IWETH.sol";
 import {MevEthIndex} from "./MevEthIndex.sol";
+import {MevEthErrors} from "./libraries/Errors.sol";
+import {console} from "forge-std/console.sol";
 
 /// Interface for the Beacon Chain Deposit Contract
 interface IBeaconDepositContract {
@@ -52,10 +54,10 @@ interface IBeaconDepositContract {
 }
 
 /// @title MevEth
-/// @author Manifold Finance, Chef Copypasta
+/// @author Manifold Finance
 /// @dev Contract that allows deposit of ETH, for a Liquid Staking Reciept (LSR) in return.
 /// @dev LSR is represented through an ERC4626 token and interface
-contract MevEth is OperatorRegistry, MevEthIndex, Auth {
+contract MevEth is MevEthIndex, Auth, ERC20 {
     using SafeTransferLib for ERC20;
     using FixedPointMathLib for uint256;
 
@@ -64,9 +66,9 @@ contract MevEth is OperatorRegistry, MevEthIndex, Auth {
         uint256 base; // Represents claims to ownership of the staked ether
     }
 
-    AssetsRebase public total_assets;
+    AssetsRebase public assetRebase;
 
-    constructor(address _authority, address depositContract) Auth(_authority) {
+    constructor(address _authority, address depositContract, address _WETH) Auth(_authority) ERC20("MevEth", "METH", 18) {
         uint256 chainId;
         assembly {
             chainId := chainid()
@@ -78,6 +80,7 @@ contract MevEth is OperatorRegistry, MevEthIndex, Auth {
             _BEACON_CHAIN_DEPOSIT_CONTRACT = IBeaconDepositContract(depositContract);
         }
 
+        WETH = IWETH(_WETH);
         BEACON_CHAIN_DEPOSIT_CONTRACT = _BEACON_CHAIN_DEPOSIT_CONTRACT;
     }
 
@@ -120,7 +123,7 @@ contract MevEth is OperatorRegistry, MevEthIndex, Auth {
     uint256 public managementFee;
     
     // WETH
-    IERC20 public WETH = IERC20(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
+    IWETH public immutable WETH;
 
     /*//////////////////////////////////////////////////////////////
                             Registry For Validators
@@ -129,7 +132,7 @@ contract MevEth is OperatorRegistry, MevEthIndex, Auth {
      * @notice This function pauses staking for the contract.
      * @dev Only the owner of the contract can call this function.
      */
-    function pauseStaking() external authorized {
+    function pauseStaking() external onlyAdmin {
         stakingPaused = true;
 
         emit StakingPaused();
@@ -139,7 +142,7 @@ contract MevEth is OperatorRegistry, MevEthIndex, Auth {
      * @notice This function unpauses staking
      * @dev This function is only callable by the owner and sets the stakingPaused variable to false. It also emits the StakingUnpaused event.
      */
-    function unpauseStaking() external authorized {
+    function unpauseStaking() external onlyAdmin {
         stakingPaused = false;
 
         emit StakingUnpaused();
@@ -148,7 +151,7 @@ contract MevEth is OperatorRegistry, MevEthIndex, Auth {
     // Helper function for registering new validators
     function createValidator(ValidatorData calldata validatorData) internal {
         if (validatorData.withdrawal_credentials != withdrawalCredentials) {
-            revert InvalidWithdrawalCredentials();
+            revert MevEthErrors.InvalidWithdrawalCredentials();
         }
 
         validatorsInfo.totalValidators++;
@@ -160,7 +163,7 @@ contract MevEth is OperatorRegistry, MevEthIndex, Auth {
             validatorData.deposit_data_root
         );
 
-        registerValidator(validatorData);
+        //registerValidator(validatorData);
 
         emit NewValidator(
             validatorData.operator,
@@ -172,9 +175,9 @@ contract MevEth is OperatorRegistry, MevEthIndex, Auth {
     }
 
     // take 32 buffered eth and allocate 1 new validator
-    function registerNewValidator(ValidatorData calldata validatorData) external {
+    function registerNewValidator(ValidatorData calldata validatorData) external onlyOperator {
         if (totalBufferedEther < VALIDATOR_DEPOSIT_SIZE) {
-            revert InsufficientBufferedEth();
+            revert MevEthErrors.InsufficientBufferedEth();
         }
 
         totalBufferedEther -= VALIDATOR_DEPOSIT_SIZE;
@@ -182,7 +185,7 @@ contract MevEth is OperatorRegistry, MevEthIndex, Auth {
         uint256 targetBalance = address(this).balance - VALIDATOR_DEPOSIT_SIZE;
 
         if (address(this).balance != targetBalance) {
-            revert BeaconDepositFailed();
+            revert MevEthErrors.BeaconDepositFailed();
         }
 
         emit NewValidator(
@@ -196,12 +199,12 @@ contract MevEth is OperatorRegistry, MevEthIndex, Auth {
 
     // allocate 32 ETH * X to X new validators
     // todo: can abstract this functionality in an internal function so above function uses same logic
-    function registerNewValidators(ValidatorData[] calldata validatorData) external onlyKeeper {
+    function registerNewValidators(ValidatorData[] calldata validatorData) external onlyOperator {
         if (validatorData.length > maxValidatorRegistration) {
-            revert TooManyValidatorRegistrations();
+            revert MevEthErrors.TooManyValidatorRegistrations();
         }
         if (totalBufferedEther < uint256(validatorData.length * VALIDATOR_DEPOSIT_SIZE)) {
-            revert InsufficientBufferedEth();
+            revert MevEthErrors.InsufficientBufferedEth();
         }
 
         totalBufferedEther -= validatorData.length * VALIDATOR_DEPOSIT_SIZE;
@@ -210,7 +213,7 @@ contract MevEth is OperatorRegistry, MevEthIndex, Auth {
         uint256 targetBalance = address(this).balance - validatorData.length * VALIDATOR_DEPOSIT_SIZE;
 
         for (uint256 i = 0; i < validatorData.length; ++i) {
-            if (validatorData[i].withdrawal_credentials != withdrawalCredentials) revert InvalidWithdrawalCredentials();
+            if (validatorData[i].withdrawal_credentials != withdrawalCredentials) revert MevEthErrors.InvalidWithdrawalCredentials();
 
             BEACON_CHAIN_DEPOSIT_CONTRACT.deposit{value: VALIDATOR_DEPOSIT_SIZE}(
                 validatorData[i].pubkey,
@@ -219,7 +222,7 @@ contract MevEth is OperatorRegistry, MevEthIndex, Auth {
                 validatorData[i].deposit_data_root
             );
 
-            registerValidator(validatorData[i]);
+            //registerValidator(validatorData[i]);
 
             emit NewValidator(
                 validatorData[i].operator,
@@ -231,19 +234,19 @@ contract MevEth is OperatorRegistry, MevEthIndex, Auth {
         }
 
         if (address(this).balance != targetBalance) {
-            revert BeaconDepositFailed();
+            revert MevEthErrors.BeaconDepositFailed();
         }
     }
 
     // called by manifold to update the beacon balance + number of validators successfully validating
-    function oracleUpdate(uint256 beaconBalance, uint128 beaconValidators) external onlyKeeper {
+    function oracleUpdate(uint256 beaconBalance, uint128 beaconValidators) external onlyOperator {
         uint256 oldBeaconBalance = totalBeaconBalance;
         uint256 oldBeaconValidators = validatorsInfo.beaconValidators;
         uint256 totalValidators = validatorsInfo.totalValidators;
 
         // reported validators must be strictly <= to totalValidators
         if (beaconValidators > totalValidators) {
-            revert ReportedBeaconValidatorsGreaterThanTotalValidators();
+            revert MevEthErrors.ReportedBeaconValidatorsGreaterThanTotalValidators();
         }
 
         uint256 appearedValidators = beaconValidators - oldBeaconValidators;
@@ -274,6 +277,14 @@ contract MevEth is OperatorRegistry, MevEthIndex, Auth {
     //////////////////////////////////////////////////////////////*/
     receive() external payable {
         // Should allow rewards to be send here, and validator withdrawls
+        if (msg.sender == address(WETH)) {
+            return;
+        }
+        if (msg.sender == block.coinbase) {
+            assetRebase.elastic += msg.value;
+        } else {
+            revert MevEthErrors.InvalidSender();
+        }
     }
 
 
@@ -286,20 +297,19 @@ contract MevEth is OperatorRegistry, MevEthIndex, Auth {
 
     function totalAssets() external view returns (uint256 totalManagedAssets) {
         // Should return the total amount of Ether managed by the contract
-        //
-        totalManagedAssets = total_assets.elastic;
+        totalManagedAssets = assetRebase.elastic;
     }
 
     function convertToShares(uint256 assets) public view returns (uint256 shares) {
         // So if there are no shares, then they will mint 1:1 with assets
         // Otherwise, shares will mint proportional to the amount of assets
-        shares = total_assets.elastic == 0 ? assets : assets * total_assets.base / total_assets.elastic;
+        shares = assetRebase.elastic == 0 ? assets : assets * assetRebase.base / assetRebase.elastic;
     }
 
     function convertToAssets(uint256 shares) public view returns (uint256 assets) {
         // So if there are no shares, then they will mint 1:1 with assets
         // Otherwise, shares will mint proportional to the amount of assets
-        assets = total_assets.elastic == 0 ? shares : shares * total_assets.elastic / total_assets.base;
+        assets = assetRebase.elastic == 0 ? shares : shares * assetRebase.elastic / assetRebase.base;
     }
 
     function maxDeposit(address receiver) external view returns (uint256 maxAssets) {
@@ -307,9 +317,36 @@ contract MevEth is OperatorRegistry, MevEthIndex, Auth {
         return 2 ** 256 - 1;
     }
 
-    function previewDeposit(uint256 assets) external view returns (uint256 shares) {}
+    function previewDeposit(uint256 assets) external view returns (uint256 shares) {
+        return convertToShares(assets);
+    }
 
-    function deposit(uint256 assets, address receiver) external returns (uint256 shares) {}
+    function deposit(uint256 assets, address receiver) external returns (uint256 shares) {
+        WETH.transferFrom(msg.sender, address(this), assets);
+        uint256 balance = address(this).balance;
+        WETH.withdraw(assets);
+        // Not really neccessary, but protects against malicious WETH implementations
+        if (balance + assets != address(this).balance) {
+            revert MevEthErrors.DepositFailed();
+        }
+
+        if (assetRebase.elastic == 0 || assetRebase.base == 0) {
+            shares = assets;
+        } else {
+            shares = (assets * assetRebase.elastic) / assetRebase.base;
+        } 
+
+        if (assetRebase.base + shares < 1000) {
+            revert MevEthErrors.DepositTooSmall();
+        }
+
+        assetRebase.elastic += assets;
+        assetRebase.base += shares;
+
+        _mint(receiver, shares);
+
+        emit Deposit(msg.sender, receiver, assets, shares);
+    }
 
     function maxMint(address receiver) external view returns (uint256 maxShares) {}
 

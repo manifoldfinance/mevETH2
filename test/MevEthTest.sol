@@ -16,6 +16,12 @@ contract MevEthTest is Test {
     // Admin account
     address constant SamBacha = address(0x06);
 
+    // User account
+    address constant User01 = address(0x01);
+    address constant User02 = address(0x02);
+    address constant User03 = address(0x03);
+    address constant User04 = address(0x04);
+
     // Operator account
     address constant Operator01 = address(0x07);
     address constant Operator02 = address(0x08);
@@ -26,13 +32,18 @@ contract MevEthTest is Test {
 
     MevEth internal mev_eth;
 
+    WETH9 internal weth;
 
-    function setup() public virtual {
+
+    function setUp() public virtual {
         // Deploy the BeaconChainDepositContract 
         // Can't etch because https://github.com/foundry-rs/foundry/issues/4707
         depositContract = new DepositContract();
 
+        // Deploy the WETH9 contract
+        weth = new WETH9();
+
         // Deploy the mevETH contract
-        mev_eth = new MevEth(SamBacha, address(depositContract));
+        mev_eth = new MevEth(SamBacha, address(depositContract), address(weth));
     }
 }
