@@ -348,11 +348,18 @@ contract MevEth is MevEthIndex, Auth, ERC20 {
         emit Deposit(msg.sender, receiver, assets, shares);
     }
 
-    function maxMint(address receiver) external view returns (uint256 maxShares) {}
+    function maxMint(address receiver) external view returns (uint256 maxShares) {
+        // No practical limit on mint for Ether
+        return 2 ** 256 - 1;
+    }
 
-    function previewMint(uint256 shares) external view returns (uint256 assets) {}
+    function previewMint(uint256 shares) external view returns (uint256 assets) {
+        return convertToAssets(shares);
+    }
 
-    function mint(uint256 shares, address receiver) external returns (uint256 assets) {}
+    function mint(uint256 shares, address receiver) external returns (uint256 assets) {
+        
+    }
 
     function maxWithdraw(address owner) external view returns (uint256 maxAssets) {}
 
@@ -363,4 +370,8 @@ contract MevEth is MevEthIndex, Auth, ERC20 {
     function maxRedeem(address owner) external view returns (uint256 maxShares) {}
 
     function previewRedeem(uint256 shares) external view returns (uint256 assets) {}
+
+    function redeem(uint256 shares, address receiver, address owner) external returns (uint256 assets) {
+
+    }
 }

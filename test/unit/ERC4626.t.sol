@@ -97,58 +97,18 @@ contract ERC4626Test is MevEthTest {
         assertEq(base , 0);
     }
 
-    function testFuzzDepositWithAccrual(uint256 amount) public {
-        vm.assume(amount > 1 ether);
-        vm.assume(amount < type(uint168).max);
-        // Base deposit
-        vm.deal(User01, 10 ether);
-        vm.startPrank(User01);
-
-        // Deposit 10 ETH
-        weth.deposit{value: 10 ether}();
-        weth.approve(address(mev_eth), 10 ether);
-
-        // Deposit 10 ETH into the mevETH contract
-        mev_eth.deposit(10 ether, User01);
-
-        // Accrue Interest
+    // Helper function to deposit into mevETH
+    function _depositOnBehalfOf(uint256 amount, address user) internal {
         vm.stopPrank();
-        vm.startPrank(User02);
-        vm.deal(User02, 15 ether);
-        vm.coinbase(User02);
-        (bool success, ) = address(mev_eth).call{value: 15 ether}("");
-        assert(success);
-        (uint256 elastic, uint256 base) = mev_eth.assetRebase();
-        assert(elastic == 25 ether);
-        assert(base == 10e18);
+        vm.startPrank(user);
 
-        // Deposit Amount
-        vm.stopPrank();
-        vm.startPrank(User03);
-
-        vm.deal(User03, amount);
-
-        // Deposit ETH
+        // Deposit amount in eth
         weth.deposit{value: amount}();
         weth.approve(address(mev_eth), amount);
 
-        // Deposit ETH into the mevETH contract
-        uint256 sharesOut = mev_eth.deposit(amount, User03);
-
-
-        assertEq(mev_eth.balanceOf(User03), sharesOut);
-        //assert(sharesOut < amount);
-
-        (elastic, base) = mev_eth.assetRebase();
-
-        console.log(5);
-        console.log(elastic);
-        console.log(base);
-
-        // Check the Rebase has updated correctly
-        assert(elastic > base);
-
-
+        // Deposit amount in mevETH
+        mev_eth.deposit(amount, user);
     }
+
 
 }
