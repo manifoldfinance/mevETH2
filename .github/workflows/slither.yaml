@@ -1,0 +1,55 @@
+name: Slither Analysis
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, develop]
+    paths:
+      - "**.sol"
+      - ".github/workflows/slither.yaml"
+  pull_request_target:
+    branches: [main, develop]
+
+
+# ensure multiple CI processes are not running analysis on contracts
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request_target' && github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+env:
+  COMMIT_SHA: ${{ github.event.pull_request.head.sha }}
+  PULL_NUMBER: ${{ github.event.pull_request.number }}
+  RUN_ID: ${{ github.run_id }}
+
+jobs:
+  slither:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Use Nix
+        uses: aldoborrero/use-nix-action@v2
+      
+      - name: Run forge build
+        run: forge build
+      
+      - name: Run Slither
+        uses: crytic/slither-action@v0.3.0
+        id: slither
+        with:
+          fail-on: none
+          ignore-compile: true
+          slither-args: --checklist --markdown-root ${{ github.server_url }}/${{ github.repository }}/blob/${{ github.sha }}/
+
+      - name: Create/update checklist as PR comment
+        uses: actions/github-script@v6
+        if: github.event_name == 'pull_request'
+        with:
+          script: |
+            const script = require('.github/scripts/comment')
+            const header = '# Slither report'
+            const body = `${{ steps.slither.outputs.stdout }}`
+            await script({ github, context, header, body })
