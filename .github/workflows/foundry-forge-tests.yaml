@@ -1,16 +1,19 @@
 name: Foundry Tests
+
 on:
   workflow_dispatch:
   push:
     branches: [main, develop]
-  pull_request:
+  pull_request_target:
     types: [opened, reopened, synchronize, ready_for_review]
+
 env:
   FOUNDRY_PROFILE: ci
   RPC_MAINNET: ${{ secrets.RPC_MAINNET }}
   ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
+
 jobs:
-  check:
+  tests:
     name: Forge Tests
     runs-on: ubuntu-latest
     steps:
@@ -18,14 +21,18 @@ jobs:
         uses: actions/checkout@v3
         with:
           submodules: recursive
+
       - name: Use Nix
-        uses: aldoborrero/use-nix-action@v1
+        uses: aldoborrero/use-nix-action@v2
+      
       - name: Check formatting
         run: forge fmt --check
+      
       - name: Run forge build
         run: |
           forge --version
           forge build --sizes
+      
       - name: Run forge tests
         run: |
           forge test --fork-url "$RPC_MAINNET" --etherscan-api-key $ETHERSCAN_API_KEY -vvv
