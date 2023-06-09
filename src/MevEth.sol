@@ -125,6 +125,14 @@ contract MevEth is MevEthIndex, Auth, ERC20 {
     // WETH
     IWETH public immutable WETH;
 
+    function min(uint256 a, uint256 b) internal pure returns (uint256) {
+        return a < b ? a : b;
+    }
+
+    function calculateNeededEtherBuffer() public view returns (uint256) {
+        return min((assetRebase.elastic * 2) / 100, 31 ether);
+    }
+
     /*//////////////////////////////////////////////////////////////
                             Registry For Validators
     //////////////////////////////////////////////////////////////*/
@@ -312,7 +320,7 @@ contract MevEth is MevEthIndex, Auth, ERC20 {
         assets = assetRebase.elastic == 0 ? shares : shares * assetRebase.elastic / assetRebase.base;
     }
 
-    function maxDeposit(address receiver) external view returns (uint256 maxAssets) {
+    function maxDeposit(address) external view returns (uint256 maxAssets) {
         // No practical limit on deposit for Ether
         return 2 ** 256 - 1;
     }
@@ -358,20 +366,64 @@ contract MevEth is MevEthIndex, Auth, ERC20 {
     }
 
     function mint(uint256 shares, address receiver) external returns (uint256 assets) {
-        
+        // Pretty much deposit but in reverse
+        if (assetRebase.elastic == 0 || assetRebase.base == 0) {
+            assets = shares;
+        } else {
+            assets = (shares * assetRebase.base) / assetRebase.elastic;
+        }
+
+        if (assetRebase.base + shares < 1000) {
+            revert MevEthErrors.DepositTooSmall();
+        }
+
+        assetRebase.elastic += assets;
+        assetRebase.base += shares;
+
+        _mint(receiver, shares);
+
+        emit Deposit(msg.sender, receiver, assets, shares);
     }
 
-    function maxWithdraw(address owner) external view returns (uint256 maxAssets) {}
+    function maxWithdraw(address owner) public view returns (uint256 maxAssets) {
+        // Withdrawal is either their maximum balance, or the internal buffer
+        maxAssets = min(address(this).balance, convertToAssets(balanceOf[owner]));
+    }
 
-    function previewWithdraw(uint256 assets) external view returns (uint256 shares) {}
+    function previewWithdraw(uint256 assets) external view returns (uint256 shares) {
+        return convertToShares(assets);
+    }
 
-    function withdraw(uint256 assets, address receiver, address owner) external returns (uint256 shares) {}
+    function withdraw(uint256 assets, address receiver, address owner) external returns (uint256 shares) {
 
-    function maxRedeem(address owner) external view returns (uint256 maxShares) {}
+    }
 
-    function previewRedeem(uint256 shares) external view returns (uint256 assets) {}
+    function maxRedeem(address owner) external view returns (uint256 maxShares) {
+        maxShares = min(convertToShares(address(this).balance), balanceOf[owner]);
+    }
+
+    function previewRedeem(uint256 shares) external view returns (uint256 assets) {
+        return convertToAssets(shares);
+    }
 
     function redeem(uint256 shares, address receiver, address owner) external returns (uint256 assets) {
+        assets = convertToAssets(shares);
 
+        if (owner != msg.sender) {
+            require(allowance[owner][msg.sender] >= shares, "ERC20: transfer amount exceeds allowance");
+            allowance[owner][msg.sender] -= shares;
+        }
+
+        _burn(owner, shares);
+
+        assetRebase.elastic -= assets;
+        assetRebase.base -= shares;
+
+        WETH.deposit{value: assets}();
+        WETH.transfer(receiver, assets);
+
+        emit Withdraw(msg.sender, owner, receiver, assets, shares);
+
+        return assets;
     }
 }
