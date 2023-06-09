@@ -32,17 +32,13 @@ jobs:
 
       - name: Use Nix
         uses: aldoborrero/use-nix-action@v2
-      
-      - name: Run forge build
-        run: forge build
-      
+            
       - name: Run Slither
         uses: crytic/slither-action@v0.3.0
         id: slither
         with:
           fail-on: none
-          ignore-compile: true
-          slither-args: --foundry-out-directory out/ --checklist --markdown-root ${{ github.server_url }}/${{ github.repository }}/blob/${{ github.sha }}/
+          slither-args: --checklist --markdown-root ${{ github.server_url }}/${{ github.repository }}/blob/${{ github.sha }}/
 
       - name: Create/update checklist as PR comment
         uses: actions/github-script@v6
