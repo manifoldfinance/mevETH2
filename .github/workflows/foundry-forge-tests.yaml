@@ -1,16 +1,19 @@
 name: Foundry Tests
+
 on:
   workflow_dispatch:
   push:
     branches: [main, develop]
-  pull_request:
+  pull_request_target:
     types: [opened, reopened, synchronize, ready_for_review]
+
 env:
   FOUNDRY_PROFILE: ci
   RPC_MAINNET: ${{ secrets.RPC_MAINNET }}
   ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
+
 jobs:
-  check:
+  tests:
     name: Forge Tests
     runs-on: ubuntu-latest
     steps:
