@@ -105,9 +105,6 @@ contract MevEth is MevEthIndex, Auth, ERC20 {
 
     ValidatorsInfo public validatorsInfo;
 
-    // max amount of validators we can register at once
-    uint256 public maxValidatorRegistration;
-
     bytes32 public withdrawalCredentials;
 
     // Amount of Ether held current;y as a fraction of 32 eth awaiting a new validator
@@ -156,129 +153,18 @@ contract MevEth is MevEthIndex, Auth, ERC20 {
         emit StakingUnpaused();
     }
 
-    // Helper function for registering new validators
-    function createValidator(ValidatorData calldata validatorData) internal {
-        if (validatorData.withdrawal_credentials != withdrawalCredentials) {
-            revert MevEthErrors.InvalidWithdrawalCredentials();
+    function createValidator() public {
+        if (stakingPaused) {
+            revert MevEthErrors.StakingPaused();
         }
 
-        validatorsInfo.totalValidators++;
+        if (address(this).balance < calculateNeededEtherBuffer()) {
+            revert MevEthErrors.NotEnoughEth();
+        }
 
-        BEACON_CHAIN_DEPOSIT_CONTRACT.deposit{value: VALIDATOR_DEPOSIT_SIZE}(
-            validatorData.pubkey,
-            abi.encodePacked(validatorData.withdrawal_credentials),
-            validatorData.signature,
-            validatorData.deposit_data_root
-        );
 
-        //registerValidator(validatorData);
-
-        emit NewValidator(
-            validatorData.operator,
-            validatorData.pubkey,
-            validatorData.withdrawal_credentials,
-            validatorData.signature,
-            validatorData.deposit_data_root
-        );
     }
 
-    // take 32 buffered eth and allocate 1 new validator
-    function registerNewValidator(ValidatorData calldata validatorData) external onlyOperator {
-        if (totalBufferedEther < VALIDATOR_DEPOSIT_SIZE) {
-            revert MevEthErrors.InsufficientBufferedEth();
-        }
-
-        totalBufferedEther -= VALIDATOR_DEPOSIT_SIZE;
-
-        uint256 targetBalance = address(this).balance - VALIDATOR_DEPOSIT_SIZE;
-
-        if (address(this).balance != targetBalance) {
-            revert MevEthErrors.BeaconDepositFailed();
-        }
-
-        emit NewValidator(
-            validatorData.operator,
-            validatorData.pubkey,
-            validatorData.withdrawal_credentials,
-            validatorData.signature,
-            validatorData.deposit_data_root
-        );
-    }
-
-    // allocate 32 ETH * X to X new validators
-    // todo: can abstract this functionality in an internal function so above function uses same logic
-    function registerNewValidators(ValidatorData[] calldata validatorData) external onlyOperator {
-        if (validatorData.length > maxValidatorRegistration) {
-            revert MevEthErrors.TooManyValidatorRegistrations();
-        }
-        if (totalBufferedEther < uint256(validatorData.length * VALIDATOR_DEPOSIT_SIZE)) {
-            revert MevEthErrors.InsufficientBufferedEth();
-        }
-
-        totalBufferedEther -= validatorData.length * VALIDATOR_DEPOSIT_SIZE;
-        validatorsInfo.totalValidators += uint128(validatorData.length);
-
-        uint256 targetBalance = address(this).balance - validatorData.length * VALIDATOR_DEPOSIT_SIZE;
-
-        for (uint256 i = 0; i < validatorData.length; ++i) {
-            if (validatorData[i].withdrawal_credentials != withdrawalCredentials) revert MevEthErrors.InvalidWithdrawalCredentials();
-
-            BEACON_CHAIN_DEPOSIT_CONTRACT.deposit{value: VALIDATOR_DEPOSIT_SIZE}(
-                validatorData[i].pubkey,
-                abi.encodePacked(validatorData[i].withdrawal_credentials),
-                validatorData[i].signature,
-                validatorData[i].deposit_data_root
-            );
-
-            //registerValidator(validatorData[i]);
-
-            emit NewValidator(
-                validatorData[i].operator,
-                validatorData[i].pubkey,
-                validatorData[i].withdrawal_credentials,
-                validatorData[i].signature,
-                validatorData[i].deposit_data_root
-            );
-        }
-
-        if (address(this).balance != targetBalance) {
-            revert MevEthErrors.BeaconDepositFailed();
-        }
-    }
-
-    // called by manifold to update the beacon balance + number of validators successfully validating
-    function oracleUpdate(uint256 beaconBalance, uint128 beaconValidators) external onlyOperator {
-        uint256 oldBeaconBalance = totalBeaconBalance;
-        uint256 oldBeaconValidators = validatorsInfo.beaconValidators;
-        uint256 totalValidators = validatorsInfo.totalValidators;
-
-        // reported validators must be strictly <= to totalValidators
-        if (beaconValidators > totalValidators) {
-            revert MevEthErrors.ReportedBeaconValidatorsGreaterThanTotalValidators();
-        }
-
-        uint256 appearedValidators = beaconValidators - oldBeaconValidators;
-
-        // RewardBase is the amount of money that is not included in the reward calculation
-        // Just appeared validators * 32 added to the previously reported beacon balance
-        uint256 rewardBase = (appearedValidators * VALIDATOR_DEPOSIT_SIZE) + oldBeaconBalance;
-
-        validatorsInfo.beaconValidators = beaconValidators;
-        totalBeaconBalance = beaconBalance;
-
-        // skim fee
-        if (beaconBalance > rewardBase) {
-            uint256 balanceDifference = beaconBalance - rewardBase;
-
-            uint256 feesAccrued = balanceDifference.mulDivDown(managementFee, 1e18);
-
-            //_deposit(feesAccrued, rewardsReceiver);
-
-            emit RewardsMinted(rewardsReceiver, feesAccrued);
-        }
-
-        emit OracleUpdate(oldBeaconBalance, oldBeaconValidators, beaconBalance, beaconValidators);
-    }
 
     /*//////////////////////////////////////////////////////////////
                             RecieveSupport

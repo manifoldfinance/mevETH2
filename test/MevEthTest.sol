@@ -36,6 +36,7 @@ contract MevEthTest is Test {
 
     //Events 
     event StakingPaused();
+    event StakingUnpaused();
 
 
     function setUp() public virtual {
