@@ -23,4 +23,6 @@ library MevEthErrors {
     error NotAuthorized();
     error DepositTooSmall();
     error InvalidSender();
+
+    error TransferExceedsAllowance();
 }

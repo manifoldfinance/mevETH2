@@ -14,6 +14,25 @@ contract ERC4626Test is MevEthTest {
         super.setUp();
     }
 
+    function testAsset() public {
+        assertEq(mev_eth.asset(), address(weth));
+    }
+
+    function testMaxDeposit(address randomGuy) public {
+        assertEq(mev_eth.maxDeposit(randomGuy), 2**256 -1);
+    }
+
+    function testFuzzMaxMint(address randomGuy) public {
+        assertEq(mev_eth.maxMint(randomGuy), 2**256 -1);
+    }
+
+    /* 
+        -------/  Tests for Deposit   /-------
+        1. Test a simple deposit, of a fixed amount, for one user
+        2. Test a simple deposit, of a random amount, for one user
+        3. Test a small deposit below the minimum, and ensure it reverts
+    */
+
     function testSimpleDeposit() public {  
         vm.deal(User01, 1 ether);
         vm.startPrank(User01);
@@ -110,5 +129,84 @@ contract ERC4626Test is MevEthTest {
         mev_eth.deposit(amount, user);
     }
 
+    /* 
+        -------/  Tests for Withdrawal   /-------
+        1. Test a basic withdrawal, of 1 eth, for one user
+        2. Attempt to withdraw without approval, and ensure it reverts
+        3. Test that a user can withdraw, if they have been approved by the owner
+        4. Test a basic withdrawal with a random amount of eth
+    */
 
+    function testBasicWithdrawal() public {
+        vm.deal(User01, 1 ether);
+        vm.startPrank(User01);
+        _depositOnBehalfOf(1 ether, User01);
+
+        assertEq(address(mev_eth).balance, 1 ether);
+
+        // Withdraw 1 mevETH
+        mev_eth.withdraw(1 ether, User01, User01);
+        assertEq(mev_eth.balanceOf(User01), 0 ether);
+        assertEq(weth.balanceOf(User01), 1 ether);
+    }
+
+    function testCannotWithdrawWithoutApproval() public {
+        vm.deal(User01, 1 ether);
+        vm.startPrank(User01);
+
+        _depositOnBehalfOf(1 ether, User01);
+
+        assertEq(mev_eth.balanceOf(User01), 1 ether);
+
+        vm.stopPrank();
+        vm.startPrank(User02);
+
+        // Withdraw 1 mevETH
+        vm.expectRevert(MevEthErrors.TransferExceedsAllowance.selector);
+        mev_eth.withdraw(1 ether, User02, User01);
+
+        assertEq(mev_eth.balanceOf(User01), 1 ether);
+        assertEq(mev_eth.balanceOf(User02), 0 ether);
+    } 
+
+    function testCanWithdrawWithApproval() public {
+        vm.deal(User01, 1 ether);
+        vm.startPrank(User01);
+
+        _depositOnBehalfOf(1 ether, User01);
+
+        assertEq(mev_eth.balanceOf(User01), 1 ether);
+
+        // Approve User02 to spend 1 mevETH
+        mev_eth.approve(User02, 1 ether);
+        vm.stopPrank();
+        vm.startPrank(User02);
+
+        // Withdraw 1 mevETH
+        mev_eth.withdraw(1 ether, User02, User01);
+
+        assertEq(mev_eth.balanceOf(User01), 0 ether);
+        assertEq(weth.balanceOf(User02), 1 ether);
+
+        assertEq(mev_eth.allowance(User01, User02), 0 ether);
+    }
+
+    function fuzzSimpleWithdrawal(uint256 amount) public {
+        vm.assume(amount > 10000);
+        vm.deal(User02, 10001);
+        vm.startPrank(User02);
+        _depositOnBehalfOf(10001, User02);
+
+        vm.stopPrank();
+        vm.deal(User01, amount);
+        vm.startPrank(User01);
+        _depositOnBehalfOf(amount, User01);
+
+        assertEq(address(mev_eth).balance, amount);
+
+        // Withdraw 1 mevETH
+        mev_eth.withdraw(amount, User01, User01);
+        assertEq(mev_eth.balanceOf(User01), 0 ether);
+        assertEq(weth.balanceOf(User01), amount);
+    }
 }

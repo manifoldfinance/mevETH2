@@ -395,7 +395,26 @@ contract MevEth is MevEthIndex, Auth, ERC20 {
     }
 
     function withdraw(uint256 assets, address receiver, address owner) external returns (uint256 shares) {
+        shares = convertToShares(assets);
 
+        if (owner != msg.sender) {
+            if (!(allowance[owner][msg.sender] >= shares)) {
+                revert MevEthErrors.TransferExceedsAllowance();
+            }
+            allowance[owner][msg.sender] -= shares;
+        }
+
+        _burn(owner, shares);
+
+        assetRebase.elastic -= assets;
+        assetRebase.base -= shares;
+
+        WETH.deposit{value: assets}();
+        WETH.transfer(receiver, assets);
+
+        emit Withdraw(msg.sender, owner, receiver, assets, shares);
+
+        return assets;
     }
 
     function maxRedeem(address owner) external view returns (uint256 maxShares) {
