@@ -3,13 +3,13 @@ pragma solidity 0.8.20;
 // Test utils
 import "forge-std/Test.sol";
 
-
 // MevETH Contracts
 import "src/MevEth.sol";
 
 // Needed Periphery Contracts
 import "./mocks/WETH9.sol";
 import "./mocks/DepositContract.sol";
+
 
 
 contract MevEthTest is Test {
@@ -30,13 +30,16 @@ contract MevEthTest is Test {
 
     DepositContract internal depositContract;
 
-    MevEth internal mev_eth;
+    MevEth internal mevEth;
 
     WETH9 internal weth;
 
+    //Events 
+    event StakingPaused();
+
 
     function setUp() public virtual {
-        // Deploy the BeaconChainDepositContract 
+        // Deploy the BeaconChainDepositContract
         // Can't etch because https://github.com/foundry-rs/foundry/issues/4707
         depositContract = new DepositContract();
 
@@ -44,6 +47,11 @@ contract MevEthTest is Test {
         weth = new WETH9();
 
         // Deploy the mevETH contract
-        mev_eth = new MevEth(SamBacha, address(depositContract), address(weth));
+        // mev_eth = new MevEth(SamBacha, address(depositContract), address(weth));
+        mevEth = new MevEth(SamBacha, address(depositContract), address(weth));
     }
+
+
+
+
 }

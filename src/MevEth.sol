@@ -373,6 +373,14 @@ contract MevEth is MevEthIndex, Auth, ERC20 {
             assets = (shares * assetRebase.base) / assetRebase.elastic;
         }
 
+        WETH.transferFrom(msg.sender, address(this), assets);
+        uint256 balance = address(this).balance;
+        WETH.withdraw(assets);
+        // Not really neccessary, but protects against malicious WETH implementations
+        if (balance + assets != address(this).balance) {
+            revert MevEthErrors.DepositFailed();
+        }
+
         if (assetRebase.base + shares < 1000) {
             revert MevEthErrors.DepositTooSmall();
         }
