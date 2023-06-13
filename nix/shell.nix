@@ -8,26 +8,27 @@
   ];
 
   config.perSystem = {
-    pkgs,
     inputs',
+    pkgs,
+    self',
     ...
   }: let
     inherit (inputs'.ethereum-nix.packages) foundry;
-    inherit (inputs'.nixpkgs-unstable.legacyPackages) solc;
+    # inherit (inputs'.nixpkgs-unstable.legacyPackages) solc;
   in {
     config.devshells.default = {
       env = [
         # we want foundry to use the version of solidity we have included
         {
           name = "FOUNDRY_SOLC";
-          value = "${lib.getExe solc}";
+          value = "${lib.getExe self'.packages.solc-0_8_20}";
         }
       ];
 
       packages = with pkgs; [
         age
         foundry
-        solc
+        self'.packages.solc-0_8_20
         sops
         ssh-to-age
         statix
