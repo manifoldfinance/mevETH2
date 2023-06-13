@@ -1,16 +1,19 @@
 name: "Update Flake Inputs ️❄️"
+
 on:
   workflow_dispatch:
   schedule:
     - cron: "0 10 * * 0" # https://crontab.guru/#0_10_*_*_0
+
 jobs:
-  updateFlakeInputs:
-    runs-on: ubuntu-latest
+  update-nix-flake-inputs:
+    runs-on: nix
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-      - name: Install Nix
-        uses: cachix/install-nix-action@v20
+        with:
+          submodules: recursive
+
       - name: Update flake inputs
         id: update
         uses: DeterminateSystems/update-flake-lock@v19
@@ -19,7 +22,8 @@ jobs:
           pr-title: "chore: ❄️ update flake.lock"
           commit-msg: "chore: ❄️ update flake.lock"
           pr-labels: |
-            dependencies
-            automated
+            Type:Dependencies
+            Type:Automated
+
       - name: Print PR number
         run: echo Pull request number is ${{ steps.update.outputs.pull-request-number }}.
