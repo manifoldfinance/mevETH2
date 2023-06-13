@@ -25,7 +25,6 @@ import { Auth } from "./libraries/Auth.sol";
 import { IWETH } from "./interfaces/IWETH.sol";
 import { MevEthErrors } from "./interfaces/Errors.sol";
 import { IStakingModule } from "./interfaces/IStakingModule.sol";
-import { console } from "forge-std/console.sol";
 
 /// @title MevEth
 /// @author Manifold Finance
@@ -43,11 +42,11 @@ contract MevEth is Auth, ERC20, IERC4626 {
 
     AssetsRebase public assetRebase;
 
+    /// @notice Construction creates mevETH token, sets authority, staking contract and weth address
+    /// @dev pending staking module and committed timestamp will both be zero on deployment
     /// @param _authority The address of the controlling admin authority
     /// @param initialStakingContract The address of the staking module to be used at first by mevEth
     /// @param _WETH The address of the WETH contract to use for deposits
-
-    //TODO: add a @dev note mentioning that the pending staking module and the pending staking module committed timestamp will both be zero on deployment
     constructor(address _authority, address initialStakingContract, address _WETH) Auth(_authority) ERC20("Mev Liquid Staked Ether", "mevETH", 18) {
         stakingModule = IStakingModule(initialStakingContract);
         WETH = IWETH(_WETH);
@@ -269,7 +268,7 @@ contract MevEth is Auth, ERC20, IERC4626 {
 
         _mint(receiver, shares);
 
-        if (!WETH.transferFrom(msg.sender, address(this), assets)) revert MevEthErrors.TransferFailed();
+        ERC20(address(WETH)).safeTransferFrom(msg.sender, address(this), assets);
         WETH.withdraw(assets);
 
         // Not really neccessary, but protects against malicious WETH implementations
@@ -318,7 +317,7 @@ contract MevEth is Auth, ERC20, IERC4626 {
 
         _mint(receiver, shares);
 
-        if (!WETH.transferFrom(msg.sender, address(this), assets)) revert MevEthErrors.TransferFailed();
+        ERC20(address(WETH)).safeTransferFrom(msg.sender, address(this), assets);
         WETH.withdraw(assets);
         // Not really neccessary, but protects against malicious WETH implementations
         if (balance + assets != address(this).balance) {
@@ -361,7 +360,7 @@ contract MevEth is Auth, ERC20, IERC4626 {
         assetRebase.base -= shares;
 
         WETH.deposit{ value: assets }();
-        if (!WETH.transfer(receiver, assets)) revert MevEthErrors.TransferFailed();
+        ERC20(address(WETH)).safeTransfer(receiver, assets);
 
         emit Withdraw(msg.sender, owner, receiver, assets, shares);
 
@@ -400,7 +399,7 @@ contract MevEth is Auth, ERC20, IERC4626 {
         assetRebase.base -= shares;
 
         WETH.deposit{ value: assets }();
-        if (!WETH.transfer(receiver, assets)) revert MevEthErrors.TransferFailed();
+        ERC20(address(WETH)).safeTransfer(receiver, assets);
 
         emit Withdraw(msg.sender, owner, receiver, assets, shares);
 
