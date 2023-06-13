@@ -10,9 +10,6 @@ import "src/MevEth.sol";
 import "./mocks/WETH9.sol";
 import "./mocks/DepositContract.sol";
 
-
-
-
 contract MevEthTest is Test {
     // Admin account
     address constant SamBacha = address(0x06);

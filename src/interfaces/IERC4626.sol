@@ -7,11 +7,11 @@ interface IERC4626 {
     function asset() external view returns (address assetTokenAddress);
 
     /// @return totalManagedAssets The amount of eth controlled by the vault
-    function totalAssets() external view returns (uint256 totalManagedAssets) ;
+    function totalAssets() external view returns (uint256 totalManagedAssets);
 
     /// @param assets The amount of assets to convert to shares
     /// @return shares The value of the given assets in shares
-    function convertToShares(uint256 assets) external view returns (uint256 shares) ;
+    function convertToShares(uint256 assets) external view returns (uint256 shares);
 
     /// @param shares The amount of shares to convert to assets
     /// @return assets The value of the given shares in assets
@@ -23,7 +23,7 @@ interface IERC4626 {
 
     /// @param assets The amount of assets that would be deposited
     /// @return shares The amount of shares that would be minted, *under ideal conditions* only
-    function previewDeposit(uint256 assets) external view returns (uint256 shares) ;
+    function previewDeposit(uint256 assets) external view returns (uint256 shares);
 
     /// @param assets The amount of WETH which should be deposited
     /// @param receiver The address user whom should recieve the mevEth out
@@ -59,7 +59,7 @@ interface IERC4626 {
 
     /// @param owner The address in question of who would be redeeming their shares
     /// @return maxShares The maximum amount of shares they could redeem
-    function maxRedeem(address owner) external view returns (uint256 maxShares) ;
+    function maxRedeem(address owner) external view returns (uint256 maxShares);
 
     /// @param shares The amount of shares that would be burned
     /// @return assets The amount of assets that would be withdrawn, *under ideal conditions* only

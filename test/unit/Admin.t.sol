@@ -10,8 +10,6 @@ contract MevAdminTest is MevEthTest {
     uint256 constant AMOUNT_TO_STAKE = 1 ether;
     uint256 constant ONE = 1;
 
-
-
     //TODO: when pausing and unpausing staking, make sure that the max deposits and mints return 0
 
     /**
@@ -110,60 +108,39 @@ contract MevAdminTest is MevEthTest {
         mevEth.mint(ONE, address(this));
     }
 
+    /**
+     * TODO:
+     */
+
+    function testCommitUpdateStakingModule() public { }
 
     /**
-         TODO:
+     * TODO:
      */
 
-    function testCommitUpdateStakingModule() public {
-       
-    }
+    function testNegativeCommitUpdateStakingModule() public { }
 
-
-
-      /**
-         TODO:
+    /**
+     * TODO:
      */
 
-    function testNegativeCommitUpdateStakingModule() public {
-        
-    }
+    function testFinalizeUpdateStakingModule() public { }
 
-
-      /**
-         TODO:
+    /**
+     * TODO:
      */
 
-    function testFinalizeUpdateStakingModule() public {
-        
-    }
+    function testNegativeFinalizeCommitUpdateStakingModule() public { }
 
-
-
-      /**
-         TODO:
+    /**
+     * TODO:
      */
 
-    function testNegativeFinalizeCommitUpdateStakingModule() public {
-         
-    }
+    function testCancelUpdateStakingModule() public { }
 
-        /**
-         TODO:
+    /**
+     * TODO:
      */
 
-    function testCancelUpdateStakingModule() public {
-        
-    }
-
-
-
-      /**
-         TODO:
-     */
-
-    function testNegativeCancelCommitUpdateStakingModule() public {
-        
-    }
-
+    function testNegativeCancelCommitUpdateStakingModule() public { }
 }

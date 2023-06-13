@@ -43,7 +43,6 @@ contract MevEth is Auth, ERC20, IERC4626 {
 
     AssetsRebase public assetRebase;
 
-
     /// @param _authority The address of the controlling admin authority
     /// @param initialStakingContract The address of the staking module to be used at first by mevEth
     /// @param _WETH The address of the WETH contract to use for deposits
@@ -63,12 +62,10 @@ contract MevEth is Auth, ERC20, IERC4626 {
         }
     }
 
-    
     /*//////////////////////////////////////////////////////////////
                             Configuration Variables
     //////////////////////////////////////////////////////////////*/
     bool public stakingPaused;
-
 
     IStakingModule public stakingModule;
     IStakingModule public pendingStakingModule;
@@ -124,9 +121,8 @@ contract MevEth is Auth, ERC20, IERC4626 {
         emit StakingUnpaused();
     }
 
-
     /**
-     //TODO:
+     * //TODO:
      */
     function commitUpdateStakingModule(IStakingModule newModule) external onlyAdmin {
         address oldModule = address(stakingModule);
@@ -135,25 +131,25 @@ contract MevEth is Auth, ERC20, IERC4626 {
         emit StakingModuleUpdateCommitted(oldModule, address(newModule), uint64(block.timestamp + STAKING_MODULE_UPDATE_TIME_DELAY));
     }
 
-     /**
-     //TODO:
-
+    /**
+     * //TODO:
      */
     function finalizeUpdateStakingModule() external onlyAdmin {
-        if (pendingStakingModule == IStakingModule(address(0)) || pendingStakingModuleCommittedTimestamp == 0){
-            revert MevEthErrors.InvalidPendingStakingModule();   
-        } 
-        
-        if (uint64(block.timestamp) < pendingStakingModuleCommittedTimestamp + STAKING_MODULE_UPDATE_TIME_DELAY){
-            revert  MevEthErrors.PrematureStakingModuleUpdateFinalization(pendingStakingModuleCommittedTimestamp + STAKING_MODULE_UPDATE_TIME_DELAY, uint64(block.timestamp));
-        } 
+        if (pendingStakingModule == IStakingModule(address(0)) || pendingStakingModuleCommittedTimestamp == 0) {
+            revert MevEthErrors.InvalidPendingStakingModule();
+        }
+
+        if (uint64(block.timestamp) < pendingStakingModuleCommittedTimestamp + STAKING_MODULE_UPDATE_TIME_DELAY) {
+            revert MevEthErrors.PrematureStakingModuleUpdateFinalization(
+                pendingStakingModuleCommittedTimestamp + STAKING_MODULE_UPDATE_TIME_DELAY, uint64(block.timestamp)
+            );
+        }
 
         address oldModule = address(stakingModule);
         address newModule = address(pendingStakingModule);
 
         //Update the staking module
         stakingModule = IStakingModule(newModule);
-
 
         //Set the pending staking module variables to zero
         pendingStakingModule = IStakingModule(address(0));
@@ -162,16 +158,13 @@ contract MevEth is Auth, ERC20, IERC4626 {
         emit StakingModuleUpdateFinalized(oldModule, address(newModule));
     }
 
-
     /**
-         //TODO:
-
+     * //TODO:
      */
     function cancelUpdateStakingModule() external onlyAdmin {
-
-        if (pendingStakingModule == IStakingModule(address(0)) || pendingStakingModuleCommittedTimestamp == 0){
-            revert MevEthErrors.InvalidPendingStakingModule();   
-        } 
+        if (pendingStakingModule == IStakingModule(address(0)) || pendingStakingModuleCommittedTimestamp == 0) {
+            revert MevEthErrors.InvalidPendingStakingModule();
+        }
 
         address oldModule = address(stakingModule);
         address pendingModule = address(pendingStakingModule);
@@ -183,12 +176,9 @@ contract MevEth is Auth, ERC20, IERC4626 {
         emit StakingModuleUpdateCanceled(oldModule, address(pendingModule));
     }
 
-
     event StakingModuleUpdateCommitted(address indexed oldModule, address indexed pendingModule, uint64 indexed eligibleForFinalization);
     event StakingModuleUpdateFinalized(address indexed oldModule, address indexed newModule);
     event StakingModuleUpdateCanceled(address indexed oldModule, address indexed pendingModule);
-
-
 
     /*//////////////////////////////////////////////////////////////
                             Registry For Validators
@@ -209,11 +199,10 @@ contract MevEth is Auth, ERC20, IERC4626 {
         stakingModule.deposit{ value: depositSize }(newData);
     }
 
-
     /*//////////////////////////////////////////////////////////////
                             ERC4626 Support
     //////////////////////////////////////////////////////////////*/
-    
+
     /// @return assetTokenAddress The address of the asset token
     function asset() external view returns (address assetTokenAddress) {
         assetTokenAddress = address(WETH);
@@ -425,7 +414,7 @@ contract MevEth is Auth, ERC20, IERC4626 {
     function max(uint256 a, uint256 b) internal pure returns (uint256) {
         return a > b ? a : b;
     }
-    
+
     /**
      * @dev Returns the smallest of two numbers.
      */

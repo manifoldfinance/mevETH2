@@ -10,9 +10,7 @@ interface tinyMevETH {
 /// @title MevEthShareVault
 /// @notice This contract controls the ETH Rewards earned by mevEth
 contract MevEthShareVault {
-    receive() external payable {
-        
-    }
+    receive() external payable { }
 
     fallback() external payable { }
 
@@ -21,7 +19,4 @@ contract MevEthShareVault {
     constructor(address _mevEth) {
         mevEth = tinyMevETH(_mevEth);
     }
-
-
-
 }
