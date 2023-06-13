@@ -3,10 +3,16 @@ pragma solidity 0.8.20;
 
 import "../MevEthTest.sol";
 import "src/libraries/Auth.sol";
+import "../mocks/DepositContract.sol";
+import { IStakingModule } from "../../src/interfaces/IStakingModule.sol";
 
 contract MevAdminTest is MevEthTest {
     uint256 constant AMOUNT_TO_STAKE = 1 ether;
     uint256 constant ONE = 1;
+
+
+
+    //TODO: when pausing and unpausing staking, make sure that the max deposits and mints return 0
 
     /**
      * Test pausing the staking functionality in the contract as an admin. Should only succeed when called by an account
@@ -46,8 +52,6 @@ contract MevAdminTest is MevEthTest {
         assert(!mevEth.stakingPaused());
 
         //When stakingPaused is false, staking should succeed
-
-        //TODO: these are arbitrary values that should succeed, we can update these values to something specific if needed
         vm.deal(address(this), AMOUNT_TO_STAKE);
         weth.deposit{ value: AMOUNT_TO_STAKE }();
 
@@ -72,7 +76,6 @@ contract MevAdminTest is MevEthTest {
         assert(!mevEth.stakingPaused());
 
         //Staking should succeed
-        //TODO: these are arbitrary values that should succeed, we can update these values to something specific if needed
         vm.deal(address(this), AMOUNT_TO_STAKE);
         weth.deposit{ value: AMOUNT_TO_STAKE }();
 
@@ -95,7 +98,7 @@ contract MevAdminTest is MevEthTest {
         mevEth.unpauseStaking();
         assert(mevEth.stakingPaused());
 
-        //Deposit Eth to get weth to stake
+        // Deposit Eth to get weth to stake
         vm.deal(address(this), AMOUNT_TO_STAKE);
         weth.deposit{ value: AMOUNT_TO_STAKE }();
 
@@ -106,4 +109,61 @@ contract MevAdminTest is MevEthTest {
         vm.expectRevert(MevEthErrors.StakingPaused.selector);
         mevEth.mint(ONE, address(this));
     }
+
+
+    /**
+         TODO:
+     */
+
+    function testCommitUpdateStakingModule() public {
+       
+    }
+
+
+
+      /**
+         TODO:
+     */
+
+    function testNegativeCommitUpdateStakingModule() public {
+        
+    }
+
+
+      /**
+         TODO:
+     */
+
+    function testFinalizeUpdateStakingModule() public {
+        
+    }
+
+
+
+      /**
+         TODO:
+     */
+
+    function testNegativeFinalizeCommitUpdateStakingModule() public {
+         
+    }
+
+        /**
+         TODO:
+     */
+
+    function testCancelUpdateStakingModule() public {
+        
+    }
+
+
+
+      /**
+         TODO:
+     */
+
+    function testNegativeCancelCommitUpdateStakingModule() public {
+        
+    }
+
 }

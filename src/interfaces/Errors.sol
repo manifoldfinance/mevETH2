@@ -23,6 +23,7 @@ interface MevEthErrors {
     error NotAuthorized();
     error DepositTooSmall();
     error InvalidSender();
-
+    error PrematureStakingModuleUpdateFinalization(uint64 finalizationTimestamp, uint64 currentTimestamp);
+    error InvalidPendingStakingModule();
     error TransferExceedsAllowance();
 }

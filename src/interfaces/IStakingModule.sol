@@ -1,7 +1,5 @@
 // SPDX-License-Identifier: MIT
 
-import { MevEthIndex } from "../MevEthIndex.sol";
-
 pragma solidity 0.8.20;
 
 interface IStakingModule {
