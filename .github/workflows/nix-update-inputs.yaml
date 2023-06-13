@@ -7,16 +7,13 @@ on:
 
 jobs:
   update-nix-flake-inputs:
-    runs-on: ubuntu-latest
+    runs-on: nix
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
           submodules: recursive
 
-      - name: Use Nix
-        uses: aldoborrero/use-nix-action@v2
-      
       - name: Update flake inputs
         id: update
         uses: DeterminateSystems/update-flake-lock@v19
@@ -27,6 +24,6 @@ jobs:
           pr-labels: |
             Type:Dependencies
             Type:Automated
-      
+
       - name: Print PR number
         run: echo Pull request number is ${{ steps.update.outputs.pull-request-number }}.

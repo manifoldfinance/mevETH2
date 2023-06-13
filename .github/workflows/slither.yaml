@@ -10,7 +10,6 @@ on:
   pull_request:
     branches: [main, develop]
 
-
 # ensure multiple CI processes are not running analysis on contracts
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name == 'pull_request_target' && github.head_ref || github.ref }}
@@ -30,9 +29,6 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Use Nix
-        uses: aldoborrero/use-nix-action@v2
-            
       - name: Run Slither
         uses: crytic/slither-action@v0.3.0
         id: slither
