@@ -26,16 +26,16 @@ pragma solidity 0.8.20;
                                 ""'
 /////////////////////////////////////////////*/
 
-import {SafeTransferLib} from "solmate/utils/SafeTransferLib.sol";
-import {FixedPointMathLib} from "solmate/utils/FixedPointMathLib.sol";
-import {ERC20} from "solmate/tokens/ERC20.sol";
-import {IERC20} from "./interfaces/IERC20.sol";
-import {Auth} from "./libraries/Auth.sol";
-import {IWETH} from "./interfaces/IWETH.sol";
-import {MevEthIndex} from "./MevEthIndex.sol";
-import {MevEthErrors} from "./libraries/Errors.sol";
+import { SafeTransferLib } from "solmate/utils/SafeTransferLib.sol";
+import { FixedPointMathLib } from "solmate/utils/FixedPointMathLib.sol";
+import { ERC20 } from "solmate/tokens/ERC20.sol";
+import { IERC20 } from "./interfaces/IERC20.sol";
+import { Auth } from "./libraries/Auth.sol";
+import { IWETH } from "./interfaces/IWETH.sol";
+import { MevEthIndex } from "./MevEthIndex.sol";
+import { MevEthErrors } from "./interfaces/Errors.sol";
 import { IStakingModule } from "./interfaces/IStakingModule.sol";
-import {console} from "forge-std/console.sol";
+import { console } from "forge-std/console.sol";
 
 /// @title MevEth
 /// @author Manifold Finance
@@ -57,17 +57,17 @@ contract MevEth is MevEthIndex, Auth, ERC20 {
         WETH = IWETH(_WETH);
     }
 
+    modifier stakingUnpaused() {
+        if (stakingPaused) {
+            revert MevEthErrors.StakingPaused();
+        }
+        _;
+    }
+
     /*//////////////////////////////////////////////////////////////
                             Configuration Variables
     //////////////////////////////////////////////////////////////*/
     bool public stakingPaused;
-
-    struct ValidatorsInfo {
-        // current number of beacon validators
-        uint128 beaconValidators;
-        // total validators, includes pending + beacon validators
-        uint128 totalValidators;
-    }
 
     IStakingModule public stakingModule;
 
@@ -108,11 +108,7 @@ contract MevEth is MevEthIndex, Auth, ERC20 {
         emit StakingUnpaused();
     }
 
-    function createValidator(IStakingModule.ValidatorData calldata newData) public onlyOperator {
-        if (stakingPaused) {
-            revert MevEthErrors.StakingPaused();
-        }
-
+    function createValidator(IStakingModule.ValidatorData calldata newData) public onlyOperator stakingUnpaused {
         if (address(this).balance < calculateNeededEtherBuffer()) {
             revert MevEthErrors.NotEnoughEth();
         }
@@ -122,9 +118,8 @@ contract MevEth is MevEthIndex, Auth, ERC20 {
         uint256 depositSize = stakingModule.validatorDepositSize();
 
         // Deposit the Ether into the staking contract
-        stakingModule.deposit{value: depositSize}(newData);
+        stakingModule.deposit{ value: depositSize }(newData);
     }
-
 
     /*//////////////////////////////////////////////////////////////
                             RecieveSupport
@@ -133,14 +128,10 @@ contract MevEth is MevEthIndex, Auth, ERC20 {
         // Should allow rewards to be send here, and validator withdrawls
         if (msg.sender == address(WETH)) {
             return;
-        }
-        if (msg.sender == block.coinbase) {
-            assetRebase.elastic += msg.value;
         } else {
             revert MevEthErrors.InvalidSender();
         }
     }
-
 
     /*//////////////////////////////////////////////////////////////
                             ERC4626 Support
@@ -175,7 +166,7 @@ contract MevEth is MevEthIndex, Auth, ERC20 {
         return convertToShares(assets);
     }
 
-    function deposit(uint256 assets, address receiver) external returns (uint256 shares) {
+    function deposit(uint256 assets, address receiver) external stakingUnpaused returns (uint256 shares) {
         WETH.transferFrom(msg.sender, address(this), assets);
         uint256 balance = address(this).balance;
         WETH.withdraw(assets);
@@ -188,7 +179,7 @@ contract MevEth is MevEthIndex, Auth, ERC20 {
             shares = assets;
         } else {
             shares = (assets * assetRebase.elastic) / assetRebase.base;
-        } 
+        }
 
         if (assetRebase.base + shares < 1000) {
             revert MevEthErrors.DepositTooSmall();
@@ -211,7 +202,7 @@ contract MevEth is MevEthIndex, Auth, ERC20 {
         return convertToAssets(shares);
     }
 
-    function mint(uint256 shares, address receiver) external returns (uint256 assets) {
+    function mint(uint256 shares, address receiver) external stakingUnpaused returns (uint256 assets) {
         // Pretty much deposit but in reverse
         if (assetRebase.elastic == 0 || assetRebase.base == 0) {
             assets = shares;
@@ -263,7 +254,7 @@ contract MevEth is MevEthIndex, Auth, ERC20 {
         assetRebase.elastic -= assets;
         assetRebase.base -= shares;
 
-        WETH.deposit{value: assets}();
+        WETH.deposit{ value: assets }();
         WETH.transfer(receiver, assets);
 
         emit Withdraw(msg.sender, owner, receiver, assets, shares);
@@ -283,7 +274,9 @@ contract MevEth is MevEthIndex, Auth, ERC20 {
         assets = convertToAssets(shares);
 
         if (owner != msg.sender) {
-            require(allowance[owner][msg.sender] >= shares, "ERC20: transfer amount exceeds allowance");
+            if (allowance[owner][msg.sender] < shares) {
+                revert MevEthErrors.TransferExceedsAllowance();
+            }
             allowance[owner][msg.sender] -= shares;
         }
 
@@ -292,7 +285,7 @@ contract MevEth is MevEthIndex, Auth, ERC20 {
         assetRebase.elastic -= assets;
         assetRebase.base -= shares;
 
-        WETH.deposit{value: assets}();
+        WETH.deposit{ value: assets }();
         WETH.transfer(receiver, assets);
 
         emit Withdraw(msg.sender, owner, receiver, assets, shares);

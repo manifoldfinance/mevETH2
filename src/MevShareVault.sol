@@ -2,5 +2,9 @@
 pragma solidity 0.8.20;
 
 contract MevEthShareVault {
+    receive() external payable { }
 
+    fallback() external payable { }
+
+    constructor() { }
 }

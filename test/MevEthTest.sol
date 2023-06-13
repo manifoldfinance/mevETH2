@@ -10,8 +10,6 @@ import "src/MevEth.sol";
 import "./mocks/WETH9.sol";
 import "./mocks/DepositContract.sol";
 
-
-
 contract MevEthTest is Test {
     // Admin account
     address constant SamBacha = address(0x06);
@@ -34,10 +32,9 @@ contract MevEthTest is Test {
 
     WETH9 internal weth;
 
-    //Events 
+    //Events
     event StakingPaused();
     event StakingUnpaused();
-
 
     function setUp() public virtual {
         // Deploy the BeaconChainDepositContract
@@ -51,8 +48,4 @@ contract MevEthTest is Test {
         // mev_eth = new MevEth(SamBacha, address(depositContract), address(weth));
         mevEth = new MevEth(SamBacha, address(depositContract), address(weth));
     }
-
-
-
-
 }

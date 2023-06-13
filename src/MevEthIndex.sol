@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity 0.8.20;
 
-import "./libraries/Errors.sol";
+import "./interfaces/Errors.sol";
 
 /// @title MevEthIndex
 /// @notice This contract is used to store the events, and other data needed for off-chain indexing systems

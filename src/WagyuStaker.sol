@@ -12,24 +12,16 @@ interface IBeaconDepositContract {
     /// @param deposit_data_root The SHA-256 hash of the SSZ-encoded DepositData object.
 
     /// Used as a protection against malformed input.
-    function deposit(
-        bytes calldata pubkey,
-        bytes calldata withdrawal_credentials,
-        bytes calldata signature,
-        bytes32 deposit_data_root
-    ) external payable;
+    function deposit(bytes calldata pubkey, bytes calldata withdrawal_credentials, bytes calldata signature, bytes32 deposit_data_root) external payable;
 }
-
 
 /// @title 🥩 Wagyu Staker 🥩
 /// @dev This contract stakes Ether inside of the BeaconChainDepositContract directly
 contract WagyuStaker is IStakingModule {
-
     error WrongDepositAmount();
     error UnAuthorizedCaller();
 
-
-    // The amount of staked Ether on the beaconchain    
+    // The amount of staked Ether on the beaconchain
     uint256 public balance;
 
     // The number of 32 validators on the consensus layer registered under this contract
@@ -42,23 +34,17 @@ contract WagyuStaker is IStakingModule {
     uint256 public constant override validatorDepositSize = 32 ether;
 
     // The Canonical Address of the BeaconChainDepositContract
-    IBeaconDepositContract immutable public BEACON_CHAIN_DEPOSIT_CONTRACT;
+    IBeaconDepositContract public immutable BEACON_CHAIN_DEPOSIT_CONTRACT;
 
-    event NewValidator(
-        address indexed operator,
-        bytes pubkey,
-        bytes32 withdrawalCredentials,
-        bytes signature,
-        bytes32 deposit_data_root
-    );
+    event NewValidator(address indexed operator, bytes pubkey, bytes32 withdrawalCredentials, bytes signature, bytes32 deposit_data_root);
 
     constructor(address depositContract, address _mevEth) {
         uint256 chainId;
         assembly {
             chainId := chainid()
         }
-        IBeaconDepositContract _BEACON_CHAIN_DEPOSIT_CONTRACT; 
-        if (chainId != 1) {
+        IBeaconDepositContract _BEACON_CHAIN_DEPOSIT_CONTRACT;
+        if (chainId == 1) {
             _BEACON_CHAIN_DEPOSIT_CONTRACT = IBeaconDepositContract(0x00000000219ab540356cBB839Cbe05303d7705Fa);
         } else {
             _BEACON_CHAIN_DEPOSIT_CONTRACT = IBeaconDepositContract(depositContract);
@@ -76,20 +62,11 @@ contract WagyuStaker is IStakingModule {
             revert WrongDepositAmount();
         }
 
-        BEACON_CHAIN_DEPOSIT_CONTRACT.deposit{value: 32 ether}(
-            _data.pubkey,
-            abi.encodePacked(_data.withdrawal_credentials),
-            _data.signature,
-            _data.deposit_data_root
+        BEACON_CHAIN_DEPOSIT_CONTRACT.deposit{ value: 32 ether }(
+            _data.pubkey, abi.encodePacked(_data.withdrawal_credentials), _data.signature, _data.deposit_data_root
         );
 
-        emit NewValidator(
-            _data.operator,
-            _data.pubkey,
-            _data.withdrawal_credentials,
-            _data.signature,
-            _data.deposit_data_root
-        );
+        emit NewValidator(_data.operator, _data.pubkey, _data.withdrawal_credentials, _data.signature, _data.deposit_data_root);
 
         balance += 32 ether;
 
@@ -102,6 +79,6 @@ contract WagyuStaker is IStakingModule {
         }
 
         balance = newBalance;
-        validators = newValidators;        
+        validators = newValidators;
     }
 }
