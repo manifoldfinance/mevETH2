@@ -48,7 +48,7 @@ contract MevEth is Auth, ERC20, IERC4626 {
     /// @param _WETH The address of the WETH contract to use for deposits
 
     //TODO: add a @dev note mentioning that the pending staking module and the pending staking module committed timestamp will both be zero on deployment
-    constructor(address _authority, address initialStakingContract, address _WETH) Auth(_authority) ERC20("MevEth", "METH", 18) {
+    constructor(address _authority, address initialStakingContract, address _WETH) Auth(_authority) ERC20("Mev Liquid Staked Ether", "mevETH", 18) {
         stakingModule = IStakingModule(initialStakingContract);
         WETH = IWETH(_WETH);
     }
