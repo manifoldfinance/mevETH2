@@ -6,7 +6,8 @@ library MevEthErrors {
     error InsufficientBufferedEth();
     error TooManyValidatorRegistrations();
     error ExceedsStakingAllowance();
-    error StakingIsPaused();
+    error StakingPaused();
+    error NotEnoughEth();
     error DepositTooLow();
     error ZeroShares();
     error ReportedBeaconValidatorsGreaterThanTotalValidators();

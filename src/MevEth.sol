@@ -34,24 +34,8 @@ import {Auth} from "./libraries/Auth.sol";
 import {IWETH} from "./interfaces/IWETH.sol";
 import {MevEthIndex} from "./MevEthIndex.sol";
 import {MevEthErrors} from "./libraries/Errors.sol";
+import { IStakingModule } from "./interfaces/IStakingModule.sol";
 import {console} from "forge-std/console.sol";
-
-/// Interface for the Beacon Chain Deposit Contract
-interface IBeaconDepositContract {
-    /// @notice Submit a Phase 0 DepositData object.
-    /// @param pubkey A BLS12-381 public key.
-    /// @param withdrawal_credentials Commitment to a public key for withdrawals.
-    /// @param signature A BLS12-381 signature.
-    /// @param deposit_data_root The SHA-256 hash of the SSZ-encoded DepositData object.
-
-    /// Used as a protection against malformed input.
-    function deposit(
-        bytes calldata pubkey,
-        bytes calldata withdrawal_credentials,
-        bytes calldata signature,
-        bytes32 deposit_data_root
-    ) external payable;
-}
 
 /// @title MevEth
 /// @author Manifold Finance
@@ -68,32 +52,14 @@ contract MevEth is MevEthIndex, Auth, ERC20 {
 
     AssetsRebase public assetRebase;
 
-    constructor(address _authority, address depositContract, address _WETH) Auth(_authority) ERC20("MevEth", "METH", 18) {
-        uint256 chainId;
-        assembly {
-            chainId := chainid()
-        }
-        IBeaconDepositContract _BEACON_CHAIN_DEPOSIT_CONTRACT; 
-        if (chainId != 1) {
-            _BEACON_CHAIN_DEPOSIT_CONTRACT = IBeaconDepositContract(0x00000000219ab540356cBB839Cbe05303d7705Fa);
-        } else {
-            _BEACON_CHAIN_DEPOSIT_CONTRACT = IBeaconDepositContract(depositContract);
-        }
-
+    constructor(address _authority, address initialStakingContract, address _WETH) Auth(_authority) ERC20("MevEth", "METH", 18) {
+        stakingModule = IStakingModule(initialStakingContract);
         WETH = IWETH(_WETH);
-        BEACON_CHAIN_DEPOSIT_CONTRACT = _BEACON_CHAIN_DEPOSIT_CONTRACT;
     }
 
     /*//////////////////////////////////////////////////////////////
                             Configuration Variables
     //////////////////////////////////////////////////////////////*/
-
-    /// The address of the Beacon Chain Deposit Contract
-    IBeaconDepositContract immutable BEACON_CHAIN_DEPOSIT_CONTRACT;
-
-    /// The amount of Ether required to mint a validator on the Beacon Chain
-    uint256 constant VALIDATOR_DEPOSIT_SIZE = 32 ether;
-
     bool public stakingPaused;
 
     struct ValidatorsInfo {
@@ -103,22 +69,11 @@ contract MevEth is MevEthIndex, Auth, ERC20 {
         uint128 totalValidators;
     }
 
-    ValidatorsInfo public validatorsInfo;
-
-    bytes32 public withdrawalCredentials;
+    IStakingModule public stakingModule;
 
     // Amount of Ether held current;y as a fraction of 32 eth awaiting a new validator
     uint256 public totalBufferedEther;
 
-    // Balance of mev-eth contract on the Beacon Chain
-    uint256 public totalBeaconBalance;
-
-    // Reciever of Beacon Chain Validator Rewards
-    address public rewardsReceiver;
-
-    // Management fee
-    uint256 public managementFee;
-    
     // WETH
     IWETH public immutable WETH;
 
@@ -153,7 +108,7 @@ contract MevEth is MevEthIndex, Auth, ERC20 {
         emit StakingUnpaused();
     }
 
-    function createValidator() public {
+    function createValidator(IStakingModule.ValidatorData calldata newData) public onlyOperator {
         if (stakingPaused) {
             revert MevEthErrors.StakingPaused();
         }
@@ -162,7 +117,12 @@ contract MevEth is MevEthIndex, Auth, ERC20 {
             revert MevEthErrors.NotEnoughEth();
         }
 
+        // Determine how big deposit is for the validator
+        // *Note this will change if Rocketpool or similar modules are used
+        uint256 depositSize = stakingModule.validatorDepositSize();
 
+        // Deposit the Ether into the staking contract
+        stakingModule.deposit{value: depositSize}(newData);
     }
 
 
@@ -208,7 +168,7 @@ contract MevEth is MevEthIndex, Auth, ERC20 {
 
     function maxDeposit(address) external view returns (uint256 maxAssets) {
         // No practical limit on deposit for Ether
-        return 2 ** 256 - 1;
+        maxAssets = 2 ** 256 - 1;
     }
 
     function previewDeposit(uint256 assets) external view returns (uint256 shares) {
@@ -242,7 +202,7 @@ contract MevEth is MevEthIndex, Auth, ERC20 {
         emit Deposit(msg.sender, receiver, assets, shares);
     }
 
-    function maxMint(address receiver) external view returns (uint256 maxShares) {
+    function maxMint(address) external view returns (uint256 maxShares) {
         // No practical limit on mint for Ether
         return 2 ** 256 - 1;
     }
