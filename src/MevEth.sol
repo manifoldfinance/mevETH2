@@ -252,13 +252,7 @@ contract MevEth is Auth, ERC20, IERC4626 {
     /// @param receiver The address user whom should recieve the mevEth out
     /// @return shares The amount of shares minted
     function deposit(uint256 assets, address receiver) external stakingUnpaused returns (uint256 shares) {
-        WETH.transferFrom(msg.sender, address(this), assets);
         uint256 balance = address(this).balance;
-        WETH.withdraw(assets);
-        // Not really neccessary, but protects against malicious WETH implementations
-        if (balance + assets != address(this).balance) {
-            revert MevEthErrors.DepositFailed();
-        }
 
         if (assetRebase.elastic == 0 || assetRebase.base == 0) {
             shares = assets;
@@ -274,6 +268,14 @@ contract MevEth is Auth, ERC20, IERC4626 {
         assetRebase.base += shares;
 
         _mint(receiver, shares);
+
+        if (!WETH.transferFrom(msg.sender, address(this), assets)) revert MevEthErrors.TransferFailed();
+        WETH.withdraw(assets);
+
+        // Not really neccessary, but protects against malicious WETH implementations
+        if (balance + assets != address(this).balance) {
+            revert MevEthErrors.DepositFailed();
+        }
 
         emit Deposit(msg.sender, receiver, assets, shares);
     }
@@ -305,13 +307,7 @@ contract MevEth is Auth, ERC20, IERC4626 {
             assets = (shares * assetRebase.base) / assetRebase.elastic;
         }
 
-        WETH.transferFrom(msg.sender, address(this), assets);
         uint256 balance = address(this).balance;
-        WETH.withdraw(assets);
-        // Not really neccessary, but protects against malicious WETH implementations
-        if (balance + assets != address(this).balance) {
-            revert MevEthErrors.DepositFailed();
-        }
 
         if (assetRebase.base + shares < 1000) {
             revert MevEthErrors.DepositTooSmall();
@@ -321,6 +317,13 @@ contract MevEth is Auth, ERC20, IERC4626 {
         assetRebase.base += shares;
 
         _mint(receiver, shares);
+
+        if (!WETH.transferFrom(msg.sender, address(this), assets)) revert MevEthErrors.TransferFailed();
+        WETH.withdraw(assets);
+        // Not really neccessary, but protects against malicious WETH implementations
+        if (balance + assets != address(this).balance) {
+            revert MevEthErrors.DepositFailed();
+        }
 
         emit Deposit(msg.sender, receiver, assets, shares);
     }
@@ -358,7 +361,7 @@ contract MevEth is Auth, ERC20, IERC4626 {
         assetRebase.base -= shares;
 
         WETH.deposit{ value: assets }();
-        WETH.transfer(receiver, assets);
+        if (!WETH.transfer(receiver, assets)) revert MevEthErrors.TransferFailed();
 
         emit Withdraw(msg.sender, owner, receiver, assets, shares);
 
@@ -397,7 +400,7 @@ contract MevEth is Auth, ERC20, IERC4626 {
         assetRebase.base -= shares;
 
         WETH.deposit{ value: assets }();
-        WETH.transfer(receiver, assets);
+        if (!WETH.transfer(receiver, assets)) revert MevEthErrors.TransferFailed();
 
         emit Withdraw(msg.sender, owner, receiver, assets, shares);
 
