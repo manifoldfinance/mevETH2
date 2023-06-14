@@ -33,7 +33,6 @@ jobs:
         uses: crytic/slither-action@v0.3.0
         id: slither
         with:
-          fail-on: none
-          slither-args: --checklist --markdown-root ${{ github.server_url }}/${{ github.repository }}/blob/${{ github.sha }}/
-
-
+          fail-on: all
+          slither-args: --checklist
+          solc-version: "0.8.20"
