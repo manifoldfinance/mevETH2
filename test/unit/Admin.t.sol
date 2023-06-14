@@ -29,7 +29,7 @@ contract MevAdminTest is MevEthTest {
 
         //Deposit Eth to get weth to stake
         vm.deal(address(this), AMOUNT_TO_STAKE);
-        weth.deposit{ value: AMOUNT_TO_STAKE }();
+        weth.deposit{value: AMOUNT_TO_STAKE}();
 
         weth.approve(address(mevEth), AMOUNT_TO_STAKE);
         //When stakingPaused is true, staking should fail
@@ -51,7 +51,7 @@ contract MevAdminTest is MevEthTest {
 
         //When stakingPaused is false, staking should succeed
         vm.deal(address(this), AMOUNT_TO_STAKE);
-        weth.deposit{ value: AMOUNT_TO_STAKE }();
+        weth.deposit{value: AMOUNT_TO_STAKE}();
 
         weth.approve(address(mevEth), AMOUNT_TO_STAKE);
         mevEth.deposit(AMOUNT_TO_STAKE / 2, address(this));
@@ -75,7 +75,7 @@ contract MevAdminTest is MevEthTest {
 
         //Staking should succeed
         vm.deal(address(this), AMOUNT_TO_STAKE);
-        weth.deposit{ value: AMOUNT_TO_STAKE }();
+        weth.deposit{value: AMOUNT_TO_STAKE}();
 
         weth.approve(address(mevEth), AMOUNT_TO_STAKE);
         mevEth.deposit(AMOUNT_TO_STAKE / 2, address(this));
@@ -88,7 +88,7 @@ contract MevAdminTest is MevEthTest {
      */
 
     function testNegativeUnpauseStaking() public {
-        //First pause staking with auth role
+        // First pause staking with auth role
         vm.prank(SamBacha);
         mevEth.pauseStaking();
 
@@ -98,9 +98,9 @@ contract MevAdminTest is MevEthTest {
 
         // Deposit Eth to get weth to stake
         vm.deal(address(this), AMOUNT_TO_STAKE);
-        weth.deposit{ value: AMOUNT_TO_STAKE }();
+        weth.deposit{value: AMOUNT_TO_STAKE}();
 
-        //When stakingPaused is true, staking should fail
+        // When stakingPaused is true, staking should fail
         vm.expectRevert(MevEthErrors.StakingPaused.selector);
         mevEth.deposit(AMOUNT_TO_STAKE, address(this));
 
@@ -109,38 +109,162 @@ contract MevAdminTest is MevEthTest {
     }
 
     /**
-     * TODO:
+     * Test commit a updated staking module. When called by an authorized account, the function should emit a StakingModuleUpdateCommitted event with the existing
+     * staking module address, the new module address and the timestamp at which the new module can be finalized.
+     * The pending staking module should be updated to the new module, the pending staking module commited timestamp should be the timestamp at which the function was called
+     * and the staking module should remain as the existing staking module before the function call.
      */
 
-    function testCommitUpdateStakingModule() public { }
+    function testCommitUpdateStakingModule() public {
+        // Create a new staking module and cache the current staking module
+        DepositContract newModule = new DepositContract();
+        address existingStakingModule = address(mevEth.stakingModule());
+
+        // Commit an update to the staking module and check the effects
+        vm.prank(SamBacha);
+        vm.expectEmit(true, true, true, false, address(mevEth));
+        uint64 finalizationTimestamp = uint64(block.timestamp + mevEth.STAKING_MODULE_UPDATE_TIME_DELAY());
+        emit StakingModuleUpdateCommitted(existingStakingModule, address(newModule), finalizationTimestamp);
+
+        mevEth.commitUpdateStakingModule(IStakingModule(address(newModule)));
+
+        assertEq(address(mevEth.pendingStakingModule()), address(newModule));
+        assertEq(mevEth.pendingStakingModuleCommittedTimestamp(), block.timestamp);
+        assertEq(address(mevEth.stakingModule()), existingStakingModule);
+    }
 
     /**
-     * TODO:
+     * Test commit a new staking module when unauthorized. This should revert with an Auth.Unauthorized error and no effects should occur.
      */
 
-    function testNegativeCommitUpdateStakingModule() public { }
+    function testNegativeCommitUpdateStakingModule() public {
+        // Create a new staking module and cache the current staking module
+        DepositContract newModule = new DepositContract();
+        address existingStakingModule = address(mevEth.stakingModule());
+
+        // Expect a reversion if unauthorized and check that no effects have occured
+        vm.expectRevert(Auth.Unauthorized.selector);
+        mevEth.commitUpdateStakingModule(IStakingModule(address(newModule)));
+
+        assertEq(address(mevEth.pendingStakingModule()), address(0));
+        assertEq(address(mevEth.stakingModule()), existingStakingModule);
+    }
 
     /**
-     * TODO:
+     * Test finalize a pending staking module. When called by an authorized account, and after the staking module update time delay has elapsed
+     * the function should emit a StakingModuleUpdateFinalized event with the previous staking module and the new staking module.
+     * The pending staking module should be updated to the zero address, the pending staking module committed timestamp should be updated to 0
+     * and the staking module should be updated to the value that was the pending staking module.
      */
 
-    function testFinalizeUpdateStakingModule() public { }
+    function testFinalizeUpdateStakingModule() public {
+        // Create a new staking module and cache the current staking module
+        DepositContract newModule = new DepositContract();
+        address existingStakingModule = address(mevEth.stakingModule());
+
+        // Commit an update to the staking module and check the effects
+        vm.prank(SamBacha);
+        uint64 finalizationTimestamp = uint64(block.timestamp + mevEth.STAKING_MODULE_UPDATE_TIME_DELAY());
+        mevEth.commitUpdateStakingModule(IStakingModule(address(newModule)));
+
+        // Finalize the staking module update and check effects
+        vm.warp(finalizationTimestamp);
+        vm.prank(SamBacha);
+        vm.expectEmit(true, true, false, false, address(mevEth));
+        emit StakingModuleUpdateFinalized(existingStakingModule, address(newModule));
+        mevEth.finalizeUpdateStakingModule();
+
+        assertEq(address(mevEth.pendingStakingModule()), address(0));
+        assertEq(mevEth.pendingStakingModuleCommittedTimestamp(), 0);
+
+        assertEq(address(mevEth.stakingModule()), address(newModule));
+    }
 
     /**
-     * TODO:
+     * Test finalize a pending staking module. When the caller is authorized and there is no pending staking module, the function should revert with an invalid pending module error.
+     * When the caller is authorized, but the time delay has not elapsed, the function should return a premature finalization error.
+     * When the time delay has elapsed and there is a pending staking module, but the caller is unauthorized, the function should revert with an unauthorized error.
      */
 
-    function testNegativeFinalizeCommitUpdateStakingModule() public { }
+    function testNegativeFinalizeCommitUpdateStakingModule() public {
+        // Expect a revert when there is no pending staking module
+        vm.prank(SamBacha);
+        vm.expectRevert(MevEthErrors.InvalidPendingStakingModule.selector);
+        mevEth.finalizeUpdateStakingModule();
+
+        // Commit a new staking module
+        DepositContract newModule = new DepositContract();
+        address existingStakingModule = address(mevEth.stakingModule());
+        vm.prank(SamBacha);
+        uint64 finalizationTimestamp = uint64(block.timestamp + mevEth.STAKING_MODULE_UPDATE_TIME_DELAY());
+        mevEth.commitUpdateStakingModule(IStakingModule(address(newModule)));
+
+        // Expect a reversion if the time delay has not elapsed
+        vm.prank(SamBacha);
+        //TODO: also check the values from the reversion here
+        vm.expectRevert(MevEthErrors.PrematureStakingModuleUpdateFinalization.selector);
+        mevEth.finalizeUpdateStakingModule();
+
+        // Warp to the finalization timestamp, expect a reversion when unauthorized
+        vm.warp(finalizationTimestamp);
+        vm.expectRevert(Auth.Unauthorized.selector);
+        mevEth.finalizeUpdateStakingModule();
+
+        // Check that there are no effects from finalization
+        assertEq(address(mevEth.pendingStakingModule()), address(newModule));
+        assertEq(mevEth.pendingStakingModuleCommittedTimestamp(), block.timestamp);
+        assertEq(address(mevEth.stakingModule()), existingStakingModule);
+    }
 
     /**
-     * TODO:
+     * Test cancel a pending staking module. When there is a pending staking module and the caller is authorized, the function should emit a cancellation event and set
+     * the pending staking module and pending staking module committed timestamp to zero values. The existing staking module should remain unchanged.
      */
 
-    function testCancelUpdateStakingModule() public { }
+    function testCancelUpdateStakingModule() public {
+        // Commit a new staking module
+        DepositContract newModule = new DepositContract();
+        address existingStakingModule = address(mevEth.stakingModule());
+        vm.prank(SamBacha);
+        mevEth.commitUpdateStakingModule(IStakingModule(address(newModule)));
+
+        // Cancel the update and check the effects
+        vm.prank(SamBacha);
+        vm.expectEmit(true, true, false, false, address(mevEth));
+        emit StakingModuleUpdateCanceled(existingStakingModule, address(newModule));
+
+        mevEth.cancelUpdateStakingModule();
+
+        assertEq(address(mevEth.pendingStakingModule()), address(0));
+        assertEq(mevEth.pendingStakingModuleCommittedTimestamp(), 0);
+        assertEq(address(mevEth.stakingModule()), existingStakingModule);
+    }
 
     /**
-     * TODO:
+     * Test cancel a pending staking module with failure conditions. When there is no pending staking module, an invalid pending staking module should occur.
+     * If there is a valid pending staking module, the cancellation function should revert when an called by an unauthorized account. The pending staking module,
+     * pending staking module timestamp and existing staking module should be unchanged.
      */
 
-    function testNegativeCancelCommitUpdateStakingModule() public { }
+    function testNegativeCancelCommitUpdateStakingModule() public {
+        // Expect a revert when there is no pending staking module
+        vm.expectRevert(MevEthErrors.InvalidPendingStakingModule.selector);
+        vm.prank(SamBacha);
+        mevEth.cancelUpdateStakingModule();
+
+        // Commit a new staking module
+        DepositContract newModule = new DepositContract();
+        address existingStakingModule = address(mevEth.stakingModule());
+        vm.prank(SamBacha);
+        mevEth.commitUpdateStakingModule(IStakingModule(address(newModule)));
+
+        // Expect a reversion if unauthorized
+        vm.expectRevert(Auth.Unauthorized.selector);
+        mevEth.cancelUpdateStakingModule();
+
+        // Check that there are no effects
+        assertEq(address(mevEth.pendingStakingModule()), address(newModule));
+        assertEq(mevEth.pendingStakingModuleCommittedTimestamp(), block.timestamp);
+        assertEq(address(mevEth.stakingModule()), existingStakingModule);
+    }
 }

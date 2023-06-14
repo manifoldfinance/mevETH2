@@ -35,7 +35,9 @@ contract MevEthTest is Test {
     //Events
     event StakingPaused();
     event StakingUnpaused();
-    event StakingModuleUpdated(address indexed oldModule, address indexed newModule);
+    event StakingModuleUpdateCommitted(address indexed oldModule, address indexed pendingModule, uint64 indexed eligibleForFinalization);
+    event StakingModuleUpdateFinalized(address indexed oldModule, address indexed newModule);
+    event StakingModuleUpdateCanceled(address indexed oldModule, address indexed pendingModule);
 
     function setUp() public virtual {
         // Deploy the BeaconChainDepositContract

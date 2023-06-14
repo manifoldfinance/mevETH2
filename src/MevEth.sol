@@ -46,8 +46,7 @@ contract MevEth is Auth, ERC20, IERC4626 {
     /// @param _authority The address of the controlling admin authority
     /// @param initialStakingContract The address of the staking module to be used at first by mevEth
     /// @param _WETH The address of the WETH contract to use for deposits
-
-    //TODO: add a @dev note mentioning that the pending staking module and the pending staking module committed timestamp will both be zero on deployment
+    /// @dev When the contract is deployed, the pendingStakingModule and the pendingStakingModuleCommitedTimestamp are both zero initialized
     constructor(address _authority, address initialStakingContract, address _WETH) Auth(_authority) ERC20("Mev Liquid Staked Ether", "mevETH", 18) {
         stakingModule = IStakingModule(initialStakingContract);
         WETH = IWETH(_WETH);
@@ -196,7 +195,7 @@ contract MevEth is Auth, ERC20, IERC4626 {
         uint256 depositSize = stakingModule.validatorDepositSize();
 
         // Deposit the Ether into the staking contract
-        stakingModule.deposit{ value: depositSize }(newData);
+        stakingModule.deposit{value: depositSize}(newData);
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -357,7 +356,7 @@ contract MevEth is Auth, ERC20, IERC4626 {
         assetRebase.elastic -= assets;
         assetRebase.base -= shares;
 
-        WETH.deposit{ value: assets }();
+        WETH.deposit{value: assets}();
         WETH.transfer(receiver, assets);
 
         emit Withdraw(msg.sender, owner, receiver, assets, shares);
@@ -396,7 +395,7 @@ contract MevEth is Auth, ERC20, IERC4626 {
         assetRebase.elastic -= assets;
         assetRebase.base -= shares;
 
-        WETH.deposit{ value: assets }();
+        WETH.deposit{value: assets}();
         WETH.transfer(receiver, assets);
 
         emit Withdraw(msg.sender, owner, receiver, assets, shares);
