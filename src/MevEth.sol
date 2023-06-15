@@ -198,6 +198,14 @@ contract MevEth is Auth, ERC20, IERC4626 {
         stakingModule.deposit{ value: depositSize }(newData);
     }
 
+    function grantRewards() external payable {
+        if (!(msg.sender == address(0))) {
+            revert MevEthErrors.InvalidSender();
+        }
+
+        assetRebase.elastic += msg.value;
+    }
+
     /*//////////////////////////////////////////////////////////////
                             ERC4626 Support
     //////////////////////////////////////////////////////////////*/

@@ -16,7 +16,10 @@ contract MevEthShareVault {
 
     tinyMevETH public immutable mevEth;
 
-    constructor(address _mevEth) {
+    uint256 avgFeeRewardsPerBlock;
+
+    constructor(address _mevEth, uint256 _initialFeeRewardsPerBlock) {
         mevEth = tinyMevETH(_mevEth);
+        avgFeeRewardsPerBlock = _initialFeeRewardsPerBlock;
     }
 }
