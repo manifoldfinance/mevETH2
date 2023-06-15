@@ -1,11 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity 0.8.20;
 
-/// @title tinyMevEth
-/// @notice smol interface for interacting with MevEth
-interface tinyMevETH {
-    function grantRewards() external payable;
-}
+import "./interfaces/ITinyMevEth.sol";
 
 /// @title MevEthShareVault
 /// @notice This contract controls the ETH Rewards earned by mevEth
@@ -14,12 +10,12 @@ contract MevEthShareVault {
 
     fallback() external payable { }
 
-    tinyMevETH public immutable mevEth;
+    ITinyMevEth public immutable MEV_ETH;
 
     uint256 avgFeeRewardsPerBlock;
 
-    constructor(address _mevEth, uint256 _initialFeeRewardsPerBlock) {
-        mevEth = tinyMevETH(_mevEth);
-        avgFeeRewardsPerBlock = _initialFeeRewardsPerBlock;
+    constructor(address mevEth, uint256 initialFeeRewardsPerBlock) {
+        MEV_ETH = ITinyMevEth(mevEth);
+        avgFeeRewardsPerBlock = initialFeeRewardsPerBlock;
     }
 }
