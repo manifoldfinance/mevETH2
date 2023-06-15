@@ -28,8 +28,7 @@ contract DeployScript is Script {
             revert UnknownChain();
         }
         vm.startBroadcast();
-        // N.B. CREATE2 deployment. Do not rely on msg.sender in construction
-        MevEth mevETH = new MevEth{salt: "Manifold"}(authority, beaconDepositContract, weth);
+        MevEth mevETH = new MevEth(authority, beaconDepositContract, weth);
         vm.stopBroadcast();
     }
 }
