@@ -370,7 +370,7 @@ contract MevAdminTest is MevEthTest {
         // Check that there are no effects from finalization
         assertEq(address(mevEth.pendingMevEthShareVault()), newVault);
         assertEq(mevEth.pendingMevEthShareVaultCommittedTimestamp(), committedTimestamp);
-        assertEq(address(mevEth.stakingModule()), existingStakingModule);
+        assertEq(address(mevEth.stakingModule()), existingVault);
     }
 
     /**
@@ -422,6 +422,6 @@ contract MevAdminTest is MevEthTest {
         // Check that there are no effects from finalization
         assertEq(address(mevEth.pendingMevEthShareVault()), newVault);
         assertEq(mevEth.pendingMevEthShareVaultCommittedTimestamp(), committedTimestamp);
-        assertEq(address(mevEth.stakingModule()), existingStakingModule);
+        assertEq(address(mevEth.stakingModule()), existingVault);
     }
 }
