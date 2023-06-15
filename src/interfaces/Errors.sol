@@ -26,4 +26,5 @@ interface MevEthErrors {
     error PrematureStakingModuleUpdateFinalization(uint64 finalizationTimestamp, uint64 currentTimestamp);
     error InvalidPendingStakingModule();
     error TransferExceedsAllowance();
+    error TransferFailed();
 }

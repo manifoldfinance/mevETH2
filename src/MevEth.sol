@@ -25,7 +25,6 @@ import { Auth } from "./libraries/Auth.sol";
 import { IWETH } from "./interfaces/IWETH.sol";
 import { MevEthErrors } from "./interfaces/Errors.sol";
 import { IStakingModule } from "./interfaces/IStakingModule.sol";
-import { console } from "forge-std/console.sol";
 
 /// @title MevEth
 /// @author Manifold Finance
@@ -41,8 +40,15 @@ contract MevEth is Auth, ERC20, IERC4626 {
         uint256 base; // Represents claims to ownership of the staked ether
     }
 
+    //TODO: instantiate an public variable for the mevShareVault
+    //TODO: add some upgrade functions with time delay
+
+    //TODO: write some tests
+
     AssetsRebase public assetRebase;
 
+    /// @notice Construction creates mevETH token, sets authority, staking contract and weth address
+    /// @dev pending staking module and committed timestamp will both be zero on deployment
     /// @param _authority The address of the controlling admin authority
     /// @param initialStakingContract The address of the staking module to be used at first by mevEth
     /// @param _WETH The address of the WETH contract to use for deposits
@@ -121,7 +127,8 @@ contract MevEth is Auth, ERC20, IERC4626 {
     }
 
     /**
-     * //TODO:
+     * @notice Starts the process to update the staking module. To finalize the update, the STAKING_MODULE_UPDATE_TIME_DELAY must elapse and the finalizeUpdateStakingModule must be called
+     * @param newModule The new staking module to replace the existing one
      */
     function commitUpdateStakingModule(IStakingModule newModule) external onlyAdmin {
         address oldModule = address(stakingModule);
@@ -131,7 +138,7 @@ contract MevEth is Auth, ERC20, IERC4626 {
     }
 
     /**
-     * //TODO:
+     * @notice Finalizes the staking module update
      */
     function finalizeUpdateStakingModule() external onlyAdmin {
         if (pendingStakingModule == IStakingModule(address(0)) || pendingStakingModuleCommittedTimestamp == 0) {
@@ -158,7 +165,7 @@ contract MevEth is Auth, ERC20, IERC4626 {
     }
 
     /**
-     * //TODO:
+     *  @notice Cancels a pending staking module update
      */
     function cancelUpdateStakingModule() external onlyAdmin {
         if (pendingStakingModule == IStakingModule(address(0)) || pendingStakingModuleCommittedTimestamp == 0) {
@@ -196,6 +203,14 @@ contract MevEth is Auth, ERC20, IERC4626 {
 
         // Deposit the Ether into the staking contract
         stakingModule.deposit{value: depositSize}(newData);
+    }
+
+    function grantRewards() external payable {
+        if (!(msg.sender == address(0))) {
+            revert MevEthErrors.InvalidSender();
+        }
+
+        assetRebase.elastic += msg.value;
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -251,13 +266,7 @@ contract MevEth is Auth, ERC20, IERC4626 {
     /// @param receiver The address user whom should recieve the mevEth out
     /// @return shares The amount of shares minted
     function deposit(uint256 assets, address receiver) external stakingUnpaused returns (uint256 shares) {
-        WETH.transferFrom(msg.sender, address(this), assets);
         uint256 balance = address(this).balance;
-        WETH.withdraw(assets);
-        // Not really neccessary, but protects against malicious WETH implementations
-        if (balance + assets != address(this).balance) {
-            revert MevEthErrors.DepositFailed();
-        }
 
         if (assetRebase.elastic == 0 || assetRebase.base == 0) {
             shares = assets;
@@ -273,6 +282,14 @@ contract MevEth is Auth, ERC20, IERC4626 {
         assetRebase.base += shares;
 
         _mint(receiver, shares);
+
+        ERC20(address(WETH)).safeTransferFrom(msg.sender, address(this), assets);
+        WETH.withdraw(assets);
+
+        // Not really neccessary, but protects against malicious WETH implementations
+        if (balance + assets != address(this).balance) {
+            revert MevEthErrors.DepositFailed();
+        }
 
         emit Deposit(msg.sender, receiver, assets, shares);
     }
@@ -304,13 +321,7 @@ contract MevEth is Auth, ERC20, IERC4626 {
             assets = (shares * assetRebase.base) / assetRebase.elastic;
         }
 
-        WETH.transferFrom(msg.sender, address(this), assets);
         uint256 balance = address(this).balance;
-        WETH.withdraw(assets);
-        // Not really neccessary, but protects against malicious WETH implementations
-        if (balance + assets != address(this).balance) {
-            revert MevEthErrors.DepositFailed();
-        }
 
         if (assetRebase.base + shares < 1000) {
             revert MevEthErrors.DepositTooSmall();
@@ -320,6 +331,13 @@ contract MevEth is Auth, ERC20, IERC4626 {
         assetRebase.base += shares;
 
         _mint(receiver, shares);
+
+        ERC20(address(WETH)).safeTransferFrom(msg.sender, address(this), assets);
+        WETH.withdraw(assets);
+        // Not really neccessary, but protects against malicious WETH implementations
+        if (balance + assets != address(this).balance) {
+            revert MevEthErrors.DepositFailed();
+        }
 
         emit Deposit(msg.sender, receiver, assets, shares);
     }
@@ -357,7 +375,7 @@ contract MevEth is Auth, ERC20, IERC4626 {
         assetRebase.base -= shares;
 
         WETH.deposit{value: assets}();
-        WETH.transfer(receiver, assets);
+        ERC20(address(WETH)).safeTransfer(receiver, assets);
 
         emit Withdraw(msg.sender, owner, receiver, assets, shares);
 
@@ -396,7 +414,7 @@ contract MevEth is Auth, ERC20, IERC4626 {
         assetRebase.base -= shares;
 
         WETH.deposit{value: assets}();
-        WETH.transfer(receiver, assets);
+        ERC20(address(WETH)).safeTransfer(receiver, assets);
 
         emit Withdraw(msg.sender, owner, receiver, assets, shares);
 
