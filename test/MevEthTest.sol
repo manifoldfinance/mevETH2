@@ -9,6 +9,7 @@ import "src/MevEth.sol";
 // Needed Periphery Contracts
 import "./mocks/WETH9.sol";
 import "./mocks/DepositContract.sol";
+import "../src/MevEthShareVault.sol";
 
 contract MevEthTest is Test {
     // Admin account
@@ -26,6 +27,8 @@ contract MevEthTest is Test {
     address constant Operator03 = address(0x09);
     address constant Operator04 = address(0x10);
 
+    uint256 constant FEE_REWARDS_PER_BLOCK = 0;
+
     DepositContract internal depositContract;
 
     MevEth internal mevEth;
@@ -38,6 +41,9 @@ contract MevEthTest is Test {
     event StakingModuleUpdateCommitted(address indexed oldModule, address indexed pendingModule, uint64 indexed eligibleForFinalization);
     event StakingModuleUpdateFinalized(address indexed oldModule, address indexed newModule);
     event StakingModuleUpdateCanceled(address indexed oldModule, address indexed pendingModule);
+    event MevEthShareVaultUpdateCommitted(address indexed oldVault, address indexed pendingVault, uint64 indexed eligibleForFinalization);
+    event MevEthShareVaultUpdateFinalized(address indexed oldVault, address indexed newVault);
+    event MevEthShareVaultUpdateCanceled(address indexed oldVault, address indexed newVault);
 
     function setUp() public virtual {
         // Deploy the BeaconChainDepositContract
@@ -49,6 +55,6 @@ contract MevEthTest is Test {
 
         // Deploy the mevETH contract
         // mev_eth = new MevEth(SamBacha, address(depositContract), address(weth));
-        mevEth = new MevEth(SamBacha, address(depositContract), address(weth));
+        mevEth = new MevEth(SamBacha, address(depositContract), FEE_REWARDS_PER_BLOCK, address(weth));
     }
 }

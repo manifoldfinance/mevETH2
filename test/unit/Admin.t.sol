@@ -5,6 +5,7 @@ import "../MevEthTest.sol";
 import "src/libraries/Auth.sol";
 import "../mocks/DepositContract.sol";
 import { IStakingModule } from "../../src/interfaces/IStakingModule.sol";
+import "../../src/MevEthShareVault.sol";
 
 contract MevAdminTest is MevEthTest {
     uint256 constant AMOUNT_TO_STAKE = 1 ether;
@@ -123,7 +124,7 @@ contract MevAdminTest is MevEthTest {
         // Commit an update to the staking module and check the effects
         vm.prank(SamBacha);
         vm.expectEmit(true, true, true, false, address(mevEth));
-        uint64 finalizationTimestamp = uint64(block.timestamp + mevEth.STAKING_MODULE_UPDATE_TIME_DELAY());
+        uint64 finalizationTimestamp = uint64(block.timestamp + mevEth.MODULE_UPDATE_TIME_DELAY());
         emit StakingModuleUpdateCommitted(existingStakingModule, address(newModule), finalizationTimestamp);
 
         mevEth.commitUpdateStakingModule(IStakingModule(address(newModule)));
@@ -162,9 +163,9 @@ contract MevAdminTest is MevEthTest {
         DepositContract newModule = new DepositContract();
         address existingStakingModule = address(mevEth.stakingModule());
 
-        // Commit an update to the staking module and check the effects
+        // Commit an update to the staking module
         vm.prank(SamBacha);
-        uint64 finalizationTimestamp = uint64(block.timestamp + mevEth.STAKING_MODULE_UPDATE_TIME_DELAY());
+        uint64 finalizationTimestamp = uint64(block.timestamp + mevEth.MODULE_UPDATE_TIME_DELAY());
         mevEth.commitUpdateStakingModule(IStakingModule(address(newModule)));
 
         // Finalize the staking module update and check effects
@@ -196,7 +197,9 @@ contract MevAdminTest is MevEthTest {
         DepositContract newModule = new DepositContract();
         address existingStakingModule = address(mevEth.stakingModule());
         vm.prank(SamBacha);
-        uint64 finalizationTimestamp = uint64(block.timestamp + mevEth.STAKING_MODULE_UPDATE_TIME_DELAY());
+        uint64 finalizationTimestamp = uint64(block.timestamp + mevEth.MODULE_UPDATE_TIME_DELAY());
+        uint256 committedTimestamp = block.timestamp;
+
         mevEth.commitUpdateStakingModule(IStakingModule(address(newModule)));
 
         // Expect a reversion if the time delay has not elapsed
@@ -212,7 +215,7 @@ contract MevAdminTest is MevEthTest {
 
         // Check that there are no effects from finalization
         assertEq(address(mevEth.pendingStakingModule()), address(newModule));
-        assertEq(mevEth.pendingStakingModuleCommittedTimestamp(), block.timestamp);
+        assertEq(mevEth.pendingStakingModuleCommittedTimestamp(), committedTimestamp);
         assertEq(address(mevEth.stakingModule()), existingStakingModule);
     }
 
@@ -265,6 +268,160 @@ contract MevAdminTest is MevEthTest {
         // Check that there are no effects
         assertEq(address(mevEth.pendingStakingModule()), address(newModule));
         assertEq(mevEth.pendingStakingModuleCommittedTimestamp(), block.timestamp);
+        assertEq(address(mevEth.stakingModule()), existingStakingModule);
+    }
+
+    /**
+     * TODO:
+     */
+
+    function testCommitUpdateMevEthShareVault() public {
+        // Create a new vault and cache the current vault
+        address newVault = address(new MevEthShareVault(address(mevEth), FEE_REWARDS_PER_BLOCK));
+        address existingVault = address(mevEth.stakingModule());
+
+        // Commit an update to the staking module and check the effects
+        vm.prank(SamBacha);
+        vm.expectEmit(true, true, true, false, address(mevEth));
+        uint64 finalizationTimestamp = uint64(block.timestamp + mevEth.MODULE_UPDATE_TIME_DELAY());
+        emit MevEthShareVaultUpdateCommitted(existingVault, newVault, finalizationTimestamp);
+
+        mevEth.commitUpdateMevEthShareVault(newVault);
+
+        assertEq(address(mevEth.pendingMevEthShareVault()), newVault);
+        assertEq(mevEth.pendingMevEthShareVaultCommittedTimestamp(), block.timestamp);
+        assertEq(address(mevEth.mevEthShareVault()), existingVault);
+    }
+
+    /**
+     * TODO:
+     */
+
+    function testNegativeCommitUpdateMevEthShareVault() public {
+        // Create a new vault and cache the current vault
+        address newVault = address(new MevEthShareVault(address(mevEth), FEE_REWARDS_PER_BLOCK));
+        address existingVault = address(mevEth.stakingModule());
+
+        // Expect a reversion if unauthorized and check that no effects have occured
+        vm.expectRevert(Auth.Unauthorized.selector);
+        mevEth.commitUpdateMevEthShareVault(newVault);
+
+        assertEq(address(mevEth.pendingMevEthShareVault()), address(0));
+        assertEq(address(mevEth.mevEthShareVault()), existingVault);
+    }
+
+    /**
+     * TODO:
+     */
+
+    function testFinalizeUpdateMevEthShareVault() public {
+        // Create a new vault and cache the current vault
+        address newVault = address(new MevEthShareVault(address(mevEth), FEE_REWARDS_PER_BLOCK));
+        address existingVault = address(mevEth.stakingModule());
+
+        // Commit an update to the mev share vault
+        vm.prank(SamBacha);
+        uint64 finalizationTimestamp = uint64(block.timestamp + mevEth.MODULE_UPDATE_TIME_DELAY());
+        mevEth.commitUpdateMevEthShareVault(newVault);
+
+        // Finalize the staking module update and check effects
+        vm.warp(finalizationTimestamp);
+        vm.prank(SamBacha);
+        vm.expectEmit(true, true, false, false, address(mevEth));
+        emit MevEthShareVaultUpdateFinalized(existingVault, newVault);
+        mevEth.finalizeUpdateMevEthShareVault();
+
+        assertEq(address(mevEth.pendingMevEthShareVault()), address(0));
+        assertEq(mevEth.pendingMevEthShareVaultCommittedTimestamp(), 0);
+        assertEq(address(mevEth.mevEthShareVault()), newVault);
+    }
+
+    /**
+     * TODO:
+     */
+
+    function testNegativeFinalizeCommitUpdateMevEthShareVault() public {
+        // Expect a revert when there is no pending mev share vault
+        vm.prank(SamBacha);
+        vm.expectRevert(MevEthErrors.InvalidPendingMevEthShareVault.selector);
+        mevEth.finalizeUpdateStakingModule();
+
+        // Create a new vault and cache the current vault
+        address newVault = address(new MevEthShareVault(address(mevEth), FEE_REWARDS_PER_BLOCK));
+        address existingVault = address(mevEth.stakingModule());
+
+        // Commit an update to the mev share vault
+        vm.prank(SamBacha);
+        uint64 finalizationTimestamp = uint64(block.timestamp + mevEth.MODULE_UPDATE_TIME_DELAY());
+        uint256 committedTimestamp = block.timestamp;
+        mevEth.commitUpdateMevEthShareVault(newVault);
+
+        // Expect a reversion if the time delay has not elapsed
+        vm.prank(SamBacha);
+        //TODO: also check the values from the reversion here
+        vm.expectRevert(MevEthErrors.PrematureMevEthShareVaultUpdateFinalization.selector);
+        mevEth.finalizeUpdateMevEthShareVault();
+
+        // Warp to the finalization timestamp, expect a reversion when unauthorized
+        vm.warp(finalizationTimestamp);
+        vm.expectRevert(Auth.Unauthorized.selector);
+        mevEth.finalizeUpdateMevEthShareVault();
+
+        // Check that there are no effects from finalization
+        assertEq(address(mevEth.pendingMevEthShareVault()), newVault);
+        assertEq(mevEth.pendingMevEthShareVaultCommittedTimestamp(), committedTimestamp);
+        assertEq(address(mevEth.stakingModule()), existingStakingModule);
+    }
+
+    /**
+     * TODO:
+     */
+
+    function testCancelUpdateMevEthShareVault() public {
+        // Create a new vault and cache the current vault
+        address newVault = address(new MevEthShareVault(address(mevEth), FEE_REWARDS_PER_BLOCK));
+        address existingVault = address(mevEth.stakingModule());
+
+        // Commit an update to the mev share vault
+        vm.prank(SamBacha);
+        mevEth.commitUpdateMevEthShareVault(newVault);
+
+        // Cancel the update and check the effects
+        vm.prank(SamBacha);
+        vm.expectEmit(true, true, false, false, address(mevEth));
+        emit MevEthShareVaultUpdateCanceled(existingVault, newVault);
+
+        mevEth.cancelUpdateMevEthShareVault();
+
+        assertEq(address(mevEth.pendingMevEthShareVault()), address(0));
+        assertEq(mevEth.pendingMevEthShareVaultCommittedTimestamp(), 0);
+        assertEq(address(mevEth.mevEthShareVault()), existingVault);
+    }
+
+    /**
+     * TODO:
+     */
+
+    function testNegativeCancelCommitUpdateMevEthShareVault() public {
+        // Expect a revert when there is no pending vault
+        vm.expectRevert(MevEthErrors.InvalidPendingMevEthShareVault.selector);
+        vm.prank(SamBacha);
+        mevEth.cancelUpdateMevEthShareVault();
+
+        // Create a new vault and cache the current vault
+        address newVault = address(new MevEthShareVault(address(mevEth), FEE_REWARDS_PER_BLOCK));
+        address existingVault = address(mevEth.stakingModule());
+        vm.prank(SamBacha);
+        uint256 committedTimestamp = block.timestamp;
+        mevEth.commitUpdateMevEthShareVault(newVault);
+
+        // Expect a reversion if unauthorized
+        vm.expectRevert(Auth.Unauthorized.selector);
+        mevEth.cancelUpdateMevEthShareVault();
+
+        // Check that there are no effects from finalization
+        assertEq(address(mevEth.pendingMevEthShareVault()), newVault);
+        assertEq(mevEth.pendingMevEthShareVaultCommittedTimestamp(), committedTimestamp);
         assertEq(address(mevEth.stakingModule()), existingStakingModule);
     }
 }
