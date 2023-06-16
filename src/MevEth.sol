@@ -157,7 +157,7 @@ contract MevEth is Auth, ERC20, IERC4626 {
         }
 
         if (uint64(block.timestamp) < committedTimestamp + MODULE_UPDATE_TIME_DELAY) {
-            revert MevEthErrors.PrematureStakingModuleUpdateFinalization(committedTimestamp + MODULE_UPDATE_TIME_DELAY, uint64(block.timestamp));
+            revert MevEthErrors.PrematureStakingModuleUpdateFinalization();
         }
 
         address oldModule = address(stakingModule);
@@ -215,7 +215,7 @@ contract MevEth is Auth, ERC20, IERC4626 {
         }
 
         if (uint64(block.timestamp) < committedTimestamp + MODULE_UPDATE_TIME_DELAY) {
-            revert MevEthErrors.PrematureMevEthShareVaultUpdateFinalization(committedTimestamp + MODULE_UPDATE_TIME_DELAY, uint64(block.timestamp));
+            revert MevEthErrors.PrematureMevEthShareVaultUpdateFinalization();
         }
 
         address oldModule = mevEthShareVault;

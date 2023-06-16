@@ -122,11 +122,11 @@ contract MevAdminTest is MevEthTest {
         address existingStakingModule = address(mevEth.stakingModule());
 
         // Commit an update to the staking module and check the effects
-        vm.prank(SamBacha);
         vm.expectEmit(true, true, true, false, address(mevEth));
         uint64 finalizationTimestamp = uint64(block.timestamp + mevEth.MODULE_UPDATE_TIME_DELAY());
         emit StakingModuleUpdateCommitted(existingStakingModule, address(newModule), finalizationTimestamp);
 
+        vm.prank(SamBacha);
         mevEth.commitUpdateStakingModule(IStakingModule(address(newModule)));
 
         assertEq(address(mevEth.pendingStakingModule()), address(newModule));
@@ -164,15 +164,17 @@ contract MevAdminTest is MevEthTest {
         address existingStakingModule = address(mevEth.stakingModule());
 
         // Commit an update to the staking module
-        vm.prank(SamBacha);
         uint64 finalizationTimestamp = uint64(block.timestamp + mevEth.MODULE_UPDATE_TIME_DELAY());
+
+        vm.prank(SamBacha);
         mevEth.commitUpdateStakingModule(IStakingModule(address(newModule)));
 
         // Finalize the staking module update and check effects
         vm.warp(finalizationTimestamp);
-        vm.prank(SamBacha);
         vm.expectEmit(true, true, false, false, address(mevEth));
         emit StakingModuleUpdateFinalized(existingStakingModule, address(newModule));
+
+        vm.prank(SamBacha);
         mevEth.finalizeUpdateStakingModule();
 
         assertEq(address(mevEth.pendingStakingModule()), address(0));
@@ -189,23 +191,20 @@ contract MevAdminTest is MevEthTest {
 
     function testNegativeFinalizeCommitUpdateStakingModule() public {
         // Expect a revert when there is no pending staking module
-        vm.prank(SamBacha);
         vm.expectRevert(MevEthErrors.InvalidPendingStakingModule.selector);
+        vm.prank(SamBacha);
         mevEth.finalizeUpdateStakingModule();
 
         // Commit a new staking module
         DepositContract newModule = new DepositContract();
         address existingStakingModule = address(mevEth.stakingModule());
-        vm.prank(SamBacha);
         uint64 finalizationTimestamp = uint64(block.timestamp + mevEth.MODULE_UPDATE_TIME_DELAY());
-        uint256 committedTimestamp = block.timestamp;
-
+        uint64 committedTimestamp = uint64(block.timestamp);
+        vm.prank(SamBacha);
         mevEth.commitUpdateStakingModule(IStakingModule(address(newModule)));
 
-        // Expect a reversion if the time delay has not elapsed
-        vm.prank(SamBacha);
-        //TODO: also check the values from the reversion here
         vm.expectRevert(MevEthErrors.PrematureStakingModuleUpdateFinalization.selector);
+        vm.prank(SamBacha);
         mevEth.finalizeUpdateStakingModule();
 
         // Warp to the finalization timestamp, expect a reversion when unauthorized
@@ -278,14 +277,14 @@ contract MevAdminTest is MevEthTest {
     function testCommitUpdateMevEthShareVault() public {
         // Create a new vault and cache the current vault
         address newVault = address(new MevEthShareVault(address(mevEth), FEE_REWARDS_PER_BLOCK));
-        address existingVault = address(mevEth.stakingModule());
+        address existingVault = address(mevEth.mevEthShareVault());
 
         // Commit an update to the staking module and check the effects
-        vm.prank(SamBacha);
         vm.expectEmit(true, true, true, false, address(mevEth));
         uint64 finalizationTimestamp = uint64(block.timestamp + mevEth.MODULE_UPDATE_TIME_DELAY());
         emit MevEthShareVaultUpdateCommitted(existingVault, newVault, finalizationTimestamp);
 
+        vm.prank(SamBacha);
         mevEth.commitUpdateMevEthShareVault(newVault);
 
         assertEq(address(mevEth.pendingMevEthShareVault()), newVault);
@@ -300,7 +299,7 @@ contract MevAdminTest is MevEthTest {
     function testNegativeCommitUpdateMevEthShareVault() public {
         // Create a new vault and cache the current vault
         address newVault = address(new MevEthShareVault(address(mevEth), FEE_REWARDS_PER_BLOCK));
-        address existingVault = address(mevEth.stakingModule());
+        address existingVault = address(mevEth.mevEthShareVault());
 
         // Expect a reversion if unauthorized and check that no effects have occured
         vm.expectRevert(Auth.Unauthorized.selector);
@@ -317,18 +316,20 @@ contract MevAdminTest is MevEthTest {
     function testFinalizeUpdateMevEthShareVault() public {
         // Create a new vault and cache the current vault
         address newVault = address(new MevEthShareVault(address(mevEth), FEE_REWARDS_PER_BLOCK));
-        address existingVault = address(mevEth.stakingModule());
+        address existingVault = address(mevEth.mevEthShareVault());
 
         // Commit an update to the mev share vault
-        vm.prank(SamBacha);
         uint64 finalizationTimestamp = uint64(block.timestamp + mevEth.MODULE_UPDATE_TIME_DELAY());
+
+        vm.prank(SamBacha);
         mevEth.commitUpdateMevEthShareVault(newVault);
 
         // Finalize the staking module update and check effects
         vm.warp(finalizationTimestamp);
-        vm.prank(SamBacha);
         vm.expectEmit(true, true, false, false, address(mevEth));
         emit MevEthShareVaultUpdateFinalized(existingVault, newVault);
+
+        vm.prank(SamBacha);
         mevEth.finalizeUpdateMevEthShareVault();
 
         assertEq(address(mevEth.pendingMevEthShareVault()), address(0));
@@ -342,24 +343,23 @@ contract MevAdminTest is MevEthTest {
 
     function testNegativeFinalizeCommitUpdateMevEthShareVault() public {
         // Expect a revert when there is no pending mev share vault
-        vm.prank(SamBacha);
         vm.expectRevert(MevEthErrors.InvalidPendingMevEthShareVault.selector);
-        mevEth.finalizeUpdateStakingModule();
+        vm.prank(SamBacha);
+        mevEth.finalizeUpdateMevEthShareVault();
 
         // Create a new vault and cache the current vault
         address newVault = address(new MevEthShareVault(address(mevEth), FEE_REWARDS_PER_BLOCK));
-        address existingVault = address(mevEth.stakingModule());
+        address existingVault = address(mevEth.mevEthShareVault());
 
         // Commit an update to the mev share vault
-        vm.prank(SamBacha);
         uint64 finalizationTimestamp = uint64(block.timestamp + mevEth.MODULE_UPDATE_TIME_DELAY());
         uint256 committedTimestamp = block.timestamp;
+        vm.prank(SamBacha);
         mevEth.commitUpdateMevEthShareVault(newVault);
 
         // Expect a reversion if the time delay has not elapsed
-        vm.prank(SamBacha);
-        //TODO: also check the values from the reversion here
         vm.expectRevert(MevEthErrors.PrematureMevEthShareVaultUpdateFinalization.selector);
+        vm.prank(SamBacha);
         mevEth.finalizeUpdateMevEthShareVault();
 
         // Warp to the finalization timestamp, expect a reversion when unauthorized
@@ -370,7 +370,7 @@ contract MevAdminTest is MevEthTest {
         // Check that there are no effects from finalization
         assertEq(address(mevEth.pendingMevEthShareVault()), newVault);
         assertEq(mevEth.pendingMevEthShareVaultCommittedTimestamp(), committedTimestamp);
-        assertEq(address(mevEth.stakingModule()), existingVault);
+        assertEq(address(mevEth.mevEthShareVault()), existingVault);
     }
 
     /**
@@ -380,7 +380,7 @@ contract MevAdminTest is MevEthTest {
     function testCancelUpdateMevEthShareVault() public {
         // Create a new vault and cache the current vault
         address newVault = address(new MevEthShareVault(address(mevEth), FEE_REWARDS_PER_BLOCK));
-        address existingVault = address(mevEth.stakingModule());
+        address existingVault = address(mevEth.mevEthShareVault());
 
         // Commit an update to the mev share vault
         vm.prank(SamBacha);
@@ -410,7 +410,7 @@ contract MevAdminTest is MevEthTest {
 
         // Create a new vault and cache the current vault
         address newVault = address(new MevEthShareVault(address(mevEth), FEE_REWARDS_PER_BLOCK));
-        address existingVault = address(mevEth.stakingModule());
+        address existingVault = address(mevEth.mevEthShareVault());
         vm.prank(SamBacha);
         uint256 committedTimestamp = block.timestamp;
         mevEth.commitUpdateMevEthShareVault(newVault);
@@ -422,6 +422,6 @@ contract MevAdminTest is MevEthTest {
         // Check that there are no effects from finalization
         assertEq(address(mevEth.pendingMevEthShareVault()), newVault);
         assertEq(mevEth.pendingMevEthShareVaultCommittedTimestamp(), committedTimestamp);
-        assertEq(address(mevEth.stakingModule()), existingVault);
+        assertEq(address(mevEth.mevEthShareVault()), existingVault);
     }
 }

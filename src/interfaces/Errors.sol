@@ -23,8 +23,8 @@ interface MevEthErrors {
     error NotAuthorized();
     error DepositTooSmall();
     error InvalidSender();
-    error PrematureStakingModuleUpdateFinalization(uint64 finalizationTimestamp, uint64 currentTimestamp);
-    error PrematureMevEthShareVaultUpdateFinalization(uint64 finalizationTimestamp, uint64 currentTimestamp);
+    error PrematureStakingModuleUpdateFinalization();
+    error PrematureMevEthShareVaultUpdateFinalization();
     error InvalidPendingStakingModule();
     error InvalidPendingMevEthShareVault();
     error TransferExceedsAllowance();
