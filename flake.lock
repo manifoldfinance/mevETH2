@@ -531,22 +531,6 @@
         "type": "github"
       }
     },
-    "openzeppelin-contracts": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1677798193,
-        "narHash": "sha256-LuDja4HGJVKPy3xmGTemRBwdG+msQF+gBY4w3JULrDs=",
-        "ref": "d00acef4059807535af0bd0dd0ddf619747a044b",
-        "rev": "d00acef4059807535af0bd0dd0ddf619747a044b",
-        "revCount": 2965,
-        "type": "git",
-        "url": "file:./lib/openzeppelin-contracts"
-      },
-      "original": {
-        "type": "git",
-        "url": "file:./lib/openzeppelin-contracts"
-      }
-    },
     "pre-commit-hooks-nix": {
       "inputs": {
         "flake-compat": "flake-compat_2",
@@ -599,27 +583,9 @@
         "forge-std": "forge-std",
         "nixpkgs": "nixpkgs_3",
         "nixpkgs-unstable": "nixpkgs-unstable_2",
-        "openzeppelin-contracts": "openzeppelin-contracts",
         "process-compose-flake": "process-compose-flake",
-        "solady": "solady",
         "solmate": "solmate",
         "treefmt-nix": "treefmt-nix_2"
-      }
-    },
-    "solady": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1678686181,
-        "narHash": "sha256-tQt/NyqRbDZCyIZnTXchPLuoUQ4GSGBjJURRFet33pM=",
-        "ref": "3d57528984275d1746ee6597acd36277f51c091d",
-        "rev": "3d57528984275d1746ee6597acd36277f51c091d",
-        "revCount": 470,
-        "type": "git",
-        "url": "file:./lib/solady"
-      },
-      "original": {
-        "type": "git",
-        "url": "file:./lib/solady"
       }
     },
     "solmate": {
