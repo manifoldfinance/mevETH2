@@ -41,19 +41,19 @@ contract Auth {
     /*//////////////////////////////////////////////////////////////
                            Maintenance Functions
     //////////////////////////////////////////////////////////////*/
-    function addAdmin(address _newAdmin) external onlyAdmin {
-        admins[_newAdmin] = true;
+    function addAdmin(address newAdmin) external onlyAdmin {
+        admins[newAdmin] = true;
     }
 
-    function deleteAdmin(address _oldAdmin) external onlyAdmin {
-        admins[_oldAdmin] = false;
+    function deleteAdmin(address oldAdmin) external onlyAdmin {
+        admins[oldAdmin] = false;
     }
 
-    function addOperator(address _newOperator) external onlyAdmin {
-        operators[_newOperator] = true;
+    function addOperator(address newOperator) external onlyAdmin {
+        operators[newOperator] = true;
     }
 
-    function deleteOperator(address _oldOperator) external onlyAdmin {
-        operators[_oldOperator] = false;
+    function deleteOperator(address oldOperator) external onlyAdmin {
+        operators[oldOperator] = false;
     }
 }

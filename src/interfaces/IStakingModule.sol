@@ -27,5 +27,7 @@ interface IStakingModule {
 
     function balance() external view returns (uint256);
 
-    function validatorDepositSize() external view returns (uint256);
+    function MEV_ETH() external view returns (address);
+
+    function VALIDATOR_DEPOSIT_SIZE() external view returns (uint256);
 }
