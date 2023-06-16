@@ -28,7 +28,7 @@ interface IERC4626 {
     /// @param assets The amount of WETH which should be deposited
     /// @param receiver The address user whom should recieve the mevEth out
     /// @return shares The amount of shares minted
-    function deposit(uint256 assets, address receiver) external returns (uint256 shares);
+    function deposit(uint256 assets, address receiver) external payable returns (uint256 shares);
 
     /// @param reciever The address in question of who would be minting, doesn't matter in this case
     /// @return maxShares The maximum amount of shares that can be minted
@@ -41,7 +41,7 @@ interface IERC4626 {
     /// @param shares The amount of shares that should be minted
     /// @param receiver The address user whom should recieve the mevEth out
     /// @return assets The amount of assets deposited
-    function mint(uint256 shares, address receiver) external returns (uint256 assets);
+    function mint(uint256 shares, address receiver) external payable returns (uint256 assets);
 
     /// @param owner The address in question of who would be withdrawing
     /// @return maxAssets The maximum amount of assets that can be withdrawn
