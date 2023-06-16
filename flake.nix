@@ -46,16 +46,6 @@
       url = "git+file:./lib/solmate";
       flake = false;
     };
-
-    solady = {
-      url = "git+file:./lib/solady";
-      flake = false;
-    };
-
-    openzeppelin-contracts = {
-      url = "git+file:./lib/openzeppelin-contracts";
-      flake = false;
-    };
   };
 
   outputs = inputs @ {flake-parts, ...}:
