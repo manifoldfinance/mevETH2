@@ -185,7 +185,7 @@ contract MevEth is Auth, ERC20, IERC4626 {
 
     /// @notice This function passes through the needed Ether to the Staking module, and the assosiated credentials with it
     /// @param newData The data needed to create a new validator
-    function createValidator(IStakingModule.ValidatorData calldata newData) public onlyOperator stakingUnpaused {
+    function createValidator(IStakingModule.ValidatorData calldata newData) external onlyOperator stakingUnpaused {
         if (address(this).balance < calculateNeededEtherBuffer()) {
             revert MevEthErrors.NotEnoughEth();
         }
