@@ -17,53 +17,42 @@ contract WagyuStaker is IStakingModule {
     uint256 public validators;
 
     // The address of the MevEth contract
-    address public immutable mevEth;
+    address public immutable MEV_ETH;
 
     // Validator deposit size
-    uint256 public constant override validatorDepositSize = 32 ether;
+    uint256 public constant override VALIDATOR_DEPOSIT_SIZE = 32 ether;
 
     // The Canonical Address of the BeaconChainDepositContract
     IBeaconDepositContract public immutable BEACON_CHAIN_DEPOSIT_CONTRACT;
 
     event NewValidator(address indexed operator, bytes pubkey, bytes32 withdrawalCredentials, bytes signature, bytes32 deposit_data_root);
 
-    constructor(address depositContract, address _mevEth) {
-        uint256 chainId;
-        assembly {
-            chainId := chainid()
-        }
-        IBeaconDepositContract _BEACON_CHAIN_DEPOSIT_CONTRACT;
-        if (chainId == 1) {
-            _BEACON_CHAIN_DEPOSIT_CONTRACT = IBeaconDepositContract(0x00000000219ab540356cBB839Cbe05303d7705Fa);
-        } else {
-            _BEACON_CHAIN_DEPOSIT_CONTRACT = IBeaconDepositContract(depositContract);
-        }
-
-        mevEth = _mevEth;
-        BEACON_CHAIN_DEPOSIT_CONTRACT = _BEACON_CHAIN_DEPOSIT_CONTRACT;
+    constructor(address depositContract, address mevEth) {
+        MEV_ETH = mevEth;
+        BEACON_CHAIN_DEPOSIT_CONTRACT = IBeaconDepositContract(depositContract);
     }
 
-    function deposit(IStakingModule.ValidatorData calldata _data) external payable {
-        if (msg.sender != mevEth) {
+    function deposit(IStakingModule.ValidatorData calldata data) external payable {
+        if (msg.sender != MEV_ETH) {
             revert UnAuthorizedCaller();
         }
-        if (msg.value != 32 ether) {
+        if (msg.value != VALIDATOR_DEPOSIT_SIZE) {
             revert WrongDepositAmount();
         }
 
-        BEACON_CHAIN_DEPOSIT_CONTRACT.deposit{ value: 32 ether }(
-            _data.pubkey, abi.encodePacked(_data.withdrawal_credentials), _data.signature, _data.deposit_data_root
-        );
-
-        emit NewValidator(_data.operator, _data.pubkey, _data.withdrawal_credentials, _data.signature, _data.deposit_data_root);
-
-        balance += 32 ether;
+        balance += VALIDATOR_DEPOSIT_SIZE;
 
         validators += 1;
+
+        BEACON_CHAIN_DEPOSIT_CONTRACT.deposit{ value: VALIDATOR_DEPOSIT_SIZE }(
+            data.pubkey, abi.encodePacked(data.withdrawal_credentials), data.signature, data.deposit_data_root
+        );
+
+        emit NewValidator(data.operator, data.pubkey, data.withdrawal_credentials, data.signature, data.deposit_data_root);
     }
 
     function oracleUpdate(uint256 newBalance, uint256 newValidators) external {
-        if (msg.sender != mevEth) {
+        if (msg.sender != MEV_ETH) {
             revert UnAuthorizedCaller();
         }
 

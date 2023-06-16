@@ -1,8 +1,9 @@
 {
+    "detectors_to_exclude": "assembly,timestamp,solc-version,missing-zero-check,immutable-states",
+    "exclude_informational": false,
     "exclude_low": false,
     "exclude_medium": false,
     "exclude_high": false,
-    "json": "",
     "disable_color": false,
     "filter_paths": "(lib/|mocks/|test/)",
     "legacy_ast": false

@@ -37,8 +37,6 @@
         # submodules will not get copied in so we rebuild the lib directory using `git+file` based inputs
         configurePhase = ''
           cp -r ${inputs.forge-std} lib/forge-std
-          cp -r ${inputs.openzeppelin-contracts} lib/openzeppelin-contracts
-          cp -r ${inputs.solady} lib/solady
           cp -r ${inputs.solmate} lib/solmate
         '';
 
