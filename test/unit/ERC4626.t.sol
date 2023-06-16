@@ -121,12 +121,8 @@ contract ERC4626Test is MevEthTest {
         vm.stopPrank();
         vm.startPrank(user);
 
-        // Deposit amount in eth
-        weth.deposit{ value: amount }();
-        weth.approve(address(mevEth), amount);
-
         // Deposit amount in mevETH
-        mevEth.deposit(amount, user);
+        mevEth.deposit{value: amount}(amount, user);
     }
 
     /* 
