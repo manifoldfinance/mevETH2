@@ -237,11 +237,11 @@ contract MevEth is Auth, ERC20, IERC4626 {
         assets = assetRebase.elastic == 0 ? shares : shares * assetRebase.elastic / assetRebase.base;
     }
 
-    /// @param reciever The address in question of who would be depositing, doesn't matter in this case
+    /// @param receiver The address in question of who would be depositing, doesn't matter in this case
     /// @return maxAssets The maximum amount of assets that can be deposited
 
-    //TODO: should we prefix the reciever arg with _ ?
-    function maxDeposit(address reciever) external view returns (uint256 maxAssets) {
+    //TODO: should we prefix the receiver arg with _ ?
+    function maxDeposit(address receiver) external view returns (uint256 maxAssets) {
         if (stakingPaused) {
             return 0;
         }
@@ -258,7 +258,7 @@ contract MevEth is Auth, ERC20, IERC4626 {
     /// @param assets The amount of WETH which should be deposited
     /// @param receiver The address user whom should recieve the mevEth out
     /// @return shares The amount of shares minted
-    function deposit(uint256 assets, address receiver) external stakingUnpaused returns (uint256 shares) {
+    function deposit(uint256 assets, address receiver) external payable stakingUnpaused returns (uint256 shares) {
         uint256 balance = address(this).balance;
 
         if (assetRebase.elastic == 0 || assetRebase.base == 0) {
@@ -287,9 +287,9 @@ contract MevEth is Auth, ERC20, IERC4626 {
         emit Deposit(msg.sender, receiver, assets, shares);
     }
 
-    /// @param reciever The address in question of who would be minting, doesn't matter in this case
+    /// @param receiver The address in question of who would be minting, doesn't matter in this case
     /// @return maxShares The maximum amount of shares that can be minted
-    function maxMint(address reciever) external view returns (uint256 maxShares) {
+    function maxMint(address receiver) external view returns (uint256 maxShares) {
         if (stakingPaused) {
             return 0;
         }
