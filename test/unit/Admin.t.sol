@@ -11,8 +11,6 @@ contract MevAdminTest is MevEthTest {
     uint256 constant AMOUNT_TO_STAKE = 1 ether;
     uint256 constant ONE = 1;
 
-    //TODO: when pausing and unpausing staking, make sure that the max deposits and mints return 0
-
     /**
      * Test pausing the staking functionality in the contract as an admin. Should only succeed when called by an account
      * with the onlyAdmin role. After calling this function, staking should not be possible.
@@ -30,7 +28,7 @@ contract MevAdminTest is MevEthTest {
 
         //Deposit Eth to get weth to stake
         vm.deal(address(this), AMOUNT_TO_STAKE);
-        weth.deposit{value: AMOUNT_TO_STAKE}();
+        weth.deposit{ value: AMOUNT_TO_STAKE }();
 
         weth.approve(address(mevEth), AMOUNT_TO_STAKE);
         //When stakingPaused is true, staking should fail
@@ -52,7 +50,7 @@ contract MevAdminTest is MevEthTest {
 
         //When stakingPaused is false, staking should succeed
         vm.deal(address(this), AMOUNT_TO_STAKE);
-        weth.deposit{value: AMOUNT_TO_STAKE}();
+        weth.deposit{ value: AMOUNT_TO_STAKE }();
 
         weth.approve(address(mevEth), AMOUNT_TO_STAKE);
         mevEth.deposit(AMOUNT_TO_STAKE / 2, address(this));
@@ -76,7 +74,7 @@ contract MevAdminTest is MevEthTest {
 
         //Staking should succeed
         vm.deal(address(this), AMOUNT_TO_STAKE);
-        weth.deposit{value: AMOUNT_TO_STAKE}();
+        weth.deposit{ value: AMOUNT_TO_STAKE }();
 
         weth.approve(address(mevEth), AMOUNT_TO_STAKE);
         mevEth.deposit(AMOUNT_TO_STAKE / 2, address(this));
@@ -99,7 +97,7 @@ contract MevAdminTest is MevEthTest {
 
         // Deposit Eth to get weth to stake
         vm.deal(address(this), AMOUNT_TO_STAKE);
-        weth.deposit{value: AMOUNT_TO_STAKE}();
+        weth.deposit{ value: AMOUNT_TO_STAKE }();
 
         // When stakingPaused is true, staking should fail
         vm.expectRevert(MevEthErrors.StakingPaused.selector);
@@ -110,10 +108,11 @@ contract MevAdminTest is MevEthTest {
     }
 
     /**
-     * Test commit a updated staking module. When called by an authorized account, the function should emit a StakingModuleUpdateCommitted event with the existing
+     * Test commit an updated staking module. When called by an authorized account, the function should emit a StakingModuleUpdateCommitted event with the
+     * existing
      * staking module address, the new module address and the timestamp at which the new module can be finalized.
-     * The pending staking module should be updated to the new module, the pending staking module commited timestamp should be the timestamp at which the function was called
-     * and the staking module should remain as the existing staking module before the function call.
+     * The pending staking module should be updated to the new module, the pending staking module commited timestamp should be the timestamp at which the
+     * function was called. The current staking module should remain as the existing staking module before the function call.
      */
 
     function testCommitUpdateStakingModule() public {
@@ -184,9 +183,11 @@ contract MevAdminTest is MevEthTest {
     }
 
     /**
-     * Test finalize a pending staking module. When the caller is authorized and there is no pending staking module, the function should revert with an invalid pending module error.
+     * Test finalize a pending staking module. When the caller is authorized and there is no pending staking module, the function should revert with an invalid
+     * pending module error.
      * When the caller is authorized, but the time delay has not elapsed, the function should return a premature finalization error.
-     * When the time delay has elapsed and there is a pending staking module, but the caller is unauthorized, the function should revert with an unauthorized error.
+     * When the time delay has elapsed and there is a pending staking module, but the caller is unauthorized, the function should revert with an unauthorized
+     * error.
      */
 
     function testNegativeFinalizeCommitUpdateStakingModule() public {
@@ -219,7 +220,8 @@ contract MevAdminTest is MevEthTest {
     }
 
     /**
-     * Test cancel a pending staking module. When there is a pending staking module and the caller is authorized, the function should emit a cancellation event and set
+     * Test cancel a pending staking module. When there is a pending staking module and the caller is authorized, the function should emit a cancellation event
+     * and set
      * the pending staking module and pending staking module committed timestamp to zero values. The existing staking module should remain unchanged.
      */
 
@@ -243,9 +245,11 @@ contract MevAdminTest is MevEthTest {
     }
 
     /**
-     * Test cancel a pending staking module with failure conditions. When there is no pending staking module, an invalid pending staking module should occur.
-     * If there is a valid pending staking module, the cancellation function should revert when an called by an unauthorized account. The pending staking module,
-     * pending staking module timestamp and existing staking module should be unchanged.
+     * Test cancel a pending staking module with failure conditions. When there is no pending staking module, an invalid pending staking module error
+     * shouldoccur.
+     * If there is a valid pending staking module, the cancellation function should revert when an called by an unauthorized account. The pending staking
+     * module,
+     * pending staking module committed timestamp and existing staking module should be unchanged.
      */
 
     function testNegativeCancelCommitUpdateStakingModule() public {
@@ -271,7 +275,10 @@ contract MevAdminTest is MevEthTest {
     }
 
     /**
-     * TODO:
+     * Test commit an updated mevEthShareVault. When called by an authorized account, the function should emit a MevEthShareVaultUpdateCommitted event with the
+     * existing vault address, the new vault address and the timestamp at which the new vault can be finalized.
+     * The pending vault should be updated to the newly specified vault, the pending vault commited timestamp should be the timestamp at which the
+     * function was called. The current vault should remain as the existing staking module before the function call.
      */
 
     function testCommitUpdateMevEthShareVault() public {
@@ -293,7 +300,7 @@ contract MevAdminTest is MevEthTest {
     }
 
     /**
-     * TODO:
+     * Test commit a new vault update when unauthorized. This should revert with an Auth.Unauthorized error and no effects should occur.
      */
 
     function testNegativeCommitUpdateMevEthShareVault() public {
@@ -310,7 +317,10 @@ contract MevAdminTest is MevEthTest {
     }
 
     /**
-     * TODO:
+     * Test finalize a pending vault update. When called by an authorized account, and after the module update time delay has elapsed
+     * the function should emit a MevEthShareVaultUpdateFinalized event with the previous vault and the new vault.
+     * The pending vault should be updated to the zero address, the pending vault committed timestamp should be updated to 0.
+     * The current vault should be updated to the value that was the pending vault.
      */
 
     function testFinalizeUpdateMevEthShareVault() public {
@@ -338,7 +348,11 @@ contract MevAdminTest is MevEthTest {
     }
 
     /**
-     * TODO:
+     * Test finalize a vault update. When the caller is authorized and there is no pending staking module, the function should revert with an invalid
+     * pending vault error.
+     * When the caller is authorized, but the time delay has not elapsed, the function should return a premature finalization error.
+     * When the time delay has elapsed and there is a pending vault, but the caller is unauthorized, the function should revert with an unauthorized
+     * error.
      */
 
     function testNegativeFinalizeCommitUpdateMevEthShareVault() public {
@@ -374,9 +388,10 @@ contract MevAdminTest is MevEthTest {
     }
 
     /**
-     * TODO:
+     * Test cancel a pending vault update. When there is a pending staking module and the caller is authorized, the function should emit a cancellation event
+     * and set
+     * the pending staking module and pending staking module committed timestamp to zero values. The existing staking module should remain unchanged.
      */
-
     function testCancelUpdateMevEthShareVault() public {
         // Create a new vault and cache the current vault
         address newVault = address(new MevEthShareVault(address(mevEth), FEE_REWARDS_PER_BLOCK));
@@ -399,7 +414,9 @@ contract MevAdminTest is MevEthTest {
     }
 
     /**
-     * TODO:
+     * Test cancel a pending vault update with failure conditions. When there is no pending vault, an invalid pending vault error should occur.
+     * If there is a valid pending vault, the cancellation function should revert when an called by an unauthorized account. The pending vault,     pending
+     * vault module committed timestamp and existing vault should be unchanged.
      */
 
     function testNegativeCancelCommitUpdateMevEthShareVault() public {

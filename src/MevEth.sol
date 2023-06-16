@@ -49,7 +49,8 @@ contract MevEth is Auth, ERC20, IERC4626 {
     /// @param _initialStakingContract The address of the staking module to be used at first by mevEth
     /// @param _initialFeeRewardsPerBlock TODO: describe this variable
     /// @param _WETH The address of the WETH contract to use for deposits
-    /// @dev When the contract is deployed, the pendingStakingModule, pendingStakingModuleCommitedTimestamp, pendingMevEthShareVault and pendingMevEthShareVaultCommitedTimestamp are all zero initialized
+    /// @dev When the contract is deployed, the pendingStakingModule, pendingStakingModuleCommitedTimestamp, pendingMevEthShareVault and
+    /// pendingMevEthShareVaultCommitedTimestamp are all zero initialized
     constructor(
         address _authority,
         address _initialStakingContract,
@@ -137,7 +138,8 @@ contract MevEth is Auth, ERC20, IERC4626 {
     }
 
     /**
-     * @notice Starts the process to update the staking module. To finalize the update, the MODULE_UPDATE_TIME_DELAY must elapse and the finalizeUpdateStakingModule must be called
+     * @notice Starts the process to update the staking module. To finalize the update, the MODULE_UPDATE_TIME_DELAY must elapse and the
+     * finalizeUpdateStakingModule function must be called
      * @param newModule The new staking module to replace the existing one
      */
     function commitUpdateStakingModule(IStakingModule newModule) external onlyAdmin {
@@ -147,7 +149,7 @@ contract MevEth is Auth, ERC20, IERC4626 {
     }
 
     /**
-     * @notice Finalizes the staking module update
+     * @notice Finalizes the staking module update after the timelock delay has elapsed.
      */
     function finalizeUpdateStakingModule() external onlyAdmin {
         uint64 committedTimestamp = pendingStakingModuleCommittedTimestamp;
@@ -196,7 +198,9 @@ contract MevEth is Auth, ERC20, IERC4626 {
     event StakingModuleUpdateCanceled(address indexed oldModule, address indexed pendingModule);
 
     /**
-     * TODO:
+     * @notice Starts the process to update the mevEthShareVault. To finalize the update, the MODULE_UPDATE_TIME_DELAY must elapse and the
+     * finalizeUpdateMevEthShareVault function must be called
+     * @param newModule The new vault to replace the existing one
      */
     function commitUpdateMevEthShareVault(address newMevEthShareVault) external onlyAdmin {
         pendingMevEthShareVault = newMevEthShareVault;
@@ -205,7 +209,7 @@ contract MevEth is Auth, ERC20, IERC4626 {
     }
 
     /**
-     * TODO:
+     * @notice Finalizes the mevEthShareVault update after the timelock delay has elapsed.
      */
     function finalizeUpdateMevEthShareVault() external onlyAdmin {
         uint64 committedTimestamp = pendingMevEthShareVaultCommittedTimestamp;
@@ -232,7 +236,7 @@ contract MevEth is Auth, ERC20, IERC4626 {
     }
 
     /**
-     * TODO:
+     *  @notice Cancels a pending mevEthShareVault.
      */
     function cancelUpdateMevEthShareVault() external onlyAdmin {
         if (pendingMevEthShareVault == address(0) || pendingMevEthShareVaultCommittedTimestamp == 0) {
@@ -268,7 +272,7 @@ contract MevEth is Auth, ERC20, IERC4626 {
         uint256 depositSize = stakingModule.validatorDepositSize();
 
         // Deposit the Ether into the staking contract
-        stakingModule.deposit{value: depositSize}(newData);
+        stakingModule.deposit{ value: depositSize }(newData);
     }
 
     function grantRewards() external payable {
@@ -440,7 +444,7 @@ contract MevEth is Auth, ERC20, IERC4626 {
         assetRebase.elastic -= assets;
         assetRebase.base -= shares;
 
-        WETH.deposit{value: assets}();
+        WETH.deposit{ value: assets }();
         ERC20(address(WETH)).safeTransfer(receiver, assets);
 
         emit Withdraw(msg.sender, owner, receiver, assets, shares);
@@ -479,7 +483,7 @@ contract MevEth is Auth, ERC20, IERC4626 {
         assetRebase.elastic -= assets;
         assetRebase.base -= shares;
 
-        WETH.deposit{value: assets}();
+        WETH.deposit{ value: assets }();
         ERC20(address(WETH)).safeTransfer(receiver, assets);
 
         emit Withdraw(msg.sender, owner, receiver, assets, shares);
