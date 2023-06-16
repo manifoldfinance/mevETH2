@@ -379,7 +379,7 @@ contract MevEth is Auth, ERC20, IERC4626 {
     /// @param shares The amount of shares that should be minted
     /// @param receiver The address user whom should recieve the mevEth out
     /// @return assets The amount of assets deposited
-    function mint(uint256 shares, address receiver) external stakingUnpaused returns (uint256 assets) {
+    function mint(uint256 shares, address receiver) external payable stakingUnpaused returns (uint256 assets) {
         // Pretty much deposit but in reverse
         if (assetRebase.elastic == 0 || assetRebase.base == 0) {
             assets = shares;
