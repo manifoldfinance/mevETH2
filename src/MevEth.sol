@@ -259,9 +259,23 @@ contract MevEth is Auth, ERC20, IERC4626 {
     /// @param receiver The address user whom should recieve the mevEth out
     /// @return shares The amount of shares minted
     function deposit(uint256 assets, address receiver) external payable stakingUnpaused returns (uint256 shares) {
-        uint256 balance = address(this).balance;
+        if (msg.value != 0) {
+            if (msg.value != assets && assets != 0) {
+                revert MevEthErrors.DepositFailed();
+            }
+            assets = msg.value;
+        } else {
+            uint256 balance = address(this).balance;
 
-        if (assetRebase.elastic == 0 || assetRebase.base == 0) {
+            ERC20(address(WETH)).safeTransferFrom(msg.sender, address(this), assets);
+            WETH.withdraw(assets);
+
+            // Not really neccessary, but protects against malicious WETH implementations
+            if (balance + assets != address(this).balance) {
+                revert MevEthErrors.DepositFailed();
+            }
+        }
+       if (assetRebase.elastic == 0 || assetRebase.base == 0) {
             shares = assets;
         } else {
             shares = (assets * assetRebase.elastic) / assetRebase.base;
@@ -275,14 +289,6 @@ contract MevEth is Auth, ERC20, IERC4626 {
         assetRebase.base += shares;
 
         _mint(receiver, shares);
-
-        ERC20(address(WETH)).safeTransferFrom(msg.sender, address(this), assets);
-        WETH.withdraw(assets);
-
-        // Not really neccessary, but protects against malicious WETH implementations
-        if (balance + assets != address(this).balance) {
-            revert MevEthErrors.DepositFailed();
-        }
 
         emit Deposit(msg.sender, receiver, assets, shares);
     }
@@ -306,7 +312,7 @@ contract MevEth is Auth, ERC20, IERC4626 {
     /// @param shares The amount of shares that should be minted
     /// @param receiver The address user whom should recieve the mevEth out
     /// @return assets The amount of assets deposited
-    function mint(uint256 shares, address receiver) external stakingUnpaused returns (uint256 assets) {
+    function mint(uint256 shares, address receiver) payable external stakingUnpaused returns (uint256 assets) {
         // Pretty much deposit but in reverse
         if (assetRebase.elastic == 0 || assetRebase.base == 0) {
             assets = shares;
@@ -325,8 +331,14 @@ contract MevEth is Auth, ERC20, IERC4626 {
 
         _mint(receiver, shares);
 
-        ERC20(address(WETH)).safeTransferFrom(msg.sender, address(this), assets);
-        WETH.withdraw(assets);
+        if (msg.value > 0) {
+            if (msg.value != assets) {
+                revert MevEthErrors.DepositFailed();
+            }
+        } else {
+            ERC20(address(WETH)).safeTransferFrom(msg.sender, address(this), assets);
+            WETH.withdraw(assets);
+        }
         // Not really neccessary, but protects against malicious WETH implementations
         if (balance + assets != address(this).balance) {
             revert MevEthErrors.DepositFailed();
