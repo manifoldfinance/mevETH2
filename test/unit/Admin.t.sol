@@ -441,4 +441,52 @@ contract MevAdminTest is MevEthTest {
         assertEq(mevEth.pendingMevEthShareVaultCommittedTimestamp(), committedTimestamp);
         assertEq(address(mevEth.mevEthShareVault()), existingVault);
     }
+
+    /**
+     */
+
+    function testCreateValidator() public {
+        uint256 stakingModuleDepositSize = mevEth.stakingModule().VALIDATOR_DEPOSIT_SIZE();
+        uint256 balanceBefore = mevEth.balance();
+
+        IStakingModule.ValidatorData memory validatorData = IStakingModule.ValidatorData({
+            operator: address(this),
+            pubkey: bytes("pubkey"),
+            withdrawal_credentials: bytes32(0),
+            signature: bytes("signature"),
+            deposit_data_root: bytes32(0)
+        });
+
+        vm.prank(SamBacha);
+        mevEth.createValidator(validatorData);
+
+        uint256 balanceAfter = mevEth.balance();
+
+        assertEq(stakingModuleDepositSize, balanceBefore - balanceAfter);
+    }
+
+    /**
+     */
+
+    function testNegativeCreateValidator() public {
+        uint256 balanceBefore = mevEth.balance();
+
+        IStakingModule.ValidatorData memory validatorData = IStakingModule.ValidatorData({
+            operator: address(this),
+            pubkey: bytes("pubkey"),
+            withdrawal_credentials: bytes32(0),
+            signature: bytes("signature"),
+            deposit_data_root: bytes32(0)
+        });
+
+        vm.expectRevert(Auth.Unauthorized.selector);
+        mevEth.createValidator(validatorData);
+
+        vm.expectRevert(MevEthErrors.NotEnoughEth.selector);
+        mevEth.createValidator(validatorData);
+
+        uint256 balanceAfter = mevEth.balance();
+
+        assertEq(balanceBefore, balanceAfter);
+    }
 }
