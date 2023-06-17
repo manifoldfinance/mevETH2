@@ -56,5 +56,7 @@ contract MevEthTest is Test {
         // Deploy the mevETH contract
         // mev_eth = new MevEth(SamBacha, address(depositContract), address(weth));
         mevEth = new MevEth(SamBacha, address(depositContract), FEE_REWARDS_PER_BLOCK, address(weth));
+        vm.prank(SamBacha);
+        mevEth.addOperator(Operator01);
     }
 }

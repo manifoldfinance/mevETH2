@@ -447,7 +447,7 @@ contract MevAdminTest is MevEthTest {
 
     function testCreateValidator() public {
         uint256 stakingModuleDepositSize = mevEth.stakingModule().VALIDATOR_DEPOSIT_SIZE();
-        uint256 balanceBefore = mevEth.balance();
+        uint256 balanceBefore = address(mevEth).balance;
 
         IStakingModule.ValidatorData memory validatorData = IStakingModule.ValidatorData({
             operator: address(this),
@@ -457,10 +457,14 @@ contract MevAdminTest is MevEthTest {
             deposit_data_root: bytes32(0)
         });
 
-        vm.prank(SamBacha);
+        vm.deal(User01, 33 ether);
+        vm.prank(User01);
+        mevEth.deposit{ value: 32 ether }(32 ether, User01);
+
+        vm.prank(Operator01);
         mevEth.createValidator(validatorData);
 
-        uint256 balanceAfter = mevEth.balance();
+        uint256 balanceAfter = address(mevEth).balance;
 
         assertEq(stakingModuleDepositSize, balanceBefore - balanceAfter);
     }
@@ -469,7 +473,7 @@ contract MevAdminTest is MevEthTest {
      */
 
     function testNegativeCreateValidator() public {
-        uint256 balanceBefore = mevEth.balance();
+        uint256 balanceBefore = address(mevEth).balance;
 
         IStakingModule.ValidatorData memory validatorData = IStakingModule.ValidatorData({
             operator: address(this),
@@ -483,9 +487,10 @@ contract MevAdminTest is MevEthTest {
         mevEth.createValidator(validatorData);
 
         vm.expectRevert(MevEthErrors.NotEnoughEth.selector);
+        vm.prank(Operator01);
         mevEth.createValidator(validatorData);
 
-        uint256 balanceAfter = mevEth.balance();
+        uint256 balanceAfter = address(mevEth).balance;
 
         assertEq(balanceBefore, balanceAfter);
     }
