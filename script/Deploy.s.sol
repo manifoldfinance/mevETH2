@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.19;
 
 import "forge-std/Script.sol";
 import "src/MevEth.sol";
@@ -7,6 +7,9 @@ import "src/WagyuStaker.sol";
 
 contract DeployScript is Script {
     error UnknownChain();
+
+    //TODO: set this value to something realistic
+    uint256 constant INITIAL_FEE_REWARDS_PER_BLOCK = 0;
 
     function run() public {
         address authority = tx.origin;
@@ -28,7 +31,7 @@ contract DeployScript is Script {
             revert UnknownChain();
         }
         vm.startBroadcast();
-        MevEth mevETH = new MevEth(authority, beaconDepositContract, weth);
+        MevEth mevETH = new MevEth(authority, beaconDepositContract, INITIAL_FEE_REWARDS_PER_BLOCK, weth);
         vm.stopBroadcast();
     }
 }

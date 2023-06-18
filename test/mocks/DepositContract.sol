@@ -55,6 +55,8 @@ contract DepositContract is IDepositContract, ERC165 {
     // NOTE: this also ensures `deposit_count` will fit into 64-bits
     uint256 constant MAX_DEPOSIT_COUNT = 2 ** DEPOSIT_CONTRACT_TREE_DEPTH - 1;
 
+    uint256 public VALIDATOR_DEPOSIT_SIZE = 32 ether;
+
     bytes32[DEPOSIT_CONTRACT_TREE_DEPTH] branch;
     uint256 deposit_count;
 

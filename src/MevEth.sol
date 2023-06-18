@@ -25,6 +25,7 @@ import { Auth } from "./libraries/Auth.sol";
 import { IWETH } from "./interfaces/IWETH.sol";
 import { MevEthErrors } from "./interfaces/Errors.sol";
 import { IStakingModule } from "./interfaces/IStakingModule.sol";
+import { MevEthShareVault } from "./MevEthShareVault.sol";
 import { ITinyMevEth } from "./interfaces/ITinyMevEth.sol";
 import { WagyuStaker } from "./WagyuStaker.sol";
 
@@ -48,8 +49,20 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
     /// @dev pending staking module and committed timestamp will both be zero on deployment
     /// @param authority The address of the controlling admin authority
     /// @param depositContract Beaconchain deposit contract address
+    /// @param initialFeeRewardsPerBlock TODO: describe this variable
     /// @param weth The address of the WETH contract to use for deposits
-    constructor(address authority, address depositContract, address weth) Auth(authority) ERC20("Mev Liquid Staked Ether", "mevETH", 18) {
+    /// @dev When the contract is deployed, the pendingStakingModule, pendingStakingModuleCommitedTimestamp, pendingMevEthShareVault and
+    /// pendingMevEthShareVaultCommitedTimestamp are all zero initialized
+    constructor(
+        address authority,
+        address depositContract,
+        uint256 initialFeeRewardsPerBlock,
+        address weth
+    )
+        Auth(authority)
+        ERC20("Mev Liquid Staked Ether", "mevETH", 18)
+    {
+        mevEthShareVault = address(new MevEthShareVault(address(this), initialFeeRewardsPerBlock));
         WagyuStaker staker = new WagyuStaker(depositContract, address(this));
         stakingModule = IStakingModule(address(staker));
         WETH = IWETH(weth);
@@ -73,7 +86,11 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
     IStakingModule public pendingStakingModule;
     uint64 public pendingStakingModuleCommittedTimestamp;
 
-    uint64 public constant STAKING_MODULE_UPDATE_TIME_DELAY = 7 days;
+    address public mevEthShareVault;
+    address public pendingMevEthShareVault;
+    uint64 public pendingMevEthShareVaultCommittedTimestamp;
+
+    uint64 public constant MODULE_UPDATE_TIME_DELAY = 7 days;
 
     // WETH Implementation used by MevEth
     IWETH public immutable WETH;
@@ -124,27 +141,28 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
     }
 
     /**
-     * //TODO:
+     * @notice Starts the process to update the staking module. To finalize the update, the MODULE_UPDATE_TIME_DELAY must elapse and the
+     * finalizeUpdateStakingModule function must be called
+     * @param newModule The new staking module to replace the existing one
      */
     function commitUpdateStakingModule(IStakingModule newModule) external onlyAdmin {
-        address oldModule = address(stakingModule);
         pendingStakingModule = newModule;
         pendingStakingModuleCommittedTimestamp = uint64(block.timestamp);
-        emit StakingModuleUpdateCommitted(oldModule, address(newModule), uint64(block.timestamp + STAKING_MODULE_UPDATE_TIME_DELAY));
+        emit StakingModuleUpdateCommitted(address(stakingModule), address(newModule), uint64(block.timestamp + MODULE_UPDATE_TIME_DELAY));
     }
 
     /**
-     * //TODO:
+     * @notice Finalizes the staking module update after the timelock delay has elapsed.
      */
     function finalizeUpdateStakingModule() external onlyAdmin {
-        if (pendingStakingModule == IStakingModule(address(0)) || pendingStakingModuleCommittedTimestamp == 0) {
+        uint64 committedTimestamp = pendingStakingModuleCommittedTimestamp;
+
+        if (pendingStakingModule == IStakingModule(address(0)) || committedTimestamp == 0) {
             revert MevEthErrors.InvalidPendingStakingModule();
         }
 
-        if (uint64(block.timestamp) < pendingStakingModuleCommittedTimestamp + STAKING_MODULE_UPDATE_TIME_DELAY) {
-            revert MevEthErrors.PrematureStakingModuleUpdateFinalization(
-                pendingStakingModuleCommittedTimestamp + STAKING_MODULE_UPDATE_TIME_DELAY, uint64(block.timestamp)
-            );
+        if (uint64(block.timestamp) < committedTimestamp + MODULE_UPDATE_TIME_DELAY) {
+            revert MevEthErrors.PrematureStakingModuleUpdateFinalization();
         }
 
         address oldModule = address(stakingModule);
@@ -161,7 +179,7 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
     }
 
     /**
-     * //TODO:
+     *  @notice Cancels a pending staking module update
      */
     function cancelUpdateStakingModule() external onlyAdmin {
         if (pendingStakingModule == IStakingModule(address(0)) || pendingStakingModuleCommittedTimestamp == 0) {
@@ -181,6 +199,65 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
     event StakingModuleUpdateCommitted(address indexed oldModule, address indexed pendingModule, uint64 indexed eligibleForFinalization);
     event StakingModuleUpdateFinalized(address indexed oldModule, address indexed newModule);
     event StakingModuleUpdateCanceled(address indexed oldModule, address indexed pendingModule);
+
+    /**
+     * @notice Starts the process to update the mevEthShareVault. To finalize the update, the MODULE_UPDATE_TIME_DELAY must elapse and the
+     * finalizeUpdateMevEthShareVault function must be called
+     * @param newMevEthShareVault The new vault to replace the existing one
+     */
+    function commitUpdateMevEthShareVault(address newMevEthShareVault) external onlyAdmin {
+        pendingMevEthShareVault = newMevEthShareVault;
+        pendingMevEthShareVaultCommittedTimestamp = uint64(block.timestamp);
+        emit MevEthShareVaultUpdateCommitted(mevEthShareVault, newMevEthShareVault, uint64(block.timestamp + MODULE_UPDATE_TIME_DELAY));
+    }
+
+    /**
+     * @notice Finalizes the mevEthShareVault update after the timelock delay has elapsed.
+     */
+    function finalizeUpdateMevEthShareVault() external onlyAdmin {
+        uint64 committedTimestamp = pendingMevEthShareVaultCommittedTimestamp;
+
+        if (pendingMevEthShareVault == address(0) || committedTimestamp == 0) {
+            revert MevEthErrors.InvalidPendingMevEthShareVault();
+        }
+
+        if (uint64(block.timestamp) < committedTimestamp + MODULE_UPDATE_TIME_DELAY) {
+            revert MevEthErrors.PrematureMevEthShareVaultUpdateFinalization();
+        }
+
+        address oldModule = mevEthShareVault;
+        address newModule = pendingMevEthShareVault;
+
+        //Update the mev share vault
+        mevEthShareVault = newModule;
+
+        //Set the pending vault variables to zero
+        pendingMevEthShareVault = address(0);
+        pendingMevEthShareVaultCommittedTimestamp = 0;
+
+        emit MevEthShareVaultUpdateFinalized(oldModule, address(newModule));
+    }
+
+    /**
+     *  @notice Cancels a pending mevEthShareVault.
+     */
+    function cancelUpdateMevEthShareVault() external onlyAdmin {
+        if (pendingMevEthShareVault == address(0) || pendingMevEthShareVaultCommittedTimestamp == 0) {
+            revert MevEthErrors.InvalidPendingMevEthShareVault();
+        }
+
+        address pendingVault = pendingMevEthShareVault;
+
+        //Set the pending vault variables to zero
+        pendingMevEthShareVault = address(0);
+        pendingMevEthShareVaultCommittedTimestamp = 0;
+
+        emit MevEthShareVaultUpdateCanceled(mevEthShareVault, pendingVault);
+    }
+
+    event MevEthShareVaultUpdateCommitted(address indexed oldVault, address indexed pendingVault, uint64 indexed eligibleForFinalization);
+    event MevEthShareVaultUpdateFinalized(address indexed oldVault, address indexed newVault);
+    event MevEthShareVaultUpdateCanceled(address indexed oldVault, address indexed newVault);
 
     /*//////////////////////////////////////////////////////////////
                             Registry For Validators
