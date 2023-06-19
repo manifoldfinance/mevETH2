@@ -2,10 +2,11 @@
 pragma solidity 0.8.20;
 
 import "./interfaces/ITinyMevEth.sol";
+import "./interfaces/IMevEthShareVault.sol";
 
 /// @title MevEthShareVault
 /// @notice This contract controls the ETH Rewards earned by mevEth
-contract MevEthShareVault {
+contract MevEthShareVault is IMevEthShareVault {
     receive() external payable { }
 
     fallback() external payable { }
