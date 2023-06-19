@@ -99,6 +99,11 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
         return max((assetRebase.elastic * 2) / 100, 31 ether);
     }
 
+    /**
+     * @dev Emitted when rewards are received
+     */
+    event Rewards(address sender, uint256 amount);
+
     /*//////////////////////////////////////////////////////////////
                             Admin Control Panel
     //////////////////////////////////////////////////////////////*/
@@ -279,11 +284,8 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
     }
 
     function grantRewards() external payable {
-        if (!(msg.sender == address(0))) {
-            revert MevEthErrors.InvalidSender();
-        }
-
         assetRebase.elastic += msg.value;
+        emit Rewards(msg.sender, msg.value);
     }
 
     /*//////////////////////////////////////////////////////////////
