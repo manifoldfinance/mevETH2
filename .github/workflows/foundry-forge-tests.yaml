@@ -35,5 +35,15 @@ jobs:
 
       - name: Run Forge tests
         run: |
-          forge test --fork-url "$RPC_MAINNET" --etherscan-api-key $ETHERSCAN_API_KEY -vvv
+          forge test --etherscan-api-key $ETHERSCAN_API_KEY -vvv
         id: test
+
+      - name: Coverage
+        run: |
+          forge coverage
+        id: coverage
+
+      - name: Gas snapshot
+        run: |
+          forge snapshot --gas-report --diff
+        id: snapshot
