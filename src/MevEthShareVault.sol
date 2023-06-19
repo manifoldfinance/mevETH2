@@ -18,4 +18,8 @@ contract MevEthShareVault {
         MEV_ETH = ITinyMevEth(mevEth);
         avgFeeRewardsPerBlock = initialFeeRewardsPerBlock;
     }
+
+    function payRewards(uint256 amount) external {
+        MEV_ETH.grantRewards{ value: amount }();
+    }
 }
