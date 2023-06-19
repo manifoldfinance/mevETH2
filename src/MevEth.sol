@@ -306,7 +306,9 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
     function convertToShares(uint256 assets) public view returns (uint256 shares) {
         // So if there are no shares, then they will mint 1:1 with assets
         // Otherwise, shares will mint proportional to the amount of assets
-        shares = assetRebase.elastic == 0 ? assets : assets * assetRebase.base / assetRebase.elastic;
+        unchecked {
+            shares = assetRebase.elastic == 0 ? assets : (assets * assetRebase.base) / assetRebase.elastic;
+        }
     }
 
     /// @param shares The amount of shares to convert to assets
@@ -314,7 +316,9 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
     function convertToAssets(uint256 shares) public view returns (uint256 assets) {
         // So if there are no shares, then they will mint 1:1 with assets
         // Otherwise, shares will mint proportional to the amount of assets
-        assets = assetRebase.elastic == 0 ? shares : shares * assetRebase.elastic / assetRebase.base;
+        unchecked {
+            assets = assetRebase.elastic == 0 ? shares : (shares * assetRebase.elastic) / assetRebase.base;
+        }
     }
 
     /// @param receiver The address in question of who would be depositing, doesn't matter in this case
@@ -437,7 +441,7 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
     /// @param assets The amount of assets that would be withdrawn
     /// @return shares The amount of shares that would be burned, *under ideal conditions* only
     function previewWithdraw(uint256 assets) external view returns (uint256 shares) {
-        return convertToShares(assets);
+        shares = convertToShares(assets);
     }
 
     /// @param assets The amount of assets that should be withdrawn
@@ -476,7 +480,7 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
     /// @param shares The amount of shares that would be burned
     /// @return assets The amount of assets that would be withdrawn, *under ideal conditions* only
     function previewRedeem(uint256 shares) external view returns (uint256 assets) {
-        return convertToAssets(shares);
+        assets = convertToAssets(shares);
     }
 
     /// @param shares The amount of shares that should be burned
