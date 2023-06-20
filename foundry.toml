@@ -5,6 +5,17 @@ solc_version = '0.8.20'
 src = 'src'
 out = 'out'
 libs = ['lib']
+optimizer = true
+optimizer_runs = 2000
+via_ir = true
+fuzz_runs = 500
+
+[profile.default.optimizer_details]
+constantOptimizer = true
+yul = true
+
+[profile.default.optimizer_details.yulDetails]
+stackAllocation = true
 
 [profile.mainnet]
 solc_version = '0.8.20'
