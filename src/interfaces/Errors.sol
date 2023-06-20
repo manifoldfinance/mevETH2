@@ -12,6 +12,7 @@ interface MevEthErrors {
     error NotEnoughEth();
     error DepositTooLow();
     error ZeroShares();
+    error ZeroValue();
     error ReportedBeaconValidatorsGreaterThanTotalValidators();
     error ReportedBeaconValidatorsDecreased();
     error BeaconDepositFailed();
