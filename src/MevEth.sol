@@ -123,7 +123,7 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
     }
 
     function calculateNeededEtherBuffer() public view returns (uint256) {
-        return max((uint256(assetRebase.elastic) * 2) / 100, 31 ether);
+        return max((uint256(assetRebase.elastic) << 1) / 100, 31 ether);
     }
 
     /*//////////////////////////////////////////////////////////////
