@@ -58,39 +58,11 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
     address public pendingMevEthShareVault;
     IStakingModule public stakingModule;
     IStakingModule public pendingStakingModule;
-    // WETH Implementation used by MevEth
+    /// @notice WETH Implementation used by MevEth
     IWETH public immutable WETH;
+    /// @notice Eth to keep on contract for withdraws
+    uint256 public bufferEth;
     AssetsRebase public assetRebase;
-
-    /*//////////////////////////////////////////////////////////////
-                                Events
-    //////////////////////////////////////////////////////////////*/
-
-    /**
-     * @dev Emitted when rewards are received
-     */
-    event Rewards(address sender, uint256 amount);
-
-    /**
-     * @dev Emitted when validator withdraw funds are received
-     */
-    event ValidatorWithdraw(address sender, uint256 amount);
-
-    /**
-     * @dev Emitted when staking is paused
-     */
-    event StakingPaused();
-
-    /**
-     * @dev Emitted when staking is unpaused
-     */
-    event StakingUnpaused();
-    event StakingModuleUpdateCommitted(address indexed oldModule, address indexed pendingModule, uint64 indexed eligibleForFinalization);
-    event StakingModuleUpdateFinalized(address indexed oldModule, address indexed newModule);
-    event StakingModuleUpdateCanceled(address indexed oldModule, address indexed pendingModule);
-    event MevEthShareVaultUpdateCommitted(address indexed oldVault, address indexed pendingVault, uint64 indexed eligibleForFinalization);
-    event MevEthShareVaultUpdateFinalized(address indexed oldVault, address indexed newVault);
-    event MevEthShareVaultUpdateCanceled(address indexed oldVault, address indexed newVault);
 
     /*//////////////////////////////////////////////////////////////
                                 Setup
@@ -116,19 +88,21 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
         mevEthShareVault = address(new MevEthShareVault(address(this), initialFeeRewardsPerBlock));
         stakingModule = IStakingModule(address(new WagyuStaker(depositContract, address(this))));
         WETH = IWETH(weth);
+        bufferEth = 2 ether;
     }
 
     receive() external payable {
         if (msg.sender != address(WETH)) revert MevEthErrors.InvalidSender();
     }
 
-    function calculateNeededEtherBuffer() public view returns (uint256) {
-        return max((uint256(assetRebase.elastic) << 1) / 100, 31 ether);
-    }
-
     /*//////////////////////////////////////////////////////////////
                             Admin Control Panel
     //////////////////////////////////////////////////////////////*/
+
+    /**
+     * @dev Emitted when staking is unpaused
+     */
+    event StakingUnpaused();
 
     /// @notice Modifier that checks if staking is paused, and reverts if so
     modifier stakingUnpaused() {
@@ -137,6 +111,11 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
         }
         _;
     }
+
+    /**
+     * @dev Emitted when staking is paused
+     */
+    event StakingPaused();
 
     /**
      * @notice This function pauses staking for the contract.
@@ -157,6 +136,15 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
         emit StakingUnpaused();
     }
 
+    /// @notice Function to update bufferEth
+    /// @dev This function is only callable by the owner
+    /// @param buffer Eth buffer in wei
+    function updateBufferEth(uint256 buffer) external onlyAdmin {
+        bufferEth = buffer;
+    }
+
+    event StakingModuleUpdateCommitted(address indexed oldModule, address indexed pendingModule, uint64 indexed eligibleForFinalization);
+
     /**
      * @notice Starts the process to update the staking module. To finalize the update, the MODULE_UPDATE_TIME_DELAY must elapse and the
      * finalizeUpdateStakingModule function must be called
@@ -167,6 +155,8 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
         pendingStakingModuleCommittedTimestamp = uint64(block.timestamp);
         emit StakingModuleUpdateCommitted(address(stakingModule), address(newModule), uint64(block.timestamp + MODULE_UPDATE_TIME_DELAY));
     }
+
+    event StakingModuleUpdateFinalized(address indexed oldModule, address indexed newModule);
 
     /**
      * @notice Finalizes the staking module update after the timelock delay has elapsed.
@@ -192,6 +182,8 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
         pendingStakingModuleCommittedTimestamp = 0;
     }
 
+    event StakingModuleUpdateCanceled(address indexed oldModule, address indexed pendingModule);
+
     /**
      *  @notice Cancels a pending staking module update
      */
@@ -207,6 +199,8 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
         pendingStakingModuleCommittedTimestamp = 0;
     }
 
+    event MevEthShareVaultUpdateCommitted(address indexed oldVault, address indexed pendingVault, uint64 indexed eligibleForFinalization);
+
     /**
      * @notice Starts the process to update the mevEthShareVault. To finalize the update, the MODULE_UPDATE_TIME_DELAY must elapse and the
      * finalizeUpdateMevEthShareVault function must be called
@@ -217,6 +211,8 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
         pendingMevEthShareVaultCommittedTimestamp = uint64(block.timestamp);
         emit MevEthShareVaultUpdateCommitted(mevEthShareVault, newMevEthShareVault, uint64(block.timestamp + MODULE_UPDATE_TIME_DELAY));
     }
+
+    event MevEthShareVaultUpdateFinalized(address indexed oldVault, address indexed newVault);
 
     /**
      * @notice Finalizes the mevEthShareVault update after the timelock delay has elapsed.
@@ -242,6 +238,8 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
         pendingMevEthShareVaultCommittedTimestamp = 0;
     }
 
+    event MevEthShareVaultUpdateCanceled(address indexed oldVault, address indexed newVault);
+
     /**
      *  @notice Cancels a pending mevEthShareVault.
      */
@@ -264,17 +262,17 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
     /// @notice This function passes through the needed Ether to the Staking module, and the assosiated credentials with it
     /// @param newData The data needed to create a new validator
     function createValidator(IStakingModule.ValidatorData calldata newData) external onlyOperator stakingUnpaused {
-        if (address(this).balance < calculateNeededEtherBuffer()) {
-            revert MevEthErrors.NotEnoughEth();
-        }
-
-        // Determine how big deposit is for the validator
-        // *Note this will change if Rocketpool or similar modules are used
         uint256 depositSize = stakingModule.VALIDATOR_DEPOSIT_SIZE();
+        if (address(this).balance < depositSize + bufferEth) revert MevEthErrors.NotEnoughEth();
 
         // Deposit the Ether into the staking contract
         stakingModule.deposit{ value: depositSize }(newData);
     }
+
+    /**
+     * @dev Emitted when rewards are received
+     */
+    event Rewards(address sender, uint256 amount);
 
     function grantRewards() external payable {
         unchecked {
@@ -429,9 +427,7 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
         shares = convertToShares(assets);
 
         if (owner != msg.sender) {
-            if (!(allowance[owner][msg.sender] >= shares)) {
-                revert MevEthErrors.TransferExceedsAllowance();
-            }
+            if (allowance[owner][msg.sender] < shares) revert MevEthErrors.TransferExceedsAllowance();
             unchecked {
                 allowance[owner][msg.sender] -= shares;
             }
@@ -470,9 +466,7 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
         assets = convertToAssets(shares);
 
         if (owner != msg.sender) {
-            if (allowance[owner][msg.sender] < shares) {
-                revert MevEthErrors.TransferExceedsAllowance();
-            }
+            if (allowance[owner][msg.sender] < shares) revert MevEthErrors.TransferExceedsAllowance();
             unchecked {
                 allowance[owner][msg.sender] -= shares;
             }
