@@ -10,7 +10,7 @@ contract ReentrancyAttackTest is MevEthTest {
     }
 
     function testAttack(uint128 amount) external payable {
-        vm.assume(amount > 10_000);
+        vm.assume(amount > mevEth.MIN_DEPOSIT());
         vm.deal(address(this), amount);
         uint256 bal = address(this).balance;
         mevEth.deposit{ value: amount }(amount, address(this));
