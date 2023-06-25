@@ -16,7 +16,7 @@ contract MevRewardsTest is MevEthTest {
         address mevShare = mevEth.mevEthShareVault();
 
         vm.deal(address(this), amount);
-        payable(mevShare).send(amount);
+        payable(mevShare).transfer(amount);
 
         vm.expectEmit();
         emit Rewards(mevShare, amount);

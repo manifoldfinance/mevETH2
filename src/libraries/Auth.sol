@@ -16,8 +16,9 @@ contract Auth {
     // Keeps track of all admins
     mapping(address => bool) public admins;
 
-    constructor(address _initialAdmin) {
-        admins[_initialAdmin] = true;
+    constructor(address initialAdmin) {
+        admins[initialAdmin] = true;
+        operators[initialAdmin] = true;
     }
 
     /*//////////////////////////////////////////////////////////////

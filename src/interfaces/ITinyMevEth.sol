@@ -5,4 +5,5 @@ pragma solidity 0.8.20;
 /// @notice smol interface for interacting with MevEth
 interface ITinyMevEth {
     function grantRewards() external payable;
+    function grantValidatorWithdraw() external payable;
 }

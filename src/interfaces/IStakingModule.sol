@@ -30,4 +30,6 @@ interface IStakingModule {
     function MEV_ETH() external view returns (address);
 
     function VALIDATOR_DEPOSIT_SIZE() external view returns (uint256);
+
+    function payValidatorWithdraw(uint256 amount) external;
 }
