@@ -49,6 +49,8 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
                             Configuration Variables
     //////////////////////////////////////////////////////////////*/
     bool public stakingPaused;
+    /// @notice amount of eth to retain on contract for withdrawls as a percent numerator
+    uint8 public bufferPercentNumerator;
     uint64 public pendingStakingModuleCommittedTimestamp;
     uint64 public pendingMevEthShareVaultCommittedTimestamp;
     uint64 public constant MODULE_UPDATE_TIME_DELAY = 7 days;
@@ -116,11 +118,18 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
         WagyuStaker staker = new WagyuStaker(depositContract, address(this));
         stakingModule = IStakingModule(address(staker));
         WETH = IWETH(weth);
+        bufferPercentNumerator = 2; // set at 2 %
     }
 
     /*//////////////////////////////////////////////////////////////
                             Admin Control Panel
     //////////////////////////////////////////////////////////////*/
+
+    /// @notice Update bufferPercentNumerator
+    /// @param newBufferPercentNumerator updated percent numerator
+    function updateBufferPercentNumerator(uint8 newBufferPercentNumerator) external onlyAdmin {
+        bufferPercentNumerator = newBufferPercentNumerator;
+    }
 
     /// @notice Modifier that checks if staking is paused, and reverts if so
     modifier stakingUnpaused() {
@@ -546,7 +555,7 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
     }
 
     function calculateNeededEtherBuffer() public view returns (uint256) {
-        return max((assetRebase.elastic * 2) / 100, 31 ether);
+        return max((uint256(assetRebase.elastic) * uint256(bufferPercentNumerator)) / 100, 31 ether);
     }
 
     /// @dev Only Weth withdraw is defined for the behaviour. Deposits should be directed to deposit / mint. Rewards via grantRewards and validator withdraws
