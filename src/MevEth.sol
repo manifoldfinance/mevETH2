@@ -107,11 +107,6 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
         bufferPercentNumerator = newBufferPercentNumerator;
     }
 
-    /**
-     * @dev Emitted when staking is unpaused
-     */
-    event StakingUnpaused();
-
     /// @notice Modifier that checks if staking is paused, and reverts if so
     modifier stakingUnpaused() {
         if (stakingPaused) {
@@ -134,6 +129,11 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
 
         emit StakingPaused();
     }
+
+    /**
+     * @dev Emitted when staking is unpaused
+     */
+    event StakingUnpaused();
 
     /**
      * @notice This function unpauses staking
@@ -304,10 +304,14 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
         }
         if (msg.value < 32 ether) {
             // assume slashed value so reduce elastic balance accordingly
-            assetRebase.elastic -= uint128(32 ether - msg.value);
+            unchecked {
+                assetRebase.elastic -= uint128(32 ether - msg.value);
+            }
         } else {
             // account for any unclaimed rewards
-            assetRebase.elastic += uint128(msg.value - 32 ether);
+            unchecked {
+                assetRebase.elastic += uint128(msg.value - 32 ether);
+            }
         }
     }
 
