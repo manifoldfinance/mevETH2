@@ -55,7 +55,7 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
     uint64 public pendingMevEthShareVaultCommittedTimestamp;
     uint64 public constant MODULE_UPDATE_TIME_DELAY = 7 days;
     uint128 public constant MAX_DEPOSIT = 2 ** 128 - 1;
-    uint128 public constant MIN_DEPOSIT = 1_000_000_000_000_000; // 0.001 eth
+    uint128 public constant MIN_DEPOSIT = 10_000_000_000_000_000; // 0.01 eth
     address public mevEthShareVault;
     address public pendingMevEthShareVault;
     IStakingModule public stakingModule;
