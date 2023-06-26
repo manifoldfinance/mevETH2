@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity 0.8.20;
 
+import { ITinyMevEth } from "./interfaces/ITinyMevEth.sol";
 import { IStakingModule } from "./interfaces/IStakingModule.sol";
 import { IBeaconDepositContract } from "./interfaces/IBeaconDepositContract.sol";
 
@@ -59,4 +60,13 @@ contract WagyuStaker is IStakingModule {
         balance = newBalance;
         validators = newValidators;
     }
+
+    // TODO: permission check
+    function payValidatorWithdraw(uint256 amount) external {
+        ITinyMevEth(MEV_ETH).grantValidatorWithdraw{ value: amount }();
+    }
+
+    receive() external payable { }
+
+    fallback() external payable { }
 }

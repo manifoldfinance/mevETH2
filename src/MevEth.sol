@@ -49,6 +49,8 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
                             Configuration Variables
     //////////////////////////////////////////////////////////////*/
     bool public stakingPaused;
+    /// @notice amount of eth to retain on contract for withdrawls as a percent numerator
+    uint8 public bufferPercentNumerator;
     uint64 public pendingStakingModuleCommittedTimestamp;
     uint64 public pendingMevEthShareVaultCommittedTimestamp;
     uint64 public constant MODULE_UPDATE_TIME_DELAY = 7 days;
@@ -86,21 +88,24 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
         mevEthShareVault = address(new MevEthShareVault(address(this), initialFeeRewardsPerBlock));
         stakingModule = IStakingModule(address(new WagyuStaker(depositContract, address(this))));
         WETH = IWETH(weth);
-    }
-
-    receive() external payable {
-        if (msg.sender != address(WETH)) revert MevEthErrors.InvalidSender();
+        bufferPercentNumerator = 2; // set at 2 %
     }
 
     function calculateNeededEtherBuffer() public view returns (uint256) {
         unchecked {
-            return max((uint256(assetRebase.elastic) << 1) / 100, 31 ether);
+            return max((uint256(assetRebase.elastic) * uint256(bufferPercentNumerator)) / 100, 31 ether);
         }
     }
 
     /*//////////////////////////////////////////////////////////////
                             Admin Control Panel
     //////////////////////////////////////////////////////////////*/
+
+    /// @notice Update bufferPercentNumerator
+    /// @param newBufferPercentNumerator updated percent numerator
+    function updateBufferPercentNumerator(uint8 newBufferPercentNumerator) external onlyAdmin {
+        bufferPercentNumerator = newBufferPercentNumerator;
+    }
 
     /**
      * @dev Emitted when staking is unpaused
@@ -258,13 +263,13 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
     /// @notice This function passes through the needed Ether to the Staking module, and the assosiated credentials with it
     /// @param newData The data needed to create a new validator
     function createValidator(IStakingModule.ValidatorData calldata newData) external onlyOperator stakingUnpaused {
-        if (address(this).balance < calculateNeededEtherBuffer()) {
-            revert MevEthErrors.NotEnoughEth();
-        }
-
         // Determine how big deposit is for the validator
         // *Note this will change if Rocketpool or similar modules are used
         uint256 depositSize = stakingModule.VALIDATOR_DEPOSIT_SIZE();
+
+        if (address(this).balance < depositSize + calculateNeededEtherBuffer()) {
+            revert MevEthErrors.NotEnoughEth();
+        }
 
         // Deposit the Ether into the staking contract
         stakingModule.deposit{ value: depositSize }(newData);
@@ -279,7 +284,31 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
         unchecked {
             assetRebase.elastic += uint128(msg.value);
         }
+        if (msg.sender != mevEthShareVault) revert MevEthErrors.InvalidSender();
         emit Rewards(msg.sender, msg.value);
+    }
+
+    /**
+     * @dev Emitted when validator withdraw funds are received
+     */
+    event ValidatorWithdraw(address sender, uint256 amount);
+
+    function grantValidatorWithdraw() external payable {
+        if (msg.sender != address(stakingModule)) revert MevEthErrors.InvalidSender();
+        if (msg.value == 0) {
+            revert MevEthErrors.ZeroValue();
+        }
+        emit ValidatorWithdraw(msg.sender, msg.value);
+        if (msg.value == 32 ether) {
+            return;
+        }
+        if (msg.value < 32 ether) {
+            // assume slashed value so reduce elastic balance accordingly
+            assetRebase.elastic -= uint128(32 ether - msg.value);
+        } else {
+            // account for any unclaimed rewards
+            assetRebase.elastic += uint128(msg.value - 32 ether);
+        }
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -352,7 +381,7 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
     }
 
     /// @param assets The amount of WETH which should be deposited
-    /// @param receiver The address user whom should recieve the mevEth out
+    /// @param receiver The address user whom should receive the mevEth out
     /// @return shares The amount of shares minted
     function deposit(uint256 assets, address receiver) external payable stakingUnpaused returns (uint256 shares) {
         if (assets < MIN_DEPOSIT) revert MevEthErrors.DepositTooSmall();
@@ -388,7 +417,7 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
     }
 
     /// @param shares The amount of shares that should be minted
-    /// @param receiver The address user whom should recieve the mevEth out
+    /// @param receiver The address user whom should receive the mevEth out
     /// @return assets The amount of assets deposited
     function mint(uint256 shares, address receiver) external payable stakingUnpaused returns (uint256 assets) {
         if (shares < MIN_DEPOSIT) revert MevEthErrors.DepositTooSmall();
@@ -421,7 +450,7 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
     }
 
     /// @param assets The amount of assets that should be withdrawn
-    /// @param receiver The address user whom should recieve the mevEth out
+    /// @param receiver The address user whom should receive the mevEth out
     /// @param owner The address of the owner of the mevEth
     /// @return shares The amount of shares burned
     function withdraw(uint256 assets, address receiver, address owner) external returns (uint256 shares) {
@@ -460,7 +489,7 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
     }
 
     /// @param shares The amount of shares that should be burned
-    /// @param receiver The address user whom should recieve the wETH out
+    /// @param receiver The address user whom should receive the wETH out
     /// @param owner The address of the owner of the mevEth
     /// @return assets The amount of assets withdrawn
     function redeem(uint256 shares, address receiver, address owner) external returns (uint256 assets) {
@@ -510,5 +539,17 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
         assembly ("memory-safe") {
             boolValue := iszero(value)
         }
+    }
+
+    /// @dev Only Weth withdraw is defined for the behaviour. Deposits should be directed to deposit / mint. Rewards via grantRewards and validator withdraws
+    /// via grantValidatorWithdraw.
+    receive() external payable {
+        if (msg.sender != address(WETH)) revert MevEthErrors.InvalidSender();
+    }
+
+    /// @dev Only Weth withdraw is defined for the behaviour. Deposits should be directed to deposit / mint. Rewards via grantRewards and validator withdraws
+    /// via grantValidatorWithdraw.
+    fallback() external payable {
+        if (msg.sender != address(WETH)) revert MevEthErrors.InvalidSender();
     }
 }
