@@ -276,13 +276,13 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
     /// @notice This function passes through the needed Ether to the Staking module, and the assosiated credentials with it
     /// @param newData The data needed to create a new validator
     function createValidator(IStakingModule.ValidatorData calldata newData) external onlyOperator stakingUnpaused {
-        if (address(this).balance < calculateNeededEtherBuffer()) {
-            revert MevEthErrors.NotEnoughEth();
-        }
-
         // Determine how big deposit is for the validator
         // *Note this will change if Rocketpool or similar modules are used
         uint256 depositSize = stakingModule.VALIDATOR_DEPOSIT_SIZE();
+
+        if (address(this).balance < depositSize + calculateNeededEtherBuffer()) {
+            revert MevEthErrors.NotEnoughEth();
+        }
 
         // Deposit the Ether into the staking contract
         stakingModule.deposit{ value: depositSize }(newData);
