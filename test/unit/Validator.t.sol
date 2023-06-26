@@ -66,7 +66,7 @@ contract ValidatorTest is MevEthTest {
         //Deal User01 the staking module deposit size and deposit into the mevEth contract
         vm.deal(User01, stakingModuleDepositSize * 2);
         vm.prank(User01);
-        mevEth.deposit{ value: stakingModuleDepositSize }(stakingModuleDepositSize, User01);
+        mevEth.deposit{ value: stakingModuleDepositSize * 2 }(stakingModuleDepositSize * 2, User01);
 
         //Cache the balance before validator creation, create the validator, and check the balance after
         uint256 balanceBeforeCreation = address(mevEth).balance;

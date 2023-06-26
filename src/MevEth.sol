@@ -49,6 +49,8 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
                             Configuration Variables
     //////////////////////////////////////////////////////////////*/
     bool public stakingPaused;
+    /// @notice amount of eth to retain on contract for withdrawls as a percent numerator
+    uint8 public bufferPercentNumerator;
     uint64 public pendingStakingModuleCommittedTimestamp;
     uint64 public pendingMevEthShareVaultCommittedTimestamp;
     uint64 public constant MODULE_UPDATE_TIME_DELAY = 7 days;
@@ -116,11 +118,18 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
         WagyuStaker staker = new WagyuStaker(depositContract, address(this));
         stakingModule = IStakingModule(address(staker));
         WETH = IWETH(weth);
+        bufferPercentNumerator = 2; // set at 2 %
     }
 
     /*//////////////////////////////////////////////////////////////
                             Admin Control Panel
     //////////////////////////////////////////////////////////////*/
+
+    /// @notice Update bufferPercentNumerator
+    /// @param newBufferPercentNumerator updated percent numerator
+    function updateBufferPercentNumerator(uint8 newBufferPercentNumerator) external onlyAdmin {
+        bufferPercentNumerator = newBufferPercentNumerator;
+    }
 
     /// @notice Modifier that checks if staking is paused, and reverts if so
     modifier stakingUnpaused() {
@@ -267,13 +276,13 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
     /// @notice This function passes through the needed Ether to the Staking module, and the assosiated credentials with it
     /// @param newData The data needed to create a new validator
     function createValidator(IStakingModule.ValidatorData calldata newData) external onlyOperator stakingUnpaused {
-        if (address(this).balance < calculateNeededEtherBuffer()) {
-            revert MevEthErrors.NotEnoughEth();
-        }
-
         // Determine how big deposit is for the validator
         // *Note this will change if Rocketpool or similar modules are used
         uint256 depositSize = stakingModule.VALIDATOR_DEPOSIT_SIZE();
+
+        if (address(this).balance < depositSize + calculateNeededEtherBuffer()) {
+            revert MevEthErrors.NotEnoughEth();
+        }
 
         // Deposit the Ether into the staking contract
         stakingModule.deposit{ value: depositSize }(newData);
@@ -546,7 +555,7 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
     }
 
     function calculateNeededEtherBuffer() public view returns (uint256) {
-        return max((assetRebase.elastic * 2) / 100, 31 ether);
+        return max((uint256(assetRebase.elastic) * uint256(bufferPercentNumerator)) / 100, 31 ether);
     }
 
     /// @dev Only Weth withdraw is defined for the behaviour. Deposits should be directed to deposit / mint. Rewards via grantRewards and validator withdraws
