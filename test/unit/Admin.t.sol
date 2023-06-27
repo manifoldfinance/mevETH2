@@ -9,7 +9,6 @@ import "../../src/MevEthShareVault.sol";
 
 contract MevAdminTest is MevEthTest {
     uint256 constant AMOUNT_TO_STAKE = 1 ether;
-    uint256 constant ONE = 1;
 
     /**
      * Test pausing the staking functionality in the contract as an admin. Should only succeed when called by an account
@@ -36,7 +35,7 @@ contract MevAdminTest is MevEthTest {
         mevEth.deposit(AMOUNT_TO_STAKE / 2, address(this));
 
         vm.expectRevert(MevEthErrors.StakingPaused.selector);
-        mevEth.mint(ONE, address(this));
+        mevEth.mint(AMOUNT_TO_STAKE / 2, address(this));
     }
 
     /**
@@ -54,7 +53,7 @@ contract MevAdminTest is MevEthTest {
 
         weth.approve(address(mevEth), AMOUNT_TO_STAKE);
         mevEth.deposit(AMOUNT_TO_STAKE / 2, address(this));
-        mevEth.mint(ONE, address(this));
+        mevEth.mint(AMOUNT_TO_STAKE / 2, address(this));
     }
 
     /**
@@ -78,7 +77,7 @@ contract MevAdminTest is MevEthTest {
 
         weth.approve(address(mevEth), AMOUNT_TO_STAKE);
         mevEth.deposit(AMOUNT_TO_STAKE / 2, address(this));
-        mevEth.mint(ONE, address(this));
+        mevEth.mint(AMOUNT_TO_STAKE / 2, address(this));
     }
 
     /**
@@ -104,7 +103,7 @@ contract MevAdminTest is MevEthTest {
         mevEth.deposit(AMOUNT_TO_STAKE, address(this));
 
         vm.expectRevert(MevEthErrors.StakingPaused.selector);
-        mevEth.mint(ONE, address(this));
+        mevEth.mint(AMOUNT_TO_STAKE / 2, address(this));
     }
 
     /**
@@ -215,7 +214,7 @@ contract MevAdminTest is MevEthTest {
 
         // Check that there are no effects from finalization
         assertEq(address(mevEth.pendingStakingModule()), address(newModule));
-        assertEq(mevEth.pendingStakingModuleCommittedTimestamp(), committedTimestamp);
+        assertEq(mevEth.pendingStakingModuleCommittedTimestamp(), 1);
         assertEq(address(mevEth.stakingModule()), existingStakingModule);
     }
 
@@ -383,7 +382,7 @@ contract MevAdminTest is MevEthTest {
 
         // Check that there are no effects from finalization
         assertEq(address(mevEth.pendingMevEthShareVault()), newVault);
-        assertEq(mevEth.pendingMevEthShareVaultCommittedTimestamp(), committedTimestamp);
+        assertEq(mevEth.pendingMevEthShareVaultCommittedTimestamp(), 1);
         assertEq(address(mevEth.mevEthShareVault()), existingVault);
     }
 

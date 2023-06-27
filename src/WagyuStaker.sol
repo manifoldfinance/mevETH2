@@ -40,10 +40,10 @@ contract WagyuStaker is IStakingModule {
         if (msg.value != VALIDATOR_DEPOSIT_SIZE) {
             revert WrongDepositAmount();
         }
-
-        balance += VALIDATOR_DEPOSIT_SIZE;
-
-        validators += 1;
+        unchecked {
+            balance += VALIDATOR_DEPOSIT_SIZE;
+            validators += 1;
+        }
 
         BEACON_CHAIN_DEPOSIT_CONTRACT.deposit{ value: VALIDATOR_DEPOSIT_SIZE }(
             data.pubkey, abi.encodePacked(data.withdrawal_credentials), data.signature, data.deposit_data_root
