@@ -21,19 +21,19 @@ import { FixedPointMathLib } from "solmate/utils/FixedPointMathLib.sol";
 import { ERC20 } from "solmate/tokens/ERC20.sol";
 import { IERC20 } from "./interfaces/IERC20.sol";
 import { IERC4626 } from "./interfaces/IERC4626.sol";
-import { Auth } from "./libraries/Auth.sol";
 import { IWETH } from "./interfaces/IWETH.sol";
 import { MevEthErrors } from "./interfaces/Errors.sol";
 import { IStakingModule } from "./interfaces/IStakingModule.sol";
 import { MevEthShareVault } from "./MevEthShareVault.sol";
 import { ITinyMevEth } from "./interfaces/ITinyMevEth.sol";
 import { WagyuStaker } from "./WagyuStaker.sol";
+import { OFTV2 } from "./layerzero/OFTV2.sol";
 
 /// @title MevEth
 /// @author Manifold Finance
 /// @dev Contract that allows deposit of ETH, for a Liquid Staking Receipt (LSR) in return.
 /// @dev LSR is represented through an ERC4626 token and interface
-contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
+contract MevEth is OFTV2, IERC4626, ITinyMevEth {
     using SafeTransferLib for ERC20;
     using FixedPointMathLib for uint256;
 
@@ -109,10 +109,10 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
         address authority,
         address depositContract,
         uint256 initialFeeRewardsPerBlock,
-        address weth
+        address weth,
+        address layerZeroEndpoint
     )
-        Auth(authority)
-        ERC20("Mev Liquid Staked Ether", "mevETH", 18)
+        OFTV2("Mev Liquid Staked Ether", "mevETH", 18, 8, authority, layerZeroEndpoint)
     {
         mevEthShareVault = address(new MevEthShareVault(address(this), initialFeeRewardsPerBlock));
         WagyuStaker staker = new WagyuStaker(depositContract, address(this));

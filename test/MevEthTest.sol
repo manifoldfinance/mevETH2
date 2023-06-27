@@ -9,6 +9,7 @@ import "src/MevEth.sol";
 // Needed Periphery Contracts
 import "./mocks/WETH9.sol";
 import "./mocks/DepositContract.sol";
+import "./mocks/LZEndpointMock.sol";
 import "../src/MevEthShareVault.sol";
 
 contract MevEthTest is Test {
@@ -35,6 +36,8 @@ contract MevEthTest is Test {
 
     WETH9 internal weth;
 
+    LZEndpointMock internal layerZeroEndpoint;
+
     //Events
     event StakingPaused();
     event StakingUnpaused();
@@ -53,9 +56,14 @@ contract MevEthTest is Test {
         // Deploy the WETH9 contract
         weth = new WETH9();
 
+        uint16 chainId;
+        assembly {
+            chainId := chainid()
+        }
+        layerZeroEndpoint = new LZEndpointMock(chainId);
+
         // Deploy the mevETH contract
-        // mev_eth = new MevEth(SamBacha, address(depositContract), address(weth));
-        mevEth = new MevEth(SamBacha, address(depositContract), FEE_REWARDS_PER_BLOCK, address(weth));
+        mevEth = new MevEth(SamBacha, address(depositContract), FEE_REWARDS_PER_BLOCK, address(weth), address(layerZeroEndpoint));
         vm.prank(SamBacha);
         mevEth.addOperator(Operator01);
     }
