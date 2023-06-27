@@ -95,7 +95,7 @@ contract ERC4626Test is MevEthTest {
         assertEq(address(User01).balance, 0 ether);
 
         // Check the Rebase has updated correctly
-        (uint256 elastic, uint256 base) = mevEth.assetRebase();
+        (uint256 elastic, uint256 base) = mevEth.fraction();
         assertEq(elastic, 1 ether);
         assertEq(base, 1 ether);
     }
@@ -124,7 +124,7 @@ contract ERC4626Test is MevEthTest {
         assertEq(address(User01).balance, 0 ether);
 
         // Check the Rebase has updated correctly
-        (uint256 elastic, uint256 base) = mevEth.assetRebase();
+        (uint256 elastic, uint256 base) = mevEth.fraction();
         assertEq(elastic, amount);
         assertEq(base, amount);
     }
@@ -152,7 +152,7 @@ contract ERC4626Test is MevEthTest {
         assertEq(address(User01).balance, 0);
 
         // Check the Rebase has updated correctly
-        (uint256 elastic, uint256 base) = mevEth.assetRebase();
+        (uint256 elastic, uint256 base) = mevEth.fraction();
         assertEq(elastic, 0);
         assertEq(base, 0);
     }
@@ -321,7 +321,7 @@ contract ERC4626Test is MevEthTest {
         assertEq(address(User01).balance, 0);
 
         // Check the Rebase has updated correctly
-        (uint256 elastic, uint256 base) = mevEth.assetRebase();
+        (uint256 elastic, uint256 base) = mevEth.fraction();
         assertEq(elastic, 0);
         assertEq(base, 0);
     }
