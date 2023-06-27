@@ -37,7 +37,7 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
     using SafeTransferLib for ERC20;
     using FixedPointMathLib for uint256;
 
-    /// @notice Central Rebase struct used for share accounting + math
+    /// @notice Central struct used for share accounting + math
     /// @param elastic Represents total amount of staked ether, including rewards accrued / slashed
     /// @param base Represents claims to ownership of the staked ether
     struct Fraction {
@@ -272,7 +272,7 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
         }
 
         // Deposit the Ether into the staking contract
-        stakingModule.deposit{ value: depositSize }(newData);
+        stakingModule.deposit{value: depositSize}(newData);
     }
 
     /**
@@ -476,7 +476,7 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
 
         emit Withdraw(msg.sender, owner, receiver, assets, shares);
 
-        WETH.deposit{ value: assets }();
+        WETH.deposit{value: assets}();
         ERC20(address(WETH)).safeTransfer(receiver, assets);
     }
 
@@ -515,7 +515,7 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
 
         emit Withdraw(msg.sender, owner, receiver, assets, shares);
 
-        WETH.deposit{ value: assets }();
+        WETH.deposit{value: assets}();
         ERC20(address(WETH)).safeTransfer(receiver, assets);
     }
 
