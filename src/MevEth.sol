@@ -37,10 +37,10 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
     using SafeTransferLib for ERC20;
     using FixedPointMathLib for uint256;
 
-    /// @notice Central Rebase struct used for share accounting + math
+    /// @notice Central struct used for share accounting + math
     /// @param elastic Represents total amount of staked ether, including rewards accrued / slashed
     /// @param base Represents claims to ownership of the staked ether
-    struct AssetsRebase {
+    struct Fraction {
         uint128 elastic;
         uint128 base;
     }
@@ -62,7 +62,7 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
     IStakingModule public pendingStakingModule;
     /// @notice WETH Implementation used by MevEth
     IWETH public immutable WETH;
-    AssetsRebase public assetRebase;
+    Fraction public fraction;
 
     /*//////////////////////////////////////////////////////////////
                                 Setup
@@ -93,7 +93,7 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
 
     function calculateNeededEtherBuffer() public view returns (uint256) {
         unchecked {
-            return max((uint256(assetRebase.elastic) * uint256(bufferPercentNumerator)) / 100, 31 ether);
+            return max((uint256(fraction.elastic) * uint256(bufferPercentNumerator)) / 100, 31 ether);
         }
     }
 
@@ -272,7 +272,7 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
         }
 
         // Deposit the Ether into the staking contract
-        stakingModule.deposit{ value: depositSize }(newData);
+        stakingModule.deposit{value: depositSize}(newData);
     }
 
     /**
@@ -282,7 +282,7 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
 
     function grantRewards() external payable {
         unchecked {
-            assetRebase.elastic += uint128(msg.value);
+            fraction.elastic += uint128(msg.value);
         }
         if (msg.sender != mevEthShareVault) revert MevEthErrors.InvalidSender();
         emit Rewards(msg.sender, msg.value);
@@ -305,12 +305,12 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
         if (msg.value < 32 ether) {
             // assume slashed value so reduce elastic balance accordingly
             unchecked {
-                assetRebase.elastic -= uint128(32 ether - msg.value);
+                fraction.elastic -= uint128(32 ether - msg.value);
             }
         } else {
             // account for any unclaimed rewards
             unchecked {
-                assetRebase.elastic += uint128(msg.value - 32 ether);
+                fraction.elastic += uint128(msg.value - 32 ether);
             }
         }
     }
@@ -327,7 +327,7 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
     /// @return totalManagedAssets The amount of eth controlled by the mevEth contract
     function totalAssets() external view returns (uint256 totalManagedAssets) {
         // Should return the total amount of Ether managed by the contract
-        totalManagedAssets = uint256(assetRebase.elastic);
+        totalManagedAssets = uint256(fraction.elastic);
     }
 
     /// @param assets The amount of assets to convert to shares
@@ -335,11 +335,11 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
     function convertToShares(uint256 assets) public view returns (uint256 shares) {
         // So if there are no shares, then they will mint 1:1 with assets
         // Otherwise, shares will mint proportional to the amount of assets
-        if (_isZero(uint256(assetRebase.elastic)) || _isZero(uint256(assetRebase.base))) {
+        if (_isZero(uint256(fraction.elastic)) || _isZero(uint256(fraction.base))) {
             shares = assets;
         } else {
             unchecked {
-                shares = (assets * uint256(assetRebase.base)) / uint256(assetRebase.elastic);
+                shares = (assets * uint256(fraction.base)) / uint256(fraction.elastic);
             }
         }
     }
@@ -349,11 +349,11 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
     function convertToAssets(uint256 shares) public view returns (uint256 assets) {
         // So if there are no shares, then they will mint 1:1 with assets
         // Otherwise, shares will mint proportional to the amount of assets
-        if (_isZero(uint256(assetRebase.elastic)) || _isZero(uint256(assetRebase.base))) {
+        if (_isZero(uint256(fraction.elastic)) || _isZero(uint256(fraction.base))) {
             assets = shares;
         } else {
             unchecked {
-                assets = (shares * uint256(assetRebase.elastic)) / uint256(assetRebase.base);
+                assets = (shares * uint256(fraction.elastic)) / uint256(fraction.base);
             }
         }
     }
@@ -393,8 +393,8 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
         shares = convertToShares(assets);
 
         unchecked {
-            assetRebase.elastic += uint128(assets);
-            assetRebase.base += uint128(shares);
+            fraction.elastic += uint128(assets);
+            fraction.base += uint128(shares);
         }
 
         _deposit(assets);
@@ -429,8 +429,8 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
         assets = convertToAssets(shares);
 
         unchecked {
-            assetRebase.elastic += uint128(assets);
-            assetRebase.base += uint128(shares);
+            fraction.elastic += uint128(assets);
+            fraction.base += uint128(shares);
         }
 
         _deposit(assets);
@@ -468,15 +468,15 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
         }
 
         unchecked {
-            assetRebase.elastic -= uint128(assets);
-            assetRebase.base -= uint128(shares);
+            fraction.elastic -= uint128(assets);
+            fraction.base -= uint128(shares);
         }
 
         _burn(owner, shares);
 
         emit Withdraw(msg.sender, owner, receiver, assets, shares);
 
-        WETH.deposit{ value: assets }();
+        WETH.deposit{value: assets}();
         ERC20(address(WETH)).safeTransfer(receiver, assets);
     }
 
@@ -507,15 +507,15 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
         }
 
         unchecked {
-            assetRebase.elastic -= uint128(assets);
-            assetRebase.base -= uint128(shares);
+            fraction.elastic -= uint128(assets);
+            fraction.base -= uint128(shares);
         }
 
         _burn(owner, shares);
 
         emit Withdraw(msg.sender, owner, receiver, assets, shares);
 
-        WETH.deposit{ value: assets }();
+        WETH.deposit{value: assets}();
         ERC20(address(WETH)).safeTransfer(receiver, assets);
     }
 

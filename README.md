@@ -84,6 +84,6 @@ First, because mev-eth is a centralized LSR, and dependent on Manifold Finance t
 
 mev-eth supports the ERC4626 interface to handle itself as an LSR. This allows many key integrations, such as Yearn Vault integrations, or any other protocols which require a yield source. This also means that mev-eth supports ERC20 as a base transferable token. Breaking from ERC4626, mev-eth also supports deposits via its fallback (recieve technically) function for call-data free deposits.
 
-The token keeps track of this by accounting with simple Rebase math, which while a bit confusing, is the most simplistic approach, where each mev-eth token is a share which accumulates interest, and as interest grows will eventually be worth greater than it 1 eth per.
+The token keeps track of this by accounting with simple fractional math, which while a bit confusing, is the most simplistic approach, where each mev-eth token is a share which accumulates interest, and as interest grows will eventually be worth greater than it 1 eth per.
 
 ### Beacon Chain Support
