@@ -41,8 +41,8 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
     /// @param elastic Represents total amount of staked ether, including rewards accrued / slashed
     /// @param base Represents claims to ownership of the staked ether
     struct AssetsRebase {
-        uint256 elastic;
-        uint256 base;
+        uint128 elastic;
+        uint128 base;
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -54,44 +54,15 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
     uint64 public pendingStakingModuleCommittedTimestamp;
     uint64 public pendingMevEthShareVaultCommittedTimestamp;
     uint64 public constant MODULE_UPDATE_TIME_DELAY = 7 days;
+    uint128 public constant MAX_DEPOSIT = 2 ** 128 - 1;
+    uint128 public constant MIN_DEPOSIT = 10_000_000_000_000_000; // 0.01 eth
     address public mevEthShareVault;
     address public pendingMevEthShareVault;
     IStakingModule public stakingModule;
     IStakingModule public pendingStakingModule;
-    // WETH Implementation used by MevEth
+    /// @notice WETH Implementation used by MevEth
     IWETH public immutable WETH;
     AssetsRebase public assetRebase;
-
-    /*//////////////////////////////////////////////////////////////
-                                Events
-    //////////////////////////////////////////////////////////////*/
-
-    /**
-     * @dev Emitted when rewards are received
-     */
-    event Rewards(address sender, uint256 amount);
-
-    /**
-     * @dev Emitted when validator withdraw funds are received
-     */
-    event ValidatorWithdraw(address sender, uint256 amount);
-
-    /**
-     * @dev Emitted when staking is paused
-     */
-    event StakingPaused();
-
-    /**
-     * @dev Emitted when staking is unpaused
-     */
-    event StakingUnpaused();
-
-    event StakingModuleUpdateCommitted(address indexed oldModule, address indexed pendingModule, uint64 indexed eligibleForFinalization);
-    event StakingModuleUpdateFinalized(address indexed oldModule, address indexed newModule);
-    event StakingModuleUpdateCanceled(address indexed oldModule, address indexed pendingModule);
-    event MevEthShareVaultUpdateCommitted(address indexed oldVault, address indexed pendingVault, uint64 indexed eligibleForFinalization);
-    event MevEthShareVaultUpdateFinalized(address indexed oldVault, address indexed newVault);
-    event MevEthShareVaultUpdateCanceled(address indexed oldVault, address indexed newVault);
 
     /*//////////////////////////////////////////////////////////////
                                 Setup
@@ -115,10 +86,15 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
         ERC20("Mev Liquid Staked Ether", "mevETH", 18)
     {
         mevEthShareVault = address(new MevEthShareVault(address(this), initialFeeRewardsPerBlock));
-        WagyuStaker staker = new WagyuStaker(depositContract, address(this));
-        stakingModule = IStakingModule(address(staker));
+        stakingModule = IStakingModule(address(new WagyuStaker(depositContract, address(this))));
         WETH = IWETH(weth);
         bufferPercentNumerator = 2; // set at 2 %
+    }
+
+    function calculateNeededEtherBuffer() public view returns (uint256) {
+        unchecked {
+            return max((uint256(assetRebase.elastic) * uint256(bufferPercentNumerator)) / 100, 31 ether);
+        }
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -140,6 +116,11 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
     }
 
     /**
+     * @dev Emitted when staking is paused
+     */
+    event StakingPaused();
+
+    /**
      * @notice This function pauses staking for the contract.
      * @dev Only the owner of the contract can call this function.
      */
@@ -150,6 +131,11 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
     }
 
     /**
+     * @dev Emitted when staking is unpaused
+     */
+    event StakingUnpaused();
+
+    /**
      * @notice This function unpauses staking
      * @dev This function is only callable by the owner and sets the stakingPaused variable to false. It also emits the StakingUnpaused event.
      */
@@ -157,6 +143,8 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
         stakingPaused = false;
         emit StakingUnpaused();
     }
+
+    event StakingModuleUpdateCommitted(address indexed oldModule, address indexed pendingModule, uint64 indexed eligibleForFinalization);
 
     /**
      * @notice Starts the process to update the staking module. To finalize the update, the MODULE_UPDATE_TIME_DELAY must elapse and the
@@ -169,13 +157,15 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
         emit StakingModuleUpdateCommitted(address(stakingModule), address(newModule), uint64(block.timestamp + MODULE_UPDATE_TIME_DELAY));
     }
 
+    event StakingModuleUpdateFinalized(address indexed oldModule, address indexed newModule);
+
     /**
      * @notice Finalizes the staking module update after the timelock delay has elapsed.
      */
     function finalizeUpdateStakingModule() external onlyAdmin {
         uint64 committedTimestamp = pendingStakingModuleCommittedTimestamp;
 
-        if (pendingStakingModule == IStakingModule(address(0)) || committedTimestamp == 0) {
+        if (address(pendingStakingModule) == address(0) || _isZero(committedTimestamp)) {
             revert MevEthErrors.InvalidPendingStakingModule();
         }
 
@@ -183,36 +173,34 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
             revert MevEthErrors.PrematureStakingModuleUpdateFinalization();
         }
 
-        address oldModule = address(stakingModule);
-        address newModule = address(pendingStakingModule);
+        emit StakingModuleUpdateFinalized(address(stakingModule), address(pendingStakingModule));
 
         //Update the staking module
-        stakingModule = IStakingModule(newModule);
+        stakingModule = IStakingModule(address(pendingStakingModule));
 
         //Set the pending staking module variables to zero
         pendingStakingModule = IStakingModule(address(0));
         pendingStakingModuleCommittedTimestamp = 0;
-
-        emit StakingModuleUpdateFinalized(oldModule, address(newModule));
     }
+
+    event StakingModuleUpdateCanceled(address indexed oldModule, address indexed pendingModule);
 
     /**
      *  @notice Cancels a pending staking module update
      */
     function cancelUpdateStakingModule() external onlyAdmin {
-        if (pendingStakingModule == IStakingModule(address(0)) || pendingStakingModuleCommittedTimestamp == 0) {
+        if (address(pendingStakingModule) == address(0) || _isZero(pendingStakingModuleCommittedTimestamp)) {
             revert MevEthErrors.InvalidPendingStakingModule();
         }
 
-        address oldModule = address(stakingModule);
-        address pendingModule = address(pendingStakingModule);
+        emit StakingModuleUpdateCanceled(address(stakingModule), address(pendingStakingModule));
 
         //Set the pending staking module variables to zero
         pendingStakingModule = IStakingModule(address(0));
         pendingStakingModuleCommittedTimestamp = 0;
-
-        emit StakingModuleUpdateCanceled(oldModule, address(pendingModule));
     }
+
+    event MevEthShareVaultUpdateCommitted(address indexed oldVault, address indexed pendingVault, uint64 indexed eligibleForFinalization);
 
     /**
      * @notice Starts the process to update the mevEthShareVault. To finalize the update, the MODULE_UPDATE_TIME_DELAY must elapse and the
@@ -225,13 +213,15 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
         emit MevEthShareVaultUpdateCommitted(mevEthShareVault, newMevEthShareVault, uint64(block.timestamp + MODULE_UPDATE_TIME_DELAY));
     }
 
+    event MevEthShareVaultUpdateFinalized(address indexed oldVault, address indexed newVault);
+
     /**
      * @notice Finalizes the mevEthShareVault update after the timelock delay has elapsed.
      */
     function finalizeUpdateMevEthShareVault() external onlyAdmin {
         uint64 committedTimestamp = pendingMevEthShareVaultCommittedTimestamp;
 
-        if (pendingMevEthShareVault == address(0) || committedTimestamp == 0) {
+        if (pendingMevEthShareVault == address(0) || _isZero(committedTimestamp)) {
             revert MevEthErrors.InvalidPendingMevEthShareVault();
         }
 
@@ -239,34 +229,31 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
             revert MevEthErrors.PrematureMevEthShareVaultUpdateFinalization();
         }
 
-        address oldModule = mevEthShareVault;
-        address newModule = pendingMevEthShareVault;
+        emit MevEthShareVaultUpdateFinalized(mevEthShareVault, address(pendingMevEthShareVault));
 
         //Update the mev share vault
-        mevEthShareVault = newModule;
+        mevEthShareVault = pendingMevEthShareVault;
 
         //Set the pending vault variables to zero
         pendingMevEthShareVault = address(0);
         pendingMevEthShareVaultCommittedTimestamp = 0;
-
-        emit MevEthShareVaultUpdateFinalized(oldModule, address(newModule));
     }
+
+    event MevEthShareVaultUpdateCanceled(address indexed oldVault, address indexed newVault);
 
     /**
      *  @notice Cancels a pending mevEthShareVault.
      */
     function cancelUpdateMevEthShareVault() external onlyAdmin {
-        if (pendingMevEthShareVault == address(0) || pendingMevEthShareVaultCommittedTimestamp == 0) {
+        if (pendingMevEthShareVault == address(0) || _isZero(pendingMevEthShareVaultCommittedTimestamp)) {
             revert MevEthErrors.InvalidPendingMevEthShareVault();
         }
 
-        address pendingVault = pendingMevEthShareVault;
+        emit MevEthShareVaultUpdateCanceled(mevEthShareVault, pendingMevEthShareVault);
 
         //Set the pending vault variables to zero
         pendingMevEthShareVault = address(0);
         pendingMevEthShareVaultCommittedTimestamp = 0;
-
-        emit MevEthShareVaultUpdateCanceled(mevEthShareVault, pendingVault);
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -288,11 +275,23 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
         stakingModule.deposit{ value: depositSize }(newData);
     }
 
+    /**
+     * @dev Emitted when rewards are received
+     */
+    event Rewards(address sender, uint256 amount);
+
     function grantRewards() external payable {
+        unchecked {
+            assetRebase.elastic += uint128(msg.value);
+        }
         if (msg.sender != mevEthShareVault) revert MevEthErrors.InvalidSender();
-        assetRebase.elastic += msg.value;
         emit Rewards(msg.sender, msg.value);
     }
+
+    /**
+     * @dev Emitted when validator withdraw funds are received
+     */
+    event ValidatorWithdraw(address sender, uint256 amount);
 
     function grantValidatorWithdraw() external payable {
         if (msg.sender != address(stakingModule)) revert MevEthErrors.InvalidSender();
@@ -305,10 +304,14 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
         }
         if (msg.value < 32 ether) {
             // assume slashed value so reduce elastic balance accordingly
-            assetRebase.elastic -= (32 ether - msg.value);
+            unchecked {
+                assetRebase.elastic -= uint128(32 ether - msg.value);
+            }
         } else {
             // account for any unclaimed rewards
-            assetRebase.elastic += (msg.value - 32 ether);
+            unchecked {
+                assetRebase.elastic += uint128(msg.value - 32 ether);
+            }
         }
     }
 
@@ -324,7 +327,7 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
     /// @return totalManagedAssets The amount of eth controlled by the mevEth contract
     function totalAssets() external view returns (uint256 totalManagedAssets) {
         // Should return the total amount of Ether managed by the contract
-        totalManagedAssets = assetRebase.elastic;
+        totalManagedAssets = uint256(assetRebase.elastic);
     }
 
     /// @param assets The amount of assets to convert to shares
@@ -332,8 +335,12 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
     function convertToShares(uint256 assets) public view returns (uint256 shares) {
         // So if there are no shares, then they will mint 1:1 with assets
         // Otherwise, shares will mint proportional to the amount of assets
-        unchecked {
-            shares = assetRebase.elastic == 0 ? assets : (assets * assetRebase.base) / assetRebase.elastic;
+        if (_isZero(uint256(assetRebase.elastic)) || _isZero(uint256(assetRebase.base))) {
+            shares = assets;
+        } else {
+            unchecked {
+                shares = (assets * uint256(assetRebase.base)) / uint256(assetRebase.elastic);
+            }
         }
     }
 
@@ -342,21 +349,23 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
     function convertToAssets(uint256 shares) public view returns (uint256 assets) {
         // So if there are no shares, then they will mint 1:1 with assets
         // Otherwise, shares will mint proportional to the amount of assets
-        unchecked {
-            assets = assetRebase.elastic == 0 ? shares : (shares * assetRebase.elastic) / assetRebase.base;
+        if (_isZero(uint256(assetRebase.elastic)) || _isZero(uint256(assetRebase.base))) {
+            assets = shares;
+        } else {
+            unchecked {
+                assets = (shares * uint256(assetRebase.elastic)) / uint256(assetRebase.base);
+            }
         }
     }
 
     /// @param receiver The address in question of who would be depositing, doesn't matter in this case
     /// @return maxAssets The maximum amount of assets that can be deposited
-
-    //TODO: should we prefix the receiver arg with _ ?
     function maxDeposit(address receiver) external view returns (uint256 maxAssets) {
         if (stakingPaused) {
             return 0;
         }
         // No practical limit on deposit for Ether
-        maxAssets = 2 ** 256 - 1;
+        maxAssets = uint256(MAX_DEPOSIT);
     }
 
     /// @param assets The amount of assets that would be deposited
@@ -365,38 +374,30 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
         return convertToShares(assets);
     }
 
+    /// @dev internal deposit function to process Weth or Eth deposits
+    function _deposit(uint256 assets) internal {
+        if (_isZero(msg.value)) {
+            ERC20(address(WETH)).safeTransferFrom(msg.sender, address(this), assets);
+            WETH.withdraw(assets);
+        } else {
+            if (msg.value < assets) revert MevEthErrors.DepositTooSmall();
+        }
+    }
+
     /// @param assets The amount of WETH which should be deposited
     /// @param receiver The address user whom should receive the mevEth out
     /// @return shares The amount of shares minted
     function deposit(uint256 assets, address receiver) external payable stakingUnpaused returns (uint256 shares) {
-        if (msg.value != 0) {
-            if (msg.value != assets && assets != 0) {
-                revert MevEthErrors.DepositFailed();
-            }
-            assets = msg.value;
-        } else {
-            uint256 balance = address(this).balance;
+        if (assets < MIN_DEPOSIT) revert MevEthErrors.DepositTooSmall();
 
-            ERC20(address(WETH)).safeTransferFrom(msg.sender, address(this), assets);
-            WETH.withdraw(assets);
+        shares = convertToShares(assets);
 
-            // Not really neccessary, but protects against malicious WETH implementations
-            if (balance + assets != address(this).balance) {
-                revert MevEthErrors.DepositFailed();
-            }
-        }
-        if (assetRebase.elastic == 0 || assetRebase.base == 0) {
-            shares = assets;
-        } else {
-            shares = (assets * assetRebase.elastic) / assetRebase.base;
+        unchecked {
+            assetRebase.elastic += uint128(assets);
+            assetRebase.base += uint128(shares);
         }
 
-        if (assetRebase.base + shares < 1000) {
-            revert MevEthErrors.DepositTooSmall();
-        }
-
-        assetRebase.elastic += assets;
-        assetRebase.base += shares;
+        _deposit(assets);
 
         _mint(receiver, shares);
 
@@ -410,7 +411,7 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
             return 0;
         }
         // No practical limit on mint for Ether
-        return 2 ** 256 - 1;
+        return MAX_DEPOSIT;
     }
 
     /// @param shares The amount of shares that would be minted
@@ -423,34 +424,16 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
     /// @param receiver The address user whom should receive the mevEth out
     /// @return assets The amount of assets deposited
     function mint(uint256 shares, address receiver) external payable stakingUnpaused returns (uint256 assets) {
-        // Pretty much deposit but in reverse
-        if (assetRebase.elastic == 0 || assetRebase.base == 0) {
-            assets = shares;
-        } else {
-            assets = (shares * assetRebase.base) / assetRebase.elastic;
+        if (shares < MIN_DEPOSIT) revert MevEthErrors.DepositTooSmall();
+
+        assets = convertToAssets(shares);
+
+        unchecked {
+            assetRebase.elastic += uint128(assets);
+            assetRebase.base += uint128(shares);
         }
 
-        uint256 balance = address(this).balance;
-
-        if (assetRebase.base + shares < 1000) {
-            revert MevEthErrors.DepositTooSmall();
-        }
-
-        assetRebase.elastic += assets;
-        assetRebase.base += shares;
-
-        if (msg.value > 0) {
-            if (msg.value != assets) {
-                revert MevEthErrors.DepositFailed();
-            }
-        } else {
-            ERC20(address(WETH)).safeTransferFrom(msg.sender, address(this), assets);
-            WETH.withdraw(assets);
-        }
-        // Not really neccessary, but protects against malicious WETH implementations
-        if (balance + assets != address(this).balance) {
-            revert MevEthErrors.DepositFailed();
-        }
+        _deposit(assets);
 
         _mint(receiver, shares);
 
@@ -478,23 +461,23 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
         shares = convertToShares(assets);
 
         if (owner != msg.sender) {
-            if (!(allowance[owner][msg.sender] >= shares)) {
-                revert MevEthErrors.TransferExceedsAllowance();
+            if (allowance[owner][msg.sender] < shares) revert MevEthErrors.TransferExceedsAllowance();
+            unchecked {
+                allowance[owner][msg.sender] -= shares;
             }
-            allowance[owner][msg.sender] -= shares;
         }
 
-        assetRebase.elastic -= assets;
-        assetRebase.base -= shares;
-
-        WETH.deposit{ value: assets }();
-        ERC20(address(WETH)).safeTransfer(receiver, assets);
+        unchecked {
+            assetRebase.elastic -= uint128(assets);
+            assetRebase.base -= uint128(shares);
+        }
 
         _burn(owner, shares);
 
         emit Withdraw(msg.sender, owner, receiver, assets, shares);
 
-        return assets;
+        WETH.deposit{ value: assets }();
+        ERC20(address(WETH)).safeTransfer(receiver, assets);
     }
 
     /// @param owner The address in question of who would be redeeming their shares
@@ -517,23 +500,23 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
         assets = convertToAssets(shares);
 
         if (owner != msg.sender) {
-            if (allowance[owner][msg.sender] < shares) {
-                revert MevEthErrors.TransferExceedsAllowance();
+            if (allowance[owner][msg.sender] < shares) revert MevEthErrors.TransferExceedsAllowance();
+            unchecked {
+                allowance[owner][msg.sender] -= shares;
             }
-            allowance[owner][msg.sender] -= shares;
         }
 
-        assetRebase.elastic -= assets;
-        assetRebase.base -= shares;
-
-        WETH.deposit{ value: assets }();
-        ERC20(address(WETH)).safeTransfer(receiver, assets);
+        unchecked {
+            assetRebase.elastic -= uint128(assets);
+            assetRebase.base -= uint128(shares);
+        }
 
         _burn(owner, shares);
 
         emit Withdraw(msg.sender, owner, receiver, assets, shares);
 
-        return assets;
+        WETH.deposit{ value: assets }();
+        ERC20(address(WETH)).safeTransfer(receiver, assets);
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -554,27 +537,23 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
         return a < b ? a : b;
     }
 
-    function calculateNeededEtherBuffer() public view returns (uint256) {
-        return max((uint256(assetRebase.elastic) * uint256(bufferPercentNumerator)) / 100, 31 ether);
+    /// @dev gas efficient zero check
+    function _isZero(uint256 value) internal pure returns (bool boolValue) {
+        // Stack Only Safety
+        assembly ("memory-safe") {
+            boolValue := iszero(value)
+        }
     }
 
     /// @dev Only Weth withdraw is defined for the behaviour. Deposits should be directed to deposit / mint. Rewards via grantRewards and validator withdraws
     /// via grantValidatorWithdraw.
     receive() external payable {
-        if (msg.sender == address(WETH)) {
-            return;
-        } else {
-            revert MevEthErrors.InvalidSender();
-        }
+        if (msg.sender != address(WETH)) revert MevEthErrors.InvalidSender();
     }
 
     /// @dev Only Weth withdraw is defined for the behaviour. Deposits should be directed to deposit / mint. Rewards via grantRewards and validator withdraws
     /// via grantValidatorWithdraw.
     fallback() external payable {
-        if (msg.sender == address(WETH)) {
-            return;
-        } else {
-            revert MevEthErrors.InvalidSender();
-        }
+        if (msg.sender != address(WETH)) revert MevEthErrors.InvalidSender();
     }
 }
