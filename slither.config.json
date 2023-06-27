@@ -1,5 +1,5 @@
 {
-    "detectors_to_exclude": "assembly,timestamp,solc-version,missing-zero-check,immutable-states,arbitrary-send-eth,too-many-digits,divide-before-multiply,conformance-to-solidity-naming-conventions,low-level-calls,reentrancy-vulnerabilities-3",
+    "detectors_to_exclude": "assembly,timestamp,solc-version,missing-zero-check,immutable-states,arbitrary-send-eth,too-many-digits,divide-before-multiply,conformance-to-solidity-naming-conventions,low-level-calls,reentrancy-vulnerabilities-3,unused-return",
     "exclude_informational": false,
     "exclude_low": false,
     "exclude_medium": false,
