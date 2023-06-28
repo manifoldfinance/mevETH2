@@ -72,15 +72,16 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
     /// @dev pending staking module and committed timestamp will both be zero on deployment
     /// @param authority The address of the controlling admin authority
     /// @param depositContract Beaconchain deposit contract address
-    /// @param initialFeeRewardsPerBlock TODO: describe this variable
     /// @param weth The address of the WETH contract to use for deposits
+    /// @param initialMevEthShareVault TODO:
+    /// @param initialStakingModule TODO:
     /// @dev When the contract is deployed, the pendingStakingModule, pendingStakingModuleCommitedTimestamp, pendingMevEthShareVault and
     /// pendingMevEthShareVaultCommitedTimestamp are all zero initialized
     constructor(
         address authority,
         address depositContract,
         address initialMevEthShareVault,
-        IStakingModule initialStakingModule
+        IStakingModule initialStakingModule,
         address weth
     )
         Auth(authority)
@@ -273,7 +274,7 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
         }
 
         // Deposit the Ether into the staking contract
-        stakingModule.deposit{value: depositSize}(newData);
+        stakingModule.deposit{ value: depositSize }(newData);
     }
 
     /**
@@ -477,7 +478,7 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
 
         emit Withdraw(msg.sender, owner, receiver, assets, shares);
 
-        WETH.deposit{value: assets}();
+        WETH.deposit{ value: assets }();
         ERC20(address(WETH)).safeTransfer(receiver, assets);
     }
 
@@ -516,7 +517,7 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
 
         emit Withdraw(msg.sender, owner, receiver, assets, shares);
 
-        WETH.deposit{value: assets}();
+        WETH.deposit{ value: assets }();
         ERC20(address(WETH)).safeTransfer(receiver, assets);
     }
 
