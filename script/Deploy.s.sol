@@ -4,6 +4,7 @@ pragma solidity ^0.8.19;
 import "forge-std/Script.sol";
 import "src/MevEth.sol";
 import "src/WagyuStaker.sol";
+import { IStakingModule } from "src/interfaces/IStakingModule.sol";
 
 contract DeployScript is Script {
     error UnknownChain();
@@ -16,6 +17,7 @@ contract DeployScript is Script {
         uint256 chainId;
         address beaconDepositContract;
         address weth;
+
         assembly {
             chainId := chainid()
         }
@@ -30,6 +32,7 @@ contract DeployScript is Script {
         } else {
             revert UnknownChain();
         }
+
         vm.startBroadcast();
         MevEth mevETH = new MevEth(authority, beaconDepositContract, INITIAL_FEE_REWARDS_PER_BLOCK, weth);
         vm.stopBroadcast();

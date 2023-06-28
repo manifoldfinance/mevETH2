@@ -57,12 +57,7 @@ contract MevEthTest is Test {
         // Deploy the mevETH contract
         // mev_eth = new MevEth(SamBacha, address(depositContract), address(weth));
 
-        // Create initial share vault and dummy staking module for testing
-        address mevEthShareVault = address(new MevEthShareVault(address(this), FEE_REWARDS_PER_BLOCK));
-        IStakingModule dummyStakingModule = IStakingModule(address(0));
-
-        mevEth = new MevEth(SamBacha, address(depositContract), mevEthShareVault, dummyStakingModule, address(weth));
-
+        mevEth = new MevEth(SamBacha, address(depositContract), FEE_REWARDS_PER_BLOCK, address(weth));
         vm.prank(SamBacha);
         mevEth.addOperator(Operator01);
     }

@@ -113,20 +113,9 @@ contract ValidatorTest is MevEthTest {
         assertEq(address(mevEth.stakingModule()), address(newStakingModule));
     }
 
-    // Helper function to create a new validator for testing
-    function _createNewValidator(uint256 depositSize, IStakingModule.ValidatorData memory validatorData) internal {
-        //Deal User01 the staking module deposit size and deposit into the mevEth contract
-        vm.deal(User01, depositSize);
-        vm.prank(User01);
-        mevEth.deposit{ value: depositSize }(depositSize, User01);
-
-        //Cache the balance before validator creation, create the validator, and check the balance after
-        vm.prank(Operator01);
-        mevEth.createValidator(validatorData);
-    }
-
     /**
-     * TODO:
+     * Tests updating to Wagyu staking module. This function should update the staking module to the WagyuStaker and create a new validator
+     * asserting that the new module's balance and validator count increase accordingly.
      */
     function testUpdateToWagyuStakingModule() public {
         // Update the staking module to the WagyuStaker and create a new validator
@@ -134,22 +123,22 @@ contract ValidatorTest is MevEthTest {
         IStakingModule wagyuStakingModule = IStakingModule(address(new WagyuStaker(depositContract, address(mevEth))));
         _updateStakingModule(wagyuStakingModule);
 
-        uint256 stakingModuleDepositSize = mevEth.stakingModule().VALIDATOR_DEPOSIT_SIZE();
+        uint256 depositSize = mevEth.stakingModule().VALIDATOR_DEPOSIT_SIZE();
         IStakingModule.ValidatorData memory validatorData = mockValidatorData(User01, 32 ether / 1 gwei);
 
+        //Deal User01 the staking module deposit size and deposit into the mevEth contract
+        vm.deal(User01, depositSize * 2);
+        vm.prank(User01);
+        mevEth.deposit{ value: depositSize * 2 }(depositSize * 2, User01);
+
+        vm.prank(Operator01);
         vm.expectEmit(true, true, true, true, address(wagyuStakingModule));
         emit NewValidator(
             validatorData.operator, validatorData.pubkey, validatorData.withdrawal_credentials, validatorData.signature, validatorData.deposit_data_root
         );
-        _createNewValidator(stakingModuleDepositSize * 2, validatorData);
+        mevEth.createValidator(validatorData);
 
-        assertEq(wagyuStakingModule.balance(), stakingModuleDepositSize * 2);
+        assertEq(wagyuStakingModule.balance(), depositSize);
         assertEq(wagyuStakingModule.validators(), 1);
     }
-
-    /**
-     * TODO:
-     */
-
-    function testNegativeUpdateToWagyuStakingModule() public { }
 }
