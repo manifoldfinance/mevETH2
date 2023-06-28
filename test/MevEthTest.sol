@@ -13,6 +13,12 @@ import "./mocks/LZEndpointMock.sol";
 import "../src/MevEthShareVault.sol";
 
 contract MevEthTest is Test {
+    // LayerZero Ids
+    uint16 constant ETH_ID = 101;
+    uint16 constant GOERLI_ID = 10_121;
+    uint16 constant POLYGON_ID = 109;
+    uint16 constant ARBITRUM_ID = 110;
+
     // Admin account
     address constant SamBacha = address(0x06);
 
@@ -56,11 +62,7 @@ contract MevEthTest is Test {
         // Deploy the WETH9 contract
         weth = new WETH9();
 
-        uint16 chainId;
-        assembly {
-            chainId := chainid()
-        }
-        layerZeroEndpoint = new LZEndpointMock(chainId);
+        layerZeroEndpoint = new LZEndpointMock(ETH_ID);
 
         // Deploy the mevETH contract
         mevEth = new MevEth(SamBacha, address(depositContract), FEE_REWARDS_PER_BLOCK, address(weth), address(layerZeroEndpoint));
