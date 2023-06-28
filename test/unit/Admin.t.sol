@@ -440,4 +440,15 @@ contract MevAdminTest is MevEthTest {
         assertEq(mevEth.pendingMevEthShareVaultCommittedTimestamp(), committedTimestamp);
         assertEq(address(mevEth.mevEthShareVault()), existingVault);
     }
+
+    /**
+     * TODO:
+     */
+    function testInitMevEth() public { }
+
+    /**
+     * TODO:
+     */
+
+    function testNegativeInitMevEth() public { }
 }

@@ -55,9 +55,15 @@ contract MevEthTest is Test {
         weth = new WETH9();
 
         // Deploy the mevETH contract
-        // mev_eth = new MevEth(SamBacha, address(depositContract), address(weth));
+        mevEth = new MevEth(SamBacha, address(weth));
 
-        mevEth = new MevEth(SamBacha, address(depositContract), FEE_REWARDS_PER_BLOCK, address(weth));
+        // Initialize the mevETH contract
+        address initialShareVault = address(new MevEthShareVault(address(mevEth), FEE_REWARDS_PER_BLOCK));
+        address initialStakingModule = address(IStakingModule(address(new WagyuStaker(address(depositContract), address(mevEth)))));
+        vm.prank(SamBacha);
+        mevEth.init(initialShareVault, initialStakingModule);
+
+        // Add a new operator
         vm.prank(SamBacha);
         mevEth.addOperator(Operator01);
     }

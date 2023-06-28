@@ -34,7 +34,10 @@ contract DeployScript is Script {
         }
 
         vm.startBroadcast();
-        MevEth mevETH = new MevEth(authority, beaconDepositContract, INITIAL_FEE_REWARDS_PER_BLOCK, weth);
+        MevEth mevETH = new MevEth(authority, weth);
+
+        //TODO: initialize the contract
+        require(false, "TODO: initialize the contract");
         vm.stopBroadcast();
     }
 }

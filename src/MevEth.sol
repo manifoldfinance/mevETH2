@@ -71,24 +71,27 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
     /// @notice Construction creates mevETH token, sets authority, staking contract and weth address
     /// @dev pending staking module and committed timestamp will both be zero on deployment
     /// @param authority The address of the controlling admin authority
-    /// @param depositContract Beaconchain deposit contract address
-    /// @param initialFeeRewardsPerBlock TODO: describe this variable
     /// @param weth The address of the WETH contract to use for deposits
     /// @dev When the contract is deployed, the pendingStakingModule, pendingStakingModuleCommitedTimestamp, pendingMevEthShareVault and
     /// pendingMevEthShareVaultCommitedTimestamp are all zero initialized
-    constructor(
-        address authority,
-        address depositContract,
-        uint256 initialFeeRewardsPerBlock,
-        address weth
-    )
-        Auth(authority)
-        ERC20("Mev Liquid Staked Ether", "mevETH", 18)
-    {
-        mevEthShareVault = address(new MevEthShareVault(address(this), initialFeeRewardsPerBlock));
-        stakingModule = IStakingModule(address(new WagyuStaker(depositContract, address(this))));
+    constructor(address authority, address weth) Auth(authority) ERC20("Mev Liquid Staked Ether", "mevETH", 18) {
         WETH = IWETH(weth);
         bufferPercentNumerator = 2; // set at 2 %
+    }
+
+    /// @param initialShareVault TODO:
+    /// @param initialStakingModule TODO:
+    function init(address initialShareVault, address initialStakingModule) external onlyAdmin {
+        if (initialShareVault == address(0)) {
+            revert MevEthErrors.ZeroAddress();
+        }
+
+        if (initialStakingModule == address(0)) {
+            revert MevEthErrors.ZeroAddress();
+        }
+
+        mevEthShareVault = initialShareVault;
+        stakingModule = IStakingModule(initialStakingModule);
     }
 
     function calculateNeededEtherBuffer() public view returns (uint256) {
