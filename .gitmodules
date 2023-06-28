@@ -5,3 +5,6 @@
 	path = lib/solmate
 	url = https://github.com/transmissions11/solmate
 	branch = "main"
+[submodule "lib/pigeon"]
+	path = lib/pigeon
+	url = https://github.com/exp-table/pigeon
