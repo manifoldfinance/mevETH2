@@ -442,12 +442,33 @@ contract MevAdminTest is MevEthTest {
     }
 
     /**
-     * TODO:
+     * Test MevEth init function, check for event emission and state changes.
+     * When an authorized caller invokes this function, it should emit a MevEthInitialized event, the initialized variable should be set to true,
+     * additionally, the staking module should be set to the specified staking module and the mevEthShareVault should be set to the specified mevEthShareVault.
      */
-    function testInitMevEth() public { }
+    function testInitMevEth() public {
+        // Deploy the mevETH contract
+        mevEth = new MevEth(SamBacha, address(weth));
+
+        // Initialize the mevETH contract
+        address initialShareVault = address(new MevEthShareVault(address(mevEth), FEE_REWARDS_PER_BLOCK));
+        address initialStakingModule = address(IStakingModule(address(new WagyuStaker(address(depositContract), address(mevEth)))));
+
+        assert(!mevEth.initialized());
+
+        vm.expectEmit(true, true, false, false, address(mevEth));
+        emit MevEthInitialized(initialShareVault, initialStakingModule);
+        vm.prank(SamBacha);
+
+        mevEth.init(initialShareVault, initialStakingModule);
+        assert(mevEth.initialized());
+        assertEq(mevEth.stakingModule, address(initialStakingModule));
+        assertEq(mevEth.mevEthShareVault, address(initialShareVault));
+    }
 
     /**
-     * TODO:
+     * Test failure conditions for MevEth init function. Should fail when called by an unauthorized caller. Should fail when share vault or staking module are
+     * address(0) and should fail when the contract is already initialized.
      */
 
     function testNegativeInitMevEth() public { }

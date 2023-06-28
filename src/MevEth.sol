@@ -49,6 +49,7 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
                             Configuration Variables
     //////////////////////////////////////////////////////////////*/
     bool public stakingPaused;
+    bool public initalized;
     /// @notice amount of eth to retain on contract for withdrawls as a percent numerator
     uint8 public bufferPercentNumerator;
     uint64 public pendingStakingModuleCommittedTimestamp;
@@ -79,9 +80,30 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
         bufferPercentNumerator = 2; // set at 2 %
     }
 
+    function calculateNeededEtherBuffer() public view returns (uint256) {
+        unchecked {
+            return max((uint256(fraction.elastic) * uint256(bufferPercentNumerator)) / 100, 31 ether);
+        }
+    }
+
+    /*//////////////////////////////////////////////////////////////
+                            Admin Control Panel
+    //////////////////////////////////////////////////////////////*/
+    /**
+     * @dev Emitted when contract is initialized
+     */
+    event MevEthInitialized(address indexed mevEthShareVault, address indexed stakingModule);
+
     /// @param initialShareVault TODO:
     /// @param initialStakingModule TODO:
+
     function init(address initialShareVault, address initialStakingModule) external onlyAdmin {
+        if (initialized) {
+            revert MevEthErrors.AlreadyInitialized();
+        }
+
+        initalized = true;
+
         if (initialShareVault == address(0)) {
             revert MevEthErrors.ZeroAddress();
         }
@@ -93,16 +115,6 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
         mevEthShareVault = initialShareVault;
         stakingModule = IStakingModule(initialStakingModule);
     }
-
-    function calculateNeededEtherBuffer() public view returns (uint256) {
-        unchecked {
-            return max((uint256(fraction.elastic) * uint256(bufferPercentNumerator)) / 100, 31 ether);
-        }
-    }
-
-    /*//////////////////////////////////////////////////////////////
-                            Admin Control Panel
-    //////////////////////////////////////////////////////////////*/
 
     /// @notice Update bufferPercentNumerator
     /// @param newBufferPercentNumerator updated percent numerator
