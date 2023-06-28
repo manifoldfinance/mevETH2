@@ -49,7 +49,7 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
                             Configuration Variables
     //////////////////////////////////////////////////////////////*/
     bool public stakingPaused;
-    bool public initalized;
+    bool public initialized;
     /// @notice amount of eth to retain on contract for withdrawls as a percent numerator
     uint8 public bufferPercentNumerator;
     uint64 public pendingStakingModuleCommittedTimestamp;
