@@ -66,6 +66,21 @@
           '';
         }
         {
+          category = "deployments";
+          name = "deploy-to-goerli";
+          help = "Deploy the Smart Contracts to goerli";
+          command = ''
+            forge script $PRJ_ROOT/script/Deploy.s.sol:DeployScript \
+              --broadcast \
+              --private-key $PRIVATE_KEY \
+              --verify \
+              -vvv \
+              --optimize \
+              --optimizer-runs 2000 \
+              --rpc-url $RPC_GOERLI $@
+          '';
+        }
+        {
           category = "tests";
           name = "tests";
           help = "Test the Smart Contracts";
