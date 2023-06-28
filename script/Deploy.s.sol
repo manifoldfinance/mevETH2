@@ -35,9 +35,10 @@ contract DeployScript is Script {
 
         vm.startBroadcast();
         MevEth mevETH = new MevEth(authority, weth);
+        address initialShareVault = address(new MevEthShareVault(address(mevEth), FEE_REWARDS_PER_BLOCK));
+        address initialStakingModule = address(IStakingModule(address(new WagyuStaker(address(depositContract), address(mevEth)))));
+        mevEth.init(initialShareVault, initialStakingModule);
 
-        //TODO: initialize the contract
-        require(false, "TODO: initialize the contract");
         vm.stopBroadcast();
     }
 }
