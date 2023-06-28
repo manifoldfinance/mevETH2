@@ -102,7 +102,7 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
             revert MevEthErrors.AlreadyInitialized();
         }
 
-        initalized = true;
+        initialized = true;
 
         if (initialShareVault == address(0)) {
             revert MevEthErrors.ZeroAddress();
@@ -114,6 +114,8 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
 
         mevEthShareVault = initialShareVault;
         stakingModule = IStakingModule(initialStakingModule);
+
+        emit MevEthInitialized(initialShareVault, initialStakingModule);
     }
 
     /// @notice Update bufferPercentNumerator

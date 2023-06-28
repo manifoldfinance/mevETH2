@@ -2,6 +2,7 @@
 pragma solidity 0.8.20;
 
 import "../MevEthTest.sol";
+import "../../src/MevEth.sol";
 import "src/libraries/Auth.sol";
 import "../mocks/DepositContract.sol";
 import { IStakingModule } from "../../src/interfaces/IStakingModule.sol";
@@ -448,22 +449,23 @@ contract MevAdminTest is MevEthTest {
      */
     function testInitMevEth() public {
         // Deploy the mevETH contract
-        mevEth = new MevEth(SamBacha, address(weth));
+        MevEth mevEth = new MevEth(SamBacha, address(weth));
 
-        // Initialize the mevETH contract
+        // Create new share vault and staking module
         address initialShareVault = address(new MevEthShareVault(address(mevEth), FEE_REWARDS_PER_BLOCK));
         address initialStakingModule = address(IStakingModule(address(new WagyuStaker(address(depositContract), address(mevEth)))));
-
         assert(!mevEth.initialized());
 
+        // Initialize the MevEth contract
         vm.expectEmit(true, true, false, false, address(mevEth));
         emit MevEthInitialized(initialShareVault, initialStakingModule);
         vm.prank(SamBacha);
-
         mevEth.init(initialShareVault, initialStakingModule);
+
+        // Assert the state changes
         assert(mevEth.initialized());
-        assertEq(mevEth.stakingModule, address(initialStakingModule));
-        assertEq(mevEth.mevEthShareVault, address(initialShareVault));
+        assertEq(address(mevEth.stakingModule()), address(initialStakingModule));
+        assertEq(mevEth.mevEthShareVault(), address(initialShareVault));
     }
 
     /**
@@ -471,5 +473,37 @@ contract MevAdminTest is MevEthTest {
      * address(0) and should fail when the contract is already initialized.
      */
 
-    function testNegativeInitMevEth() public { }
+    function testNegativeInitMevEth() public {
+        // Deploy the mevETH contract
+        MevEth mevEth = new MevEth(SamBacha, address(weth));
+
+        // Create new share vault and staking module
+        address initialShareVault = address(new MevEthShareVault(address(mevEth), FEE_REWARDS_PER_BLOCK));
+        address initialStakingModule = address(IStakingModule(address(new WagyuStaker(address(depositContract), address(mevEth)))));
+
+        // Expect an unauthorized revert
+        vm.expectRevert(Auth.Unauthorized.selector);
+        mevEth.init(initialShareVault, initialStakingModule);
+
+        // Expect an address zero revert
+        vm.expectRevert(MevEthErrors.ZeroAddress.selector);
+        vm.prank(SamBacha);
+        mevEth.init(address(0), initialStakingModule);
+
+        vm.expectRevert(MevEthErrors.ZeroAddress.selector);
+        vm.prank(SamBacha);
+        mevEth.init(initialShareVault, address(0));
+
+        // Assert state changes have not occured
+        assert(!mevEth.initialized());
+        assertEq(address(mevEth.stakingModule()), address(0));
+        assertEq(mevEth.mevEthShareVault(), address(0));
+
+        vm.prank(SamBacha);
+        mevEth.init(initialShareVault, initialStakingModule);
+
+        vm.expectRevert(MevEthErrors.AlreadyInitialized.selector);
+        vm.prank(SamBacha);
+        mevEth.init(initialShareVault, initialStakingModule);
+    }
 }

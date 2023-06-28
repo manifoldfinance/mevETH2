@@ -45,7 +45,7 @@ contract MevEthTest is Test {
     event MevEthShareVaultUpdateFinalized(address indexed oldVault, address indexed newVault);
     event MevEthShareVaultUpdateCanceled(address indexed oldVault, address indexed newVault);
     event NewValidator(address indexed operator, bytes pubkey, bytes32 withdrawalCredentials, bytes signature, bytes32 deposit_data_root);
-    event MevEthInitialized(address indexed mevEthShareVault, address stakingModule);
+    event MevEthInitialized(address indexed mevEthShareVault, address indexed stakingModule);
 
     function setUp() public virtual {
         // Deploy the BeaconChainDepositContract

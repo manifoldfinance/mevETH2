@@ -33,4 +33,5 @@ interface MevEthErrors {
     error TransferExceedsAllowance();
     error TransferFailed();
     error ZeroAddress();
+    error AlreadyInitialized();
 }
