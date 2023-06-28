@@ -79,14 +79,15 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
     constructor(
         address authority,
         address depositContract,
-        uint256 initialFeeRewardsPerBlock,
+        address initialMevEthShareVault,
+        IStakingModule initialStakingModule
         address weth
     )
         Auth(authority)
         ERC20("Mev Liquid Staked Ether", "mevETH", 18)
     {
-        mevEthShareVault = address(new MevEthShareVault(address(this), initialFeeRewardsPerBlock));
-        stakingModule = IStakingModule(address(new WagyuStaker(depositContract, address(this))));
+        mevEthShareVault = initialMevEthShareVault;
+        stakingModule = initialStakingModule;
         WETH = IWETH(weth);
         bufferPercentNumerator = 2; // set at 2 %
     }
