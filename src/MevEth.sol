@@ -94,16 +94,9 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
      */
     event MevEthInitialized(address indexed mevEthShareVault, address indexed stakingModule);
 
-    /// @param initialShareVault TODO:
-    /// @param initialStakingModule TODO:
-
+    /// @param initialShareVault The initial share vault to set when initializing the contract.
+    /// @param initialStakingModule The initial staking module to set when initializing the contract.
     function init(address initialShareVault, address initialStakingModule) external onlyAdmin {
-        if (initialized) {
-            revert MevEthErrors.AlreadyInitialized();
-        }
-
-        initialized = true;
-
         if (initialShareVault == address(0)) {
             revert MevEthErrors.ZeroAddress();
         }
@@ -111,6 +104,12 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
         if (initialStakingModule == address(0)) {
             revert MevEthErrors.ZeroAddress();
         }
+
+        if (initialized) {
+            revert MevEthErrors.AlreadyInitialized();
+        }
+
+        initialized = true;
 
         mevEthShareVault = initialShareVault;
         stakingModule = IStakingModule(initialStakingModule);
