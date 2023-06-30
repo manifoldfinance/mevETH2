@@ -2,7 +2,7 @@
 pragma solidity 0.8.20;
 
 import "forge-std/Test.sol";
-import { LayerZeroHelper } from "../layerzero/LayerZeroHelper.sol";
+import { LayerZeroHelper } from "pigeon/layerzero/LayerZeroHelper.sol";
 import "../MevEthTest.sol";
 import "src/interfaces/Errors.sol";
 import "src/interfaces/ICommonOFT.sol";
@@ -40,7 +40,7 @@ contract LayerZeroPigeonTest is MevEthTest {
         lzHelper = new LayerZeroHelper();
 
         // deploy mevEth (mainnet)
-        mevEth = new MevEth(SamBacha, mainnetDepositContract, FEE_REWARDS_PER_BLOCK, mainnetWeth, L1_lzEndpoint);
+        mevEth = new MevEth(SamBacha, mainnetWeth, L1_lzEndpoint);
 
         ARBITRUM_FORK_ID = vm.createSelectFork(RPC_ARBITRUM_MAINNET);
         arbMevEth = new OFTV2(name, symbol, 18, 8, SamBacha, arbitrumEndpoint);
