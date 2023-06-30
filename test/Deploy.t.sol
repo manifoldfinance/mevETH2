@@ -8,7 +8,7 @@ import "forge-std/Test.sol";
 import "script/Deploy.s.sol";
 
 contract DeployTest is Test {
-    string RPC_ETH_MAINNET = vm.envString("ETH_MAINNET_RPC_URL");
+    string RPC_ETH_MAINNET = vm.envString("RPC_MAINNET");
     uint256 FORK_ID;
     DeployScript deploy;
 
@@ -18,6 +18,7 @@ contract DeployTest is Test {
     }
 
     function testDeploy() public virtual {
+        vm.selectFork(FORK_ID);
         deploy.run();
     }
 }
