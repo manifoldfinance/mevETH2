@@ -53,6 +53,8 @@ contract MevEthTest is Test {
     event MevEthShareVaultUpdateCommitted(address indexed oldVault, address indexed pendingVault, uint64 indexed eligibleForFinalization);
     event MevEthShareVaultUpdateFinalized(address indexed oldVault, address indexed newVault);
     event MevEthShareVaultUpdateCanceled(address indexed oldVault, address indexed newVault);
+    event NewValidator(address indexed operator, bytes pubkey, bytes32 withdrawalCredentials, bytes signature, bytes32 deposit_data_root);
+    event MevEthInitialized(address indexed mevEthShareVault, address indexed stakingModule);
 
     function setUp() public virtual {
         // Deploy the BeaconChainDepositContract
@@ -65,7 +67,15 @@ contract MevEthTest is Test {
         layerZeroEndpoint = new LZEndpointMock(ETH_ID);
 
         // Deploy the mevETH contract
-        mevEth = new MevEth(SamBacha, address(depositContract), FEE_REWARDS_PER_BLOCK, address(weth), address(layerZeroEndpoint));
+        mevEth = new MevEth(SamBacha, address(weth), address(layerZeroEndpoint));
+
+        // Initialize the mevETH contract
+        address initialShareVault = address(new MevEthShareVault(address(mevEth), FEE_REWARDS_PER_BLOCK));
+        address initialStakingModule = address(IStakingModule(address(new WagyuStaker(address(depositContract), address(mevEth)))));
+        vm.prank(SamBacha);
+        mevEth.init(initialShareVault, initialStakingModule);
+
+        // Add a new operator
         vm.prank(SamBacha);
         mevEth.addOperator(Operator01);
     }

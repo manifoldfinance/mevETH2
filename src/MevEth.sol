@@ -49,6 +49,7 @@ contract MevEth is OFTV2, IERC4626, ITinyMevEth {
                             Configuration Variables
     //////////////////////////////////////////////////////////////*/
     bool public stakingPaused;
+    bool public initialized;
     /// @notice amount of eth to retain on contract for withdrawls as a percent numerator
     uint8 public bufferPercentNumerator;
     uint64 public pendingStakingModuleCommittedTimestamp;
@@ -68,25 +69,12 @@ contract MevEth is OFTV2, IERC4626, ITinyMevEth {
                                 Setup
     //////////////////////////////////////////////////////////////*/
 
-    /// @notice Construction creates mevETH token, sets authority, staking contract and weth address
+    /// @notice Construction creates mevETH token, sets authority and weth address
     /// @dev pending staking module and committed timestamp will both be zero on deployment
     /// @param authority The address of the controlling admin authority
-    /// @param depositContract Beaconchain deposit contract address
-    /// @param initialFeeRewardsPerBlock TODO: describe this variable
     /// @param weth The address of the WETH contract to use for deposits
-    /// @dev When the contract is deployed, the pendingStakingModule, pendingStakingModuleCommitedTimestamp, pendingMevEthShareVault and
-    /// pendingMevEthShareVaultCommitedTimestamp are all zero initialized
-    constructor(
-        address authority,
-        address depositContract,
-        uint256 initialFeeRewardsPerBlock,
-        address weth,
-        address layerZeroEndpoint
-    )
-        OFTV2("Mev Liquid Staked Ether", "mevETH", 18, 8, authority, layerZeroEndpoint)
-    {
-        mevEthShareVault = address(new MevEthShareVault(address(this), initialFeeRewardsPerBlock));
-        stakingModule = IStakingModule(address(new WagyuStaker(depositContract, address(this))));
+    /// @param layerZeroEndpoint chain specific endpoint
+    constructor(address authority, address weth, address layerZeroEndpoint) OFTV2("Mev Liquid Staked Ether", "mevETH", 18, 8, authority, layerZeroEndpoint) {
         WETH = IWETH(weth);
         bufferPercentNumerator = 2; // set at 2 %
     }
@@ -100,6 +88,33 @@ contract MevEth is OFTV2, IERC4626, ITinyMevEth {
     /*//////////////////////////////////////////////////////////////
                             Admin Control Panel
     //////////////////////////////////////////////////////////////*/
+    /**
+     * @dev Emitted when contract is initialized
+     */
+    event MevEthInitialized(address indexed mevEthShareVault, address indexed stakingModule);
+
+    /// @param initialShareVault The initial share vault to set when initializing the contract.
+    /// @param initialStakingModule The initial staking module to set when initializing the contract.
+    function init(address initialShareVault, address initialStakingModule) external onlyAdmin {
+        if (initialShareVault == address(0)) {
+            revert MevEthErrors.ZeroAddress();
+        }
+
+        if (initialStakingModule == address(0)) {
+            revert MevEthErrors.ZeroAddress();
+        }
+
+        if (initialized) {
+            revert MevEthErrors.AlreadyInitialized();
+        }
+
+        initialized = true;
+
+        mevEthShareVault = initialShareVault;
+        stakingModule = IStakingModule(initialStakingModule);
+
+        emit MevEthInitialized(initialShareVault, initialStakingModule);
+    }
 
     /// @notice Update bufferPercentNumerator
     /// @param newBufferPercentNumerator updated percent numerator
@@ -272,7 +287,7 @@ contract MevEth is OFTV2, IERC4626, ITinyMevEth {
         }
 
         // Deposit the Ether into the staking contract
-        stakingModule.deposit{value: depositSize}(newData);
+        stakingModule.deposit{ value: depositSize }(newData);
     }
 
     /**
@@ -476,7 +491,7 @@ contract MevEth is OFTV2, IERC4626, ITinyMevEth {
 
         emit Withdraw(msg.sender, owner, receiver, assets, shares);
 
-        WETH.deposit{value: assets}();
+        WETH.deposit{ value: assets }();
         ERC20(address(WETH)).safeTransfer(receiver, assets);
     }
 
@@ -515,7 +530,7 @@ contract MevEth is OFTV2, IERC4626, ITinyMevEth {
 
         emit Withdraw(msg.sender, owner, receiver, assets, shares);
 
-        WETH.deposit{value: assets}();
+        WETH.deposit{ value: assets }();
         ERC20(address(WETH)).safeTransfer(receiver, assets);
     }
 

@@ -32,4 +32,6 @@ interface MevEthErrors {
     error InvalidPendingMevEthShareVault();
     error TransferExceedsAllowance();
     error TransferFailed();
+    error ZeroAddress();
+    error AlreadyInitialized();
 }
