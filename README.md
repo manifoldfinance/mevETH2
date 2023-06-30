@@ -48,6 +48,13 @@ After cloning this repository and entering inside, run `direnv allow` when promp
 direnv: export +DEVSHELL_DIR +FOUNDRY_SOLC +IN_NIX_SHELL +NIXPKGS_PATH +PRJ_DATA_DIR +PRJ_ROOT +name ~PATH ~XDG_DATA_DIRS
 ```
 
+The `lib` directory contains git-submodules which in turn also have submodules.
+To update all submodules recursively, execute:
+
+```bash
+git submodule update --init --recursive
+```
+
 ### Docs
 
 To build the docs locally, run `docs-build`. The output will be inside of `./result`.
