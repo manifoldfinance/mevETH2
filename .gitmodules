@@ -8,3 +8,4 @@
 [submodule "lib/pigeon"]
 	path = lib/pigeon
 	url = https://github.com/manifoldfinance/pigeon
+	branch = "OFTV2"
