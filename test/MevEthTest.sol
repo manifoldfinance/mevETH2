@@ -10,10 +10,31 @@ import "src/MevEth.sol";
 import "./mocks/WETH9.sol";
 import "./mocks/DepositContract.sol";
 import "../src/MevEthShareVault.sol";
+import "../lib/safe-tools/src/SafeTestTools.sol";
 
-contract MevEthTest is Test {
+contract MevEthTest is SafeTestTools, Test {
     // Admin account
-    address constant SamBacha = address(0x06);
+
+    uint256 constant SAM_BACHA_PRIVATE_KEY = 0x01;
+    address immutable SamBacha = vm.addr(SAM_BACHA_PRIVATE_KEY);
+
+    uint256 constant SAFE_OWNER_1_PRIVATE_KEY = 0x02;
+    address immutable SafeOwner1 = vm.addr(SAFE_OWNER_1_PRIVATE_KEY);
+
+    uint256 constant SAFE_OWNER_2_PRIVATE_KEY = 0x03;
+    address immutable SafeOwner2 = vm.addr(SAFE_OWNER_2_PRIVATE_KEY);
+
+    uint256 constant SAFE_OWNER_3_PRIVATE_KEY = 0x04;
+    address immutable SafeOwner3 = vm.addr(SAFE_OWNER_3_PRIVATE_KEY);
+
+    uint256 constant SAFE_OWNER_4_PRIVATE_KEY = 0x05;
+    address immutable SafeOwner4 = vm.addr(SAFE_OWNER_4_PRIVATE_KEY);
+
+    uint256 constant SAFE_OWNER_5_PRIVATE_KEY = 0x06;
+    address immutable SafeOwner5 = vm.addr(SAFE_OWNER_5_PRIVATE_KEY);
+
+    uint256 constant SAFE_OWNER_6_PRIVATE_KEY = 0x07;
+    address immutable SafeOwner6 = vm.addr(SAFE_OWNER_6_PRIVATE_KEY);
 
     // User account
     address constant User01 = address(0x01);
@@ -58,8 +79,22 @@ contract MevEthTest is Test {
         // Deploy the mevETH contract
         mevEth = new MevEth(SamBacha, address(weth));
 
-        // Initialize the mevETH contract
-        address initialShareVault = address(new MevEthShareVault(address(mevEth), FEE_REWARDS_PER_BLOCK));
+        // Initialize initial share vault as a multisig
+
+        // Create an array with a length of 7
+        uint256[] memory ownerPKs = new uint256[](7);
+
+        ownerPKs[0] = SAM_BACHA_PRIVATE_KEY;
+        ownerPKs[1] = SAFE_OWNER_1_PRIVATE_KEY;
+        ownerPKs[2] = SAFE_OWNER_2_PRIVATE_KEY;
+        ownerPKs[3] = SAFE_OWNER_3_PRIVATE_KEY;
+        ownerPKs[4] = SAFE_OWNER_4_PRIVATE_KEY;
+        ownerPKs[5] = SAFE_OWNER_5_PRIVATE_KEY;
+        ownerPKs[6] = SAFE_OWNER_6_PRIVATE_KEY;
+
+        SafeInstance memory safeInstance = _setupSafe(ownerPKs, 5);
+        address initialShareVault = address(safeInstance.safe);
+
         address initialStakingModule = address(IStakingModule(address(new WagyuStaker(address(depositContract), address(mevEth)))));
         vm.prank(SamBacha);
         mevEth.init(initialShareVault, initialStakingModule);
