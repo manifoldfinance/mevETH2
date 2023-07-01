@@ -7,4 +7,4 @@
 	branch = "main"
 [submodule "lib/safe-tools"]
 	path = lib/safe-tools
-	url = https://github.com/colinnielsen/safe-tools
+	url = https://github.com/0xKitsune/safe-tools
