@@ -36,6 +36,8 @@ contract MevEthTest is SafeTestTools, Test {
     uint256 constant SAFE_OWNER_6_PRIVATE_KEY = 0x07;
     address immutable SafeOwner6 = vm.addr(SAFE_OWNER_6_PRIVATE_KEY);
 
+    SafeInstance internal multisigSafeInstance;
+
     // User account
     address constant User01 = address(0x01);
     address constant User02 = address(0x02);
@@ -67,6 +69,7 @@ contract MevEthTest is SafeTestTools, Test {
     event MevEthShareVaultUpdateCanceled(address indexed oldVault, address indexed newVault);
     event NewValidator(address indexed operator, bytes pubkey, bytes32 withdrawalCredentials, bytes signature, bytes32 deposit_data_root);
     event MevEthInitialized(address indexed mevEthShareVault, address indexed stakingModule);
+    event Rewards(address sender, uint256 amount);
 
     function setUp() public virtual {
         // Deploy the BeaconChainDepositContract
@@ -93,6 +96,8 @@ contract MevEthTest is SafeTestTools, Test {
         ownerPKs[6] = SAFE_OWNER_6_PRIVATE_KEY;
 
         SafeInstance memory safeInstance = _setupSafe(ownerPKs, 5);
+        multisigSafeInstance = safeInstance;
+
         address initialShareVault = address(safeInstance.safe);
 
         address initialStakingModule = address(IStakingModule(address(new WagyuStaker(address(depositContract), address(mevEth)))));
@@ -102,5 +107,43 @@ contract MevEthTest is SafeTestTools, Test {
         // Add a new operator
         vm.prank(SamBacha);
         mevEth.addOperator(Operator01);
+    }
+
+    // Helper function to update the staking module for testing
+    function _updateStakingModule(IStakingModule newStakingModule) internal {
+        // Commit update to the staking module
+        uint64 finalizationTimestamp = uint64(block.timestamp + mevEth.MODULE_UPDATE_TIME_DELAY());
+        uint256 committedTimestamp = block.timestamp;
+
+        vm.prank(SamBacha);
+        mevEth.commitUpdateStakingModule(newStakingModule);
+
+        // Warp to the finalization timestamp, finalize the update
+        vm.warp(finalizationTimestamp);
+        vm.prank(SamBacha);
+        mevEth.finalizeUpdateStakingModule();
+
+        assertEq(address(mevEth.pendingStakingModule()), address(0));
+        assertEq(mevEth.pendingStakingModuleCommittedTimestamp(), 0);
+        assertEq(address(mevEth.stakingModule()), address(newStakingModule));
+    }
+
+    // Helper function to update the share vault for testing
+    function _updateShareVault(address newShareVault) internal {
+        // Commit update to the staking module
+        uint64 finalizationTimestamp = uint64(block.timestamp + mevEth.MODULE_UPDATE_TIME_DELAY());
+        uint256 committedTimestamp = block.timestamp;
+
+        vm.prank(SamBacha);
+        mevEth.commitUpdateMevEthShareVault(newShareVault);
+
+        // Warp to the finalization timestamp, finalize the update
+        vm.warp(finalizationTimestamp);
+        vm.prank(SamBacha);
+        mevEth.finalizeUpdateMevEthShareVault();
+
+        assertEq(address(mevEth.pendingMevEthShareVault()), address(0));
+        assertEq(mevEth.pendingMevEthShareVaultCommittedTimestamp(), 0);
+        assertEq(address(mevEth.mevEthShareVault()), address(newShareVault));
     }
 }

@@ -506,4 +506,28 @@ contract MevAdminTest is MevEthTest {
         vm.prank(SamBacha);
         mevEth.init(initialShareVault, initialStakingModule);
     }
+
+    /**
+     * Tests updating to MevEthShareVault.
+     * Should update the share vault, transfer an amount to simulate rewards and successfully call mevEth.payRewards.
+     */
+    function testUpdateToMevEthShareVault(uint128 amount) public {
+        vm.assume(amount > 10_000);
+
+        // Update the staking module to the WagyuStaker and create a new validator
+        address newShareVault = address(new MevEthShareVault(address(mevEth), FEE_REWARDS_PER_BLOCK));
+        _updateShareVault(newShareVault);
+
+        vm.deal(address(this), amount);
+        payable(newShareVault).transfer(amount);
+
+        vm.expectEmit();
+        emit Rewards(newShareVault, amount);
+        IMevEthShareVault(newShareVault).payRewards(amount);
+
+        uint256 elastic = mevEth.totalAssets();
+        uint256 base = mevEth.totalSupply();
+
+        assertGt(elastic, base);
+    }
 }
