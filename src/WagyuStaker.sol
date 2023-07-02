@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-only
-pragma solidity 0.8.20;
+pragma solidity 0.8.19;
 
 import { ITinyMevEth } from "./interfaces/ITinyMevEth.sol";
 import { IStakingModule } from "./interfaces/IStakingModule.sol";
