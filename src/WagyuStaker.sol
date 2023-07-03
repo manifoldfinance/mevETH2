@@ -7,7 +7,7 @@ import { IBeaconDepositContract } from "./interfaces/IBeaconDepositContract.sol"
 
 /// @title 🥩 Wagyu Staker 🥩
 /// @dev This contract stakes Ether inside of the BeaconChainDepositContract directly
-contract WagyuStaker is IStakingModule {
+contract WagyuStaker is Auth, IStakingModule {
     error WrongDepositAmount();
     error UnAuthorizedCaller();
 

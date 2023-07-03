@@ -6,7 +6,7 @@ import "./interfaces/IMevEthShareVault.sol";
 
 /// @title MevEthShareVault
 /// @notice This contract controls the ETH Rewards earned by mevEth
-contract MevEthShareVault is IMevEthShareVault {
+contract MevEthShareVault is Auth, IMevEthShareVault {
     receive() external payable { }
 
     fallback() external payable { }
