@@ -1,7 +1,7 @@
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config
 
 [profile.default]
-solc_version = '0.8.20'
+solc_version = '0.8.19'
 src = 'src'
 out = 'out'
 libs = ['lib']
@@ -18,7 +18,7 @@ yul = true
 stackAllocation = true
 
 [profile.mainnet]
-solc_version = '0.8.20'
+solc_version = '0.8.19'
 src = 'src'
 out = 'out'
 libs = ['lib']
@@ -31,7 +31,7 @@ libs = ['lib']
 chain_id = 5
 
 [profile.ci]
-solc_version = '0.8.20'
+solc_version = '0.8.19'
 src = 'src'
 out = 'out'
 libs = ['lib']
