@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-only
-pragma solidity 0.8.20;
+pragma solidity 0.8.19;
 
 /*///////////// Manifold Mev Ether /////////////                   
                 ,,,         ,,,
@@ -487,6 +487,10 @@ contract MevEth is OFTV2, IERC4626, ITinyMevEth {
             fraction.base -= uint128(shares);
         }
 
+        if (fraction.base > 10_000) {
+            revert MevEthErrors.BelowMinimum();
+        }
+
         _burn(owner, shares);
 
         emit Withdraw(msg.sender, owner, receiver, assets, shares);
@@ -524,6 +528,10 @@ contract MevEth is OFTV2, IERC4626, ITinyMevEth {
         unchecked {
             fraction.elastic -= uint128(assets);
             fraction.base -= uint128(shares);
+        }
+
+        if (fraction.base > 10_000) {
+            revert MevEthErrors.BelowMinimum();
         }
 
         _burn(owner, shares);
