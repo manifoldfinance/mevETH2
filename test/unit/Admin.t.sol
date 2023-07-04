@@ -11,12 +11,113 @@ import "../../src/MevEthShareVault.sol";
 contract MevAdminTest is MevEthTest {
     uint256 constant AMOUNT_TO_STAKE = 1 ether;
 
+    address constant TEST_ADMIN = address(0x98);
+    address constant TEST_OPERATOR = address(0x99);
+
+    /**
+     * TODO:
+     */
+    function testAddAdmin() public {
+        vm.expectEmit(true, false, false, false, address(mevEth));
+        emit AdminAdded(TEST_ADMIN);
+        vm.prank(SamBacha);
+        mevEth.addAdmin(TEST_ADMIN);
+
+        assert(mevEth.admins(TEST_ADMIN));
+    }
+
+    /**
+     * TODO:
+     */
+    function testNegativeAddAdmin() public {
+        vm.expectRevert(Auth.Unauthorized.selector);
+        mevEth.addAdmin(TEST_ADMIN);
+        assertFalse(mevEth.admins(TEST_ADMIN));
+    }
+    /**
+     * TODO:
+     */
+
+    function testDeleteAdmin() public {
+        vm.prank(SamBacha);
+        mevEth.addAdmin(TEST_ADMIN);
+
+        vm.expectEmit(true, false, false, false, address(mevEth));
+        emit AdminDeleted(TEST_ADMIN);
+        vm.prank(SamBacha);
+        mevEth.deleteAdmin(TEST_ADMIN);
+
+        assertFalse(mevEth.admins(TEST_ADMIN));
+    }
+    /**
+     * TODO:
+     */
+
+    function testNegativeDeleteAdmin() public {
+        vm.prank(SamBacha);
+        mevEth.addAdmin(TEST_ADMIN);
+
+        vm.expectRevert(Auth.Unauthorized.selector);
+        mevEth.deleteAdmin(TEST_ADMIN);
+
+        assert(mevEth.admins(TEST_ADMIN));
+    }
+
+    /**
+     * TODO:
+     */
+    function testAddOperator() public {
+        vm.expectEmit(true, false, false, false, address(mevEth));
+        emit OperatorAdded(TEST_OPERATOR);
+        vm.prank(SamBacha);
+        mevEth.addOperator(TEST_OPERATOR);
+
+        assert(mevEth.operators(TEST_OPERATOR));
+    }
+    /**
+     * TODO:
+     */
+
+    function testNegativeAddAOperator() public {
+        vm.expectRevert(Auth.Unauthorized.selector);
+        mevEth.addOperator(TEST_OPERATOR);
+        assertFalse(mevEth.operators(TEST_OPERATOR));
+    }
+    /**
+     * TODO:
+     */
+
+    function testDeleteOperator() public {
+        vm.prank(SamBacha);
+        mevEth.addOperator(TEST_OPERATOR);
+
+        vm.expectEmit(true, false, false, false, address(mevEth));
+        emit OperatorDeleted(TEST_OPERATOR);
+        vm.prank(SamBacha);
+        mevEth.deleteOperator(TEST_OPERATOR);
+
+        assertFalse(mevEth.operators(TEST_OPERATOR));
+    }
+    /**
+     * TODO:
+     */
+
+    function testNegativeDeleteOperator() public {
+        vm.prank(SamBacha);
+        mevEth.addOperator(TEST_OPERATOR);
+
+        vm.expectRevert(Auth.Unauthorized.selector);
+        mevEth.deleteOperator(TEST_OPERATOR);
+
+        assert(mevEth.operators(TEST_OPERATOR));
+    }
     /**
      * Test pausing the staking functionality in the contract as an admin. Should only succeed when called by an account
      * with the onlyAdmin role. After calling this function, staking should not be possible.
      *
      * Should emit a StakingPaused event when invoked.
      */
+
     function testPauseStaking() public {
         vm.prank(SamBacha);
         vm.expectEmit(false, false, false, false, address(mevEth));
