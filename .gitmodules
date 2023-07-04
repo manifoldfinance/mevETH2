@@ -12,3 +12,4 @@
 [submodule "lib/manifold-oft"]
 	path = lib/manifold-oft
 	url = https://github.com/manifoldfinance/manifold-oft
+	branch = "main"
