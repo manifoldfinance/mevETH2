@@ -509,49 +509,6 @@ contract MevAdminTest is MevEthTest {
     }
 
     /**
-     * Test share vault recoverFunds function, check for event emission and state changes.
-     * When an authorized caller invokes this function, it should emit a FundsRecovered event.
-     */
-    function testRecoverFundsFromMevEthShareVault(uint256 amount) public {
-        address mevEthShareVault = mevEth.mevEthShareVault();
-
-        // Deal funds to the mevEthSharevault
-        vm.deal(mevEthShareVault, amount);
-        assertEq(mevEthShareVault.balance, amount);
-
-        // Recover the funds
-        vm.expectEmit(true, true, false, false, address(mevEthShareVault));
-        emit FundsRecovered(SamBacha, amount);
-        vm.prank(SamBacha);
-        IMevEthShareVault(mevEthShareVault).recoverFunds(SamBacha, amount);
-
-        // Assert that the balance was removed from the share vault and added to the recipient address
-        assertEq(mevEthShareVault.balance, 0);
-        assertEq(SamBacha.balance, amount);
-    }
-
-    /**
-     * Test for failure conditions for the share vault recoverFunds function, check for state changes.
-     * When an unauthorized caller invokes this function, it should revert with an Auth.Unauthorized error.
-     */
-
-    function testNegativeRecoverFundsFromMevEthShareVault(uint256 amount) public {
-        address mevEthShareVault = mevEth.mevEthShareVault();
-
-        // Deal funds to the mevEthSharevault
-        vm.deal(mevEthShareVault, amount);
-        assertEq(mevEthShareVault.balance, amount);
-
-        // Expect a revert due to an unauthorized error
-        vm.expectRevert(Auth.Unauthorized.selector);
-        IMevEthShareVault(mevEthShareVault).recoverFunds(SamBacha, amount);
-
-        // Assert that the balance is still in the mevEthShareVault and the recipient address is still zero
-        assertEq(mevEthShareVault.balance, amount);
-        assertEq(SamBacha.balance, 0);
-    }
-
-    /**
      * Test share vault recoverToken function, check for event emission and state changes.
      * When an authorized caller invokes this function, it should emit a TokenRecovered event.
      */
@@ -596,49 +553,6 @@ contract MevAdminTest is MevEthTest {
         // Assert that the balance is still in the mevEthShareVault and the recipient address is still zero
         assertEq(weth.balanceOf(mevEthShareVault), amount);
         assertEq(weth.balanceOf(SamBacha), 0);
-    }
-
-    /**
-     * Test staking module recoverFunds function, check for event emission and state changes.
-     * When an authorized caller invokes this function, it should emit a FundsRecovered event.
-     */
-    function testRecoverFundsFromStakingModule(uint256 amount) public {
-        address stakingModule = address(mevEth.stakingModule());
-
-        // Deal funds to the mevEthSharevault
-        vm.deal(stakingModule, amount);
-        assertEq(stakingModule.balance, amount);
-
-        // Recover the funds
-        vm.expectEmit(true, true, false, false, address(stakingModule));
-        emit FundsRecovered(SamBacha, amount);
-        vm.prank(SamBacha);
-        IStakingModule(stakingModule).recoverFunds(SamBacha, amount);
-
-        // Assert that the balance was removed from the share vault and added to the recipient address
-        assertEq(stakingModule.balance, 0);
-        assertEq(SamBacha.balance, amount);
-    }
-
-    /**
-     * Test for failure conditions for the staking module recoverFunds function, check for state changes.
-     * When an unauthorized caller invokes this function, it should revert with an Auth.Unauthorized error.
-     */
-
-    function testNegativeRecoverFundsFromStakingModule(uint256 amount) public {
-        address stakingModule = address(mevEth.stakingModule());
-
-        // Deal funds to the mevEthSharevault
-        vm.deal(stakingModule, amount);
-        assertEq(stakingModule.balance, amount);
-
-        // Expect a revert due to an unauthorized error
-        vm.expectRevert(Auth.Unauthorized.selector);
-        IStakingModule(stakingModule).recoverFunds(SamBacha, amount);
-
-        // Assert that the balance was removed from the share vault and added to the recipient address
-        assertEq(stakingModule.balance, amount);
-        assertEq(SamBacha.balance, 0);
     }
 
     /**
