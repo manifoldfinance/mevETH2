@@ -33,6 +33,5 @@ interface IStakingModule {
 
     // onlyAdmin Functions
     function payValidatorWithdraw(uint256 amount) external;
-    function recoverFunds(address recipient, uint256 amount) external;
     function recoverToken(address token, address recipient, uint256 amount) external;
 }

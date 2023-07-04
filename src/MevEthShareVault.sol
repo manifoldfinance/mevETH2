@@ -20,7 +20,6 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
 
     uint256 avgFeeRewardsPerBlock;
 
-    event FundsRecovered(address indexed recipient, uint256 indexed amount);
     event TokenRecovered(address indexed recipient, address indexed token, uint256 indexed amount);
 
     /// @notice Construction sets authority, MevEth, and averageFeeRewardsPerBlock
@@ -35,11 +34,6 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
 
     function payRewards(uint256 amount) external {
         MEV_ETH.grantRewards{ value: amount }();
-    }
-
-    function recoverFunds(address recipient, uint256 amount) external onlyAdmin {
-        SafeTransferLib.safeTransferETH(recipient, amount);
-        emit FundsRecovered(recipient, amount);
     }
 
     function recoverToken(address token, address recipient, uint256 amount) external onlyAdmin {

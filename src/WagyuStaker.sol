@@ -32,7 +32,6 @@ contract WagyuStaker is Auth, IStakingModule {
     IBeaconDepositContract public immutable BEACON_CHAIN_DEPOSIT_CONTRACT;
 
     event NewValidator(address indexed operator, bytes pubkey, bytes32 withdrawalCredentials, bytes signature, bytes32 deposit_data_root);
-    event FundsRecovered(address indexed recipient, uint256 indexed amount);
     event TokenRecovered(address indexed recipient, address indexed token, uint256 indexed amount);
 
     /// @notice Construction sets authority, MevEth, and deposit contract addresses
@@ -75,11 +74,6 @@ contract WagyuStaker is Auth, IStakingModule {
     // TODO: permission check
     function payValidatorWithdraw(uint256 amount) external {
         ITinyMevEth(MEV_ETH).grantValidatorWithdraw{ value: amount }();
-    }
-
-    function recoverFunds(address recipient, uint256 amount) external onlyAdmin {
-        SafeTransferLib.safeTransferETH(recipient, amount);
-        emit FundsRecovered(recipient, amount);
     }
 
     function recoverToken(address token, address recipient, uint256 amount) external onlyAdmin {
