@@ -32,6 +32,8 @@ contract WagyuStaker is Auth, IStakingModule {
     IBeaconDepositContract public immutable BEACON_CHAIN_DEPOSIT_CONTRACT;
 
     event NewValidator(address indexed operator, bytes pubkey, bytes32 withdrawalCredentials, bytes signature, bytes32 deposit_data_root);
+    event FundsRecovered(address indexed recipient, uint256 indexed amount);
+    event TokenRecovered(address indexed recipient, address indexed token, uint256 indexed amount);
 
     /// @notice Construction sets authority, MevEth, and deposit contract addresses
     /// @param authority The address of the controlling admin authority
@@ -77,10 +79,12 @@ contract WagyuStaker is Auth, IStakingModule {
 
     function recoverFunds(address recipient, uint256 amount) external onlyAdmin {
         SafeTransferLib.safeTransferETH(recipient, amount);
+        emit FundsRecovered(recipient, amount);
     }
 
     function recoverToken(address token, address recipient, uint256 amount) external onlyAdmin {
         ERC20(token).safeTransfer(recipient, amount);
+        emit TokenRecovered(recipient, token, amount);
     }
 
     receive() external payable { }

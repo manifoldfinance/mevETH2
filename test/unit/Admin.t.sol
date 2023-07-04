@@ -520,6 +520,8 @@ contract MevAdminTest is MevEthTest {
         assertEq(mevEthShareVault.balance, amount);
 
         // Recover the funds
+        vm.expectEmit(true, true, false, false, address(mevEthShareVault));
+        emit FundsRecovered(SamBacha, amount);
         vm.prank(SamBacha);
         IMevEthShareVault(mevEthShareVault).recoverFunds(SamBacha, amount);
 
@@ -563,6 +565,8 @@ contract MevAdminTest is MevEthTest {
         assertEq(weth.balanceOf(mevEthShareVault), amount);
 
         // Recover the token funds
+        vm.expectEmit(true, true, true, false, address(mevEthShareVault));
+        emit TokenRecovered(SamBacha, address(weth), amount);
         vm.prank(SamBacha);
         IMevEthShareVault(mevEthShareVault).recoverToken(address(weth), SamBacha, amount);
 
@@ -606,6 +610,8 @@ contract MevAdminTest is MevEthTest {
         assertEq(stakingModule.balance, amount);
 
         // Recover the funds
+        vm.expectEmit(true, true, false, false, address(stakingModule));
+        emit FundsRecovered(SamBacha, amount);
         vm.prank(SamBacha);
         IStakingModule(stakingModule).recoverFunds(SamBacha, amount);
 
@@ -649,6 +655,8 @@ contract MevAdminTest is MevEthTest {
         assertEq(weth.balanceOf(stakingModule), amount);
 
         // Recover the token funds
+        vm.expectEmit(true, true, true, false, address(stakingModule));
+        emit TokenRecovered(SamBacha, address(weth), amount);
         vm.prank(SamBacha);
         IStakingModule(stakingModule).recoverToken(address(weth), SamBacha, amount);
 
