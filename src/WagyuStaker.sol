@@ -75,11 +75,11 @@ contract WagyuStaker is Auth, IStakingModule {
         ITinyMevEth(MEV_ETH).grantValidatorWithdraw{ value: amount }();
     }
 
-    function revoverFunds(address recipient, uint256 amount) external onlyAdmin {
+    function recoverFunds(address recipient, uint256 amount) external onlyAdmin {
         SafeTransferLib.safeTransferETH(recipient, amount);
     }
 
-    function revoverToken(address token, address recipient, uint256 amount) external onlyAdmin {
+    function recoverToken(address token, address recipient, uint256 amount) external onlyAdmin {
         ERC20(token).safeTransfer(recipient, amount);
     }
 

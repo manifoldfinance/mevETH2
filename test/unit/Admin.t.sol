@@ -1,11 +1,12 @@
 /// SPDX: License-Identifier: GPL-3.0-only
 pragma solidity 0.8.19;
 
+import { IStakingModule } from "../../src/interfaces/IStakingModule.sol";
+import { IMevEthShareVault } from "../../src/interfaces/IMevEthShareVault.sol";
 import "../MevEthTest.sol";
 import "../../src/MevEth.sol";
 import "src/libraries/Auth.sol";
 import "../mocks/DepositContract.sol";
-import { IStakingModule } from "../../src/interfaces/IStakingModule.sol";
 import "../../src/MevEthShareVault.sol";
 
 contract MevAdminTest is MevEthTest {
@@ -506,4 +507,112 @@ contract MevAdminTest is MevEthTest {
         vm.prank(SamBacha);
         mevEth.init(initialShareVault, initialStakingModule);
     }
+
+    /**
+     * TODO:
+     */
+    function testRecoverFundsFromMevEthShareVault(uint256 amount) public {
+        address mevEthShareVault = mevEth.mevEthShareVault();
+
+        // Deal funds to the mevEthSharevault
+        vm.deal(mevEthShareVault, amount);
+        assertEq(mevEthShareVault.balance, amount);
+
+        // Recover the funds
+        vm.prank(SamBacha);
+        IMevEthShareVault(mevEthShareVault).recoverFunds(SamBacha, amount);
+
+        // Assert that the balance was removed from the share vault and added to the recipient address
+        assertEq(mevEthShareVault.balance, 0);
+        assertEq(SamBacha.balance, amount);
+    }
+
+    /**
+     * TODO:
+     */
+
+    function testNegativeRecoverFundsFromMevEthShareVault(uint256 amount) public {
+        address mevEthShareVault = mevEth.mevEthShareVault();
+
+        // Deal funds to the mevEthSharevault
+        vm.deal(mevEthShareVault, amount);
+        assertEq(mevEthShareVault.balance, amount);
+
+        // Expect a revert due to an unauthorized error
+        vm.expectRevert(Auth.Unauthorized.selector);
+        IMevEthShareVault(mevEthShareVault).recoverFunds(SamBacha, amount);
+
+        // Assert that the balance is still in the mevEthShareVault and the recipient address is still zero
+        assertEq(mevEthShareVault.balance, amount);
+        assertEq(SamBacha.balance, 0);
+    }
+
+    /**
+     * TODO:
+     */
+    function testRecoverTokenFromMevEthShareVault(uint256 amount) public {
+        address mevEthShareVault = mevEth.mevEthShareVault();
+
+        // Allocate weth to the mevEthSharevault
+        vm.deal(address(this), amount);
+        weth.deposit{ value: amount }();
+        weth.transfer(mevEthShareVault, amount);
+        assertEq(weth.balanceOf(mevEthShareVault), amount);
+
+        // Recover the token funds
+        vm.prank(SamBacha);
+        IMevEthShareVault(mevEthShareVault).recoverToken(address(weth), SamBacha, amount);
+
+        // Assert that the balance was removed from the share vault and added to the recipient address
+        assertEq(weth.balanceOf(mevEthShareVault), 0);
+        assertEq(weth.balanceOf(SamBacha), amount);
+    }
+
+    /**
+     * TODO:
+     */
+
+    function testNegativeRecoverTokenFromMevEthShareVault(uint256 amount) public {
+        address mevEthShareVault = mevEth.mevEthShareVault();
+
+        // Allocate weth to the mevEthSharevault
+        vm.deal(address(this), amount);
+        weth.deposit{ value: amount }();
+        weth.transfer(mevEthShareVault, amount);
+        assertEq(weth.balanceOf(mevEthShareVault), amount);
+
+        // Expect a revert due to an unaurhtorized error
+        vm.expectRevert(Auth.Unauthorized.selector);
+        IMevEthShareVault(mevEthShareVault).recoverToken(address(weth), SamBacha, amount);
+
+        // Assert that the balance is still in the mevEthShareVault and the recipient address is still zero
+        assertEq(weth.balanceOf(mevEthShareVault), amount);
+        assertEq(weth.balanceOf(SamBacha), 0);
+    }
+
+    /**
+     * TODO:
+     */
+    function testRecoverFundsFromStakingModule() public {
+        address stakingModule = address(mevEth.stakingModule());
+    }
+
+    /**
+     * TODO:
+     */
+
+    function testNegativeRecoverFundsFromStakingModule() public {
+        address stakingModule = address(mevEth.stakingModule());
+    }
+
+    /**
+     * TODO:
+     */
+    function testRecoverTokenFromStakingModule(uint256 amount) public { }
+
+    /**
+     * TODO:
+     */
+
+    function testNegativeRecoverTokenFromStakingModule(uint256 amount) public { }
 }
