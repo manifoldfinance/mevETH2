@@ -4,11 +4,15 @@ pragma solidity 0.8.19;
 import { ITinyMevEth } from "./interfaces/ITinyMevEth.sol";
 import { IStakingModule } from "./interfaces/IStakingModule.sol";
 import { IBeaconDepositContract } from "./interfaces/IBeaconDepositContract.sol";
-import "./libraries/Auth.sol";
+import { SafeTransferLib } from "solmate/utils/SafeTransferLib.sol";
+import { Auth } from "./libraries/Auth.sol";
+import { ERC20 } from "solmate/tokens/ERC20.sol";
 
 /// @title 🥩 Wagyu Staker 🥩
 /// @dev This contract stakes Ether inside of the BeaconChainDepositContract directly
 contract WagyuStaker is Auth, IStakingModule {
+    using SafeTransferLib for ERC20;
+
     error WrongDepositAmount();
     error UnAuthorizedCaller();
 
@@ -69,6 +73,14 @@ contract WagyuStaker is Auth, IStakingModule {
     // TODO: permission check
     function payValidatorWithdraw(uint256 amount) external {
         ITinyMevEth(MEV_ETH).grantValidatorWithdraw{ value: amount }();
+    }
+
+    function revoverFunds(address recipient, uint256 amount) external onlyAdmin {
+        SafeTransferLib.safeTransferETH(recipient, amount);
+    }
+
+    function revoverToken(address token, address recipient, uint256 amount) external onlyAdmin {
+        ERC20(token).safeTransfer(recipient, amount);
     }
 
     receive() external payable { }

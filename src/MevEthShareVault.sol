@@ -1,13 +1,17 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity 0.8.19;
 
-import "./interfaces/ITinyMevEth.sol";
-import "./interfaces/IMevEthShareVault.sol";
-import "./libraries/Auth.sol";
+import { Auth } from "./libraries/Auth.sol";
+import { SafeTransferLib } from "solmate/utils/SafeTransferLib.sol";
+import { ERC20 } from "solmate/tokens/ERC20.sol";
+import { ITinyMevEth } from "./interfaces/ITinyMevEth.sol";
+import { IMevEthShareVault } from "./interfaces/IMevEthShareVault.sol";
 
 /// @title MevEthShareVault
 /// @notice This contract controls the ETH Rewards earned by mevEth
 contract MevEthShareVault is Auth, IMevEthShareVault {
+    using SafeTransferLib for ERC20;
+
     receive() external payable { }
 
     fallback() external payable { }
@@ -28,5 +32,13 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
 
     function payRewards(uint256 amount) external {
         MEV_ETH.grantRewards{ value: amount }();
+    }
+
+    function revoverFunds(address recipient, uint256 amount) external onlyAdmin {
+        SafeTransferLib.safeTransferETH(recipient, amount);
+    }
+
+    function revoverToken(address token, address recipient, uint256 amount) external onlyAdmin {
+        ERC20(token).safeTransfer(recipient, amount);
     }
 }
