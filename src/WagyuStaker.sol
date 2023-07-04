@@ -4,6 +4,7 @@ pragma solidity 0.8.19;
 import { ITinyMevEth } from "./interfaces/ITinyMevEth.sol";
 import { IStakingModule } from "./interfaces/IStakingModule.sol";
 import { IBeaconDepositContract } from "./interfaces/IBeaconDepositContract.sol";
+import "./libraries/Auth.sol";
 
 /// @title 🥩 Wagyu Staker 🥩
 /// @dev This contract stakes Ether inside of the BeaconChainDepositContract directly
@@ -28,7 +29,11 @@ contract WagyuStaker is Auth, IStakingModule {
 
     event NewValidator(address indexed operator, bytes pubkey, bytes32 withdrawalCredentials, bytes signature, bytes32 deposit_data_root);
 
-    constructor(address depositContract, address mevEth) {
+    /// @notice Construction sets authority, MevEth, and deposit contract addresses
+    /// @param authority The address of the controlling admin authority
+    /// @param depositContract The address of the WETH contract to use for deposits
+    /// @param mevEth The address of the WETH contract to use for deposits
+    constructor(address authority, address depositContract, address mevEth) Auth(authority) {
         MEV_ETH = mevEth;
         BEACON_CHAIN_DEPOSIT_CONTRACT = IBeaconDepositContract(depositContract);
     }
