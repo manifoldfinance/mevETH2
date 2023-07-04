@@ -509,7 +509,8 @@ contract MevAdminTest is MevEthTest {
     }
 
     /**
-     * TODO:
+     * Test share vault recoverFunds function, check for event emission and state changes.
+     * When an authorized caller invokes this function, it should emit a FundsRecovered event.
      */
     function testRecoverFundsFromMevEthShareVault(uint256 amount) public {
         address mevEthShareVault = mevEth.mevEthShareVault();
@@ -528,7 +529,8 @@ contract MevAdminTest is MevEthTest {
     }
 
     /**
-     * TODO:
+     * Test for failure conditions for the share vault recoverFunds function, check for state changes.
+     * When an unauthorized caller invokes this function, it should revert with an Auth.Unauthorized error.
      */
 
     function testNegativeRecoverFundsFromMevEthShareVault(uint256 amount) public {
@@ -548,7 +550,8 @@ contract MevAdminTest is MevEthTest {
     }
 
     /**
-     * TODO:
+     * Test share vault recoverToken function, check for event emission and state changes.
+     * When an authorized caller invokes this function, it should emit a TokenRecovered event.
      */
     function testRecoverTokenFromMevEthShareVault(uint256 amount) public {
         address mevEthShareVault = mevEth.mevEthShareVault();
@@ -569,7 +572,8 @@ contract MevAdminTest is MevEthTest {
     }
 
     /**
-     * TODO:
+     * Test for failure conditions for the share vault recoverToken function, check for and state changes.
+     * When an unauthorized caller invokes this function, it should revert with an Auth.Unauthorized error.
      */
 
     function testNegativeRecoverTokenFromMevEthShareVault(uint256 amount) public {
@@ -591,28 +595,88 @@ contract MevAdminTest is MevEthTest {
     }
 
     /**
-     * TODO:
+     * Test staking module recoverFunds function, check for event emission and state changes.
+     * When an authorized caller invokes this function, it should emit a FundsRecovered event.
      */
-    function testRecoverFundsFromStakingModule() public {
+    function testRecoverFundsFromStakingModule(uint256 amount) public {
         address stakingModule = address(mevEth.stakingModule());
+
+        // Deal funds to the mevEthSharevault
+        vm.deal(stakingModule, amount);
+        assertEq(stakingModule.balance, amount);
+
+        // Recover the funds
+        vm.prank(SamBacha);
+        IStakingModule(stakingModule).recoverFunds(SamBacha, amount);
+
+        // Assert that the balance was removed from the share vault and added to the recipient address
+        assertEq(stakingModule.balance, 0);
+        assertEq(SamBacha.balance, amount);
     }
 
     /**
-     * TODO:
+     * Test for failure conditions for the staking module recoverFunds function, check for state changes.
+     * When an unauthorized caller invokes this function, it should revert with an Auth.Unauthorized error.
      */
 
-    function testNegativeRecoverFundsFromStakingModule() public {
+    function testNegativeRecoverFundsFromStakingModule(uint256 amount) public {
         address stakingModule = address(mevEth.stakingModule());
+
+        // Deal funds to the mevEthSharevault
+        vm.deal(stakingModule, amount);
+        assertEq(stakingModule.balance, amount);
+
+        // Expect a revert due to an unauthorized error
+        vm.expectRevert(Auth.Unauthorized.selector);
+        IStakingModule(stakingModule).recoverFunds(SamBacha, amount);
+
+        // Assert that the balance was removed from the share vault and added to the recipient address
+        assertEq(stakingModule.balance, amount);
+        assertEq(SamBacha.balance, 0);
     }
 
     /**
-     * TODO:
+     * Test staking module recoverToken function, check for event emission and state changes.
+     * When an authorized caller invokes this function, it should emit a TokenRecovered event.
      */
-    function testRecoverTokenFromStakingModule(uint256 amount) public { }
+    function testRecoverTokenFromStakingModule(uint256 amount) public {
+        address stakingModule = address(mevEth.stakingModule());
+
+        // Allocate weth to the mevEthSharevault
+        vm.deal(address(this), amount);
+        weth.deposit{ value: amount }();
+        weth.transfer(stakingModule, amount);
+        assertEq(weth.balanceOf(stakingModule), amount);
+
+        // Recover the token funds
+        vm.prank(SamBacha);
+        IStakingModule(stakingModule).recoverToken(address(weth), SamBacha, amount);
+
+        // Assert that the balance was removed from the share vault and added to the recipient address
+        assertEq(weth.balanceOf(stakingModule), 0);
+        assertEq(weth.balanceOf(SamBacha), amount);
+    }
 
     /**
-     * TODO:
+     * Test for failure conditions for the staking module recoverToken function, check for state changes.
+     * When an unauthorized caller invokes this function, it should revert with an Auth.Unauthorized error.
      */
 
-    function testNegativeRecoverTokenFromStakingModule(uint256 amount) public { }
+    function testNegativeRecoverTokenFromStakingModule(uint256 amount) public {
+        address stakingModule = address(mevEth.stakingModule());
+
+        // Allocate weth to the mevEthSharevault
+        vm.deal(address(this), amount);
+        weth.deposit{ value: amount }();
+        weth.transfer(stakingModule, amount);
+        assertEq(weth.balanceOf(stakingModule), amount);
+
+        // Expect a revert due to an unaurhtorized error
+        vm.expectRevert(Auth.Unauthorized.selector);
+        IStakingModule(stakingModule).recoverToken(address(weth), SamBacha, amount);
+
+        // Assert that the balance is still in the mevEthShareVault and the recipient address is still zero
+        assertEq(weth.balanceOf(stakingModule), amount);
+        assertEq(weth.balanceOf(SamBacha), 0);
+    }
 }
