@@ -27,7 +27,7 @@ import { IStakingModule } from "./interfaces/IStakingModule.sol";
 import { MevEthShareVault } from "./MevEthShareVault.sol";
 import { ITinyMevEth } from "./interfaces/ITinyMevEth.sol";
 import { WagyuStaker } from "./WagyuStaker.sol";
-import { OFTV2 } from "./layerzero/OFTV2.sol";
+import { OFTV2 } from "manifold-oft/token/oft/v2/OFTV2.sol";
 
 /// @title MevEth
 /// @author Manifold Finance

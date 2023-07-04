@@ -3,3 +3,4 @@ forge-std/=lib/forge-std/src/
 solmate/=lib/solmate/src/
 pigeon/=lib/pigeon/src/
 solady/=lib/pigeon/lib/solady/src/
+manifold-oft/=lib/manifold-oft/contracts/

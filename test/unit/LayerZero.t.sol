@@ -4,7 +4,7 @@ pragma solidity 0.8.19;
 import "forge-std/console.sol";
 import "../MevEthTest.sol";
 import "src/interfaces/Errors.sol";
-import "src/interfaces/ICommonOFT.sol";
+import "manifold-oft/token/oft/v2/ICommonOFT.sol";
 
 contract LayerZeroTest is MevEthTest {
     string constant name = "Mev Liquid Staked Ether";
