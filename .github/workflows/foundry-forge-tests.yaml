@@ -4,6 +4,9 @@ on:
   workflow_dispatch:
   push:
     branches: [main, develop]
+    paths:
+      - "**.sol"
+      - ".github/workflows/foundry-forge-tests.yaml"
   pull_request:
     types: [opened, reopened, synchronize, ready_for_review]
 

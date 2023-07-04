@@ -35,4 +35,4 @@ jobs:
         with:
           fail-on: all
           slither-args: --checklist
-          solc-version: "0.8.20"
+          solc-version: "0.8.19"
