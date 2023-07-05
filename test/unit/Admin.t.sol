@@ -13,11 +13,117 @@ contract MevAdminTest is MevEthTest {
     uint256 constant AMOUNT_TO_STAKE = 1 ether;
 
     /**
+     * Tests adding new admin and effects. When an authorized caller invokes this function, it should emit an AdminAdded event
+     * and a new admin should be added to the admins mapping.
+     */
+    function testAddAdmin(address newAdmin) public {
+        vm.expectEmit(true, false, false, false, address(mevEth));
+        emit AdminAdded(newAdmin);
+        vm.prank(SamBacha);
+        mevEth.addAdmin(newAdmin);
+
+        assert(mevEth.admins(newAdmin));
+    }
+
+    /**
+     * Tests failure when new admin and effects. When an unauthorized caller invokes this function, it should revert with Auth.Unauthorized
+     * The admins mapping should not contain the newAdmin unless already added prior.
+     */
+    function testNegativeAddAdmin(address newAdmin) public {
+        vm.expectRevert(Auth.Unauthorized.selector);
+        mevEth.addAdmin(newAdmin);
+        assertFalse(mevEth.admins(newAdmin));
+    }
+    /**
+     * Tests deleting an admin and effects. When an authorized caller invokes this function, it should emit an AdminDeleted event
+     * and the value corresponding with the admin address in the admins mapping should be false.
+     */
+
+    function testDeleteAdmin(address newAdmin) public {
+        vm.prank(SamBacha);
+        mevEth.addAdmin(newAdmin);
+
+        vm.expectEmit(true, false, false, false, address(mevEth));
+        emit AdminDeleted(newAdmin);
+        vm.prank(SamBacha);
+        mevEth.deleteAdmin(newAdmin);
+
+        assertFalse(mevEth.admins(newAdmin));
+    }
+    /**
+     * Tests failure when deleting an admin and effects. When an unauthorized caller invokes this function, revert with an Auth.Unauthorized error.
+     * If an admin had previously existed in the admins mapping, value corresponding with the admin address should still be true.
+     */
+
+    function testNegativeDeleteAdmin(address newAdmin) public {
+        vm.prank(SamBacha);
+        mevEth.addAdmin(newAdmin);
+
+        vm.expectRevert(Auth.Unauthorized.selector);
+        mevEth.deleteAdmin(newAdmin);
+
+        assert(mevEth.admins(newAdmin));
+    }
+
+    /**
+     * Tests adding new operator and effects. When an authorized caller invokes this function, it should emit an OperatorAdded event
+     * and a new operator should be added to the operators mapping.
+     */
+    function testAddOperator(address newOperator) public {
+        vm.expectEmit(true, false, false, false, address(mevEth));
+        emit OperatorAdded(newOperator);
+        vm.prank(SamBacha);
+        mevEth.addOperator(newOperator);
+
+        assert(mevEth.operators(newOperator));
+    }
+    /**
+     * Tests failure when new operator and effects. When an unauthorized caller invokes this function, it should revert with Auth.Unauthorized
+     * The operators mapping should not contain the operator unless already added prior.
+     */
+
+    function testNegativeAddAOperator(address newOperator) public {
+        vm.expectRevert(Auth.Unauthorized.selector);
+        mevEth.addOperator(newOperator);
+        assertFalse(mevEth.operators(newOperator));
+    }
+    /**
+     * Tests deleting an operator and effects. When an authorized caller invokes this function, it should emit an OperatorDeleted event
+     * and the value corresponding with the operator address in the operators mapping should be false.
+     */
+
+    function testDeleteOperator(address newOperator) public {
+        vm.prank(SamBacha);
+        mevEth.addOperator(newOperator);
+
+        vm.expectEmit(true, false, false, false, address(mevEth));
+        emit OperatorDeleted(newOperator);
+        vm.prank(SamBacha);
+        mevEth.deleteOperator(newOperator);
+
+        assertFalse(mevEth.operators(newOperator));
+    }
+    /**
+     * Tests failure when deleting an operator and effects. When an unauthorized caller invokes this function, revert with an Auth.Unauthorized error.
+     * If an operator had previously existed in the operators mapping, value corresponding with the operator address should still be true.
+     */
+
+    function testNegativeDeleteOperator(address newOperator) public {
+        vm.prank(SamBacha);
+        mevEth.addOperator(newOperator);
+
+        vm.expectRevert(Auth.Unauthorized.selector);
+        mevEth.deleteOperator(newOperator);
+
+        assert(mevEth.operators(newOperator));
+    }
+    /**
      * Test pausing the staking functionality in the contract as an admin. Should only succeed when called by an account
      * with the onlyAdmin role. After calling this function, staking should not be possible.
      *
      * Should emit a StakingPaused event when invoked.
      */
+
     function testPauseStaking() public {
         vm.prank(SamBacha);
         vm.expectEmit(false, false, false, false, address(mevEth));
@@ -513,6 +619,9 @@ contract MevAdminTest is MevEthTest {
      * When an authorized caller invokes this function, it should emit a TokenRecovered event.
      */
     function testRecoverTokenFromMevEthShareVault(uint256 amount) public {
+        address newShareVault = address(new MevEthShareVault(SamBacha, address(mevEth), FEE_REWARDS_PER_BLOCK));
+        _updateShareVault(newShareVault);
+
         address mevEthShareVault = mevEth.mevEthShareVault();
 
         // Allocate weth to the mevEthSharevault
@@ -538,6 +647,9 @@ contract MevAdminTest is MevEthTest {
      */
 
     function testNegativeRecoverTokenFromMevEthShareVault(uint256 amount) public {
+        address newShareVault = address(new MevEthShareVault(SamBacha, address(mevEth), FEE_REWARDS_PER_BLOCK));
+        _updateShareVault(newShareVault);
+
         address mevEthShareVault = mevEth.mevEthShareVault();
 
         // Allocate weth to the mevEthSharevault
@@ -600,5 +712,29 @@ contract MevAdminTest is MevEthTest {
         // Assert that the balance is still in the mevEthShareVault and the recipient address is still zero
         assertEq(weth.balanceOf(stakingModule), amount);
         assertEq(weth.balanceOf(SamBacha), 0);
+    }
+
+    /**
+     * Tests updating to MevEthShareVault.
+     * Should update the share vault, transfer an amount to simulate rewards and successfully call mevEth.payRewards.
+     */
+    function testUpdateToMevEthShareVault(uint128 amount) public {
+        vm.assume(amount > 10_000);
+
+        // Update the staking module to the WagyuStaker and create a new validator
+        address newShareVault = address(new MevEthShareVault(SamBacha, address(mevEth), FEE_REWARDS_PER_BLOCK));
+        _updateShareVault(newShareVault);
+
+        vm.deal(address(this), amount);
+        payable(newShareVault).transfer(amount);
+
+        vm.expectEmit();
+        emit Rewards(newShareVault, amount);
+        IMevEthShareVault(newShareVault).payRewards(amount);
+
+        uint256 elastic = mevEth.totalAssets();
+        uint256 base = mevEth.totalSupply();
+
+        assertGt(elastic, base);
     }
 }
