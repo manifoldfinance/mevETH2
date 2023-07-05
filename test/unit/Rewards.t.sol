@@ -38,7 +38,7 @@ contract MevRewardsTest is MevEthTest {
 
     function testGrantRewards(uint128 amount) public {
         //Update the share vault
-        address newShareVault = address(new MevEthShareVault(address(mevEth), FEE_REWARDS_PER_BLOCK));
+        address newShareVault = address(new MevEthShareVault(SamBacha, address(mevEth), FEE_REWARDS_PER_BLOCK));
         _updateShareVault(newShareVault);
 
         vm.assume(amount > 10_000);

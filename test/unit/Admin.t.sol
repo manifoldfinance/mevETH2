@@ -1,11 +1,12 @@
 /// SPDX: License-Identifier: GPL-3.0-only
 pragma solidity 0.8.19;
 
+import { IStakingModule } from "../../src/interfaces/IStakingModule.sol";
+import { IMevEthShareVault } from "../../src/interfaces/IMevEthShareVault.sol";
 import "../MevEthTest.sol";
 import "../../src/MevEth.sol";
 import "src/libraries/Auth.sol";
 import "../mocks/DepositContract.sol";
-import { IStakingModule } from "../../src/interfaces/IStakingModule.sol";
 import "../../src/MevEthShareVault.sol";
 
 contract MevAdminTest is MevEthTest {
@@ -389,7 +390,7 @@ contract MevAdminTest is MevEthTest {
 
     function testCommitUpdateMevEthShareVault() public {
         // Create a new vault and cache the current vault
-        address newVault = address(new MevEthShareVault(address(mevEth), FEE_REWARDS_PER_BLOCK));
+        address newVault = address(new MevEthShareVault(SamBacha, address(mevEth), FEE_REWARDS_PER_BLOCK));
         address existingVault = address(mevEth.mevEthShareVault());
 
         // Commit an update to the staking module and check the effects
@@ -411,7 +412,7 @@ contract MevAdminTest is MevEthTest {
 
     function testNegativeCommitUpdateMevEthShareVault() public {
         // Create a new vault and cache the current vault
-        address newVault = address(new MevEthShareVault(address(mevEth), FEE_REWARDS_PER_BLOCK));
+        address newVault = address(new MevEthShareVault(SamBacha, address(mevEth), FEE_REWARDS_PER_BLOCK));
         address existingVault = address(mevEth.mevEthShareVault());
 
         // Expect a reversion if unauthorized and check that no effects have occured
@@ -431,7 +432,7 @@ contract MevAdminTest is MevEthTest {
 
     function testFinalizeUpdateMevEthShareVault() public {
         // Create a new vault and cache the current vault
-        address newVault = address(new MevEthShareVault(address(mevEth), FEE_REWARDS_PER_BLOCK));
+        address newVault = address(new MevEthShareVault(SamBacha, address(mevEth), FEE_REWARDS_PER_BLOCK));
         address existingVault = address(mevEth.mevEthShareVault());
 
         // Commit an update to the mev share vault
@@ -468,7 +469,7 @@ contract MevAdminTest is MevEthTest {
         mevEth.finalizeUpdateMevEthShareVault();
 
         // Create a new vault and cache the current vault
-        address newVault = address(new MevEthShareVault(address(mevEth), FEE_REWARDS_PER_BLOCK));
+        address newVault = address(new MevEthShareVault(SamBacha, address(mevEth), FEE_REWARDS_PER_BLOCK));
         address existingVault = address(mevEth.mevEthShareVault());
 
         // Commit an update to the mev share vault
@@ -500,7 +501,7 @@ contract MevAdminTest is MevEthTest {
      */
     function testCancelUpdateMevEthShareVault() public {
         // Create a new vault and cache the current vault
-        address newVault = address(new MevEthShareVault(address(mevEth), FEE_REWARDS_PER_BLOCK));
+        address newVault = address(new MevEthShareVault(SamBacha, address(mevEth), FEE_REWARDS_PER_BLOCK));
         address existingVault = address(mevEth.mevEthShareVault());
 
         // Commit an update to the mev share vault
@@ -532,7 +533,7 @@ contract MevAdminTest is MevEthTest {
         mevEth.cancelUpdateMevEthShareVault();
 
         // Create a new vault and cache the current vault
-        address newVault = address(new MevEthShareVault(address(mevEth), FEE_REWARDS_PER_BLOCK));
+        address newVault = address(new MevEthShareVault(SamBacha, address(mevEth), FEE_REWARDS_PER_BLOCK));
         address existingVault = address(mevEth.mevEthShareVault());
         vm.prank(SamBacha);
         uint256 committedTimestamp = block.timestamp;
@@ -558,8 +559,8 @@ contract MevAdminTest is MevEthTest {
         MevEth mevEth = new MevEth(SamBacha, address(weth));
 
         // Create new share vault and staking module
-        address initialShareVault = address(new MevEthShareVault(address(mevEth), FEE_REWARDS_PER_BLOCK));
-        address initialStakingModule = address(IStakingModule(address(new WagyuStaker(address(depositContract), address(mevEth)))));
+        address initialShareVault = address(new MevEthShareVault(SamBacha, address(mevEth), FEE_REWARDS_PER_BLOCK));
+        address initialStakingModule = address(IStakingModule(address(new WagyuStaker(SamBacha, address(depositContract), address(mevEth)))));
         assert(!mevEth.initialized());
 
         // Initialize the MevEth contract
@@ -584,8 +585,8 @@ contract MevAdminTest is MevEthTest {
         MevEth mevEth = new MevEth(SamBacha, address(weth));
 
         // Create new share vault and staking module
-        address initialShareVault = address(new MevEthShareVault(address(mevEth), FEE_REWARDS_PER_BLOCK));
-        address initialStakingModule = address(IStakingModule(address(new WagyuStaker(address(depositContract), address(mevEth)))));
+        address initialShareVault = address(new MevEthShareVault(SamBacha, address(mevEth), FEE_REWARDS_PER_BLOCK));
+        address initialStakingModule = address(IStakingModule(address(new WagyuStaker(SamBacha, address(depositContract), address(mevEth)))));
 
         // Expect an unauthorized revert
         vm.expectRevert(Auth.Unauthorized.selector);
@@ -614,6 +615,106 @@ contract MevAdminTest is MevEthTest {
     }
 
     /**
+     * Test share vault recoverToken function, check for event emission and state changes.
+     * When an authorized caller invokes this function, it should emit a TokenRecovered event.
+     */
+    function testRecoverTokenFromMevEthShareVault(uint256 amount) public {
+        address newShareVault = address(new MevEthShareVault(SamBacha, address(mevEth), FEE_REWARDS_PER_BLOCK));
+        _updateShareVault(newShareVault);
+
+        address mevEthShareVault = mevEth.mevEthShareVault();
+
+        // Allocate weth to the mevEthSharevault
+        vm.deal(address(this), amount);
+        weth.deposit{ value: amount }();
+        weth.transfer(mevEthShareVault, amount);
+        assertEq(weth.balanceOf(mevEthShareVault), amount);
+
+        // Recover the token funds
+        vm.expectEmit(true, true, true, false, address(mevEthShareVault));
+        emit TokenRecovered(SamBacha, address(weth), amount);
+        vm.prank(SamBacha);
+        IMevEthShareVault(mevEthShareVault).recoverToken(address(weth), SamBacha, amount);
+
+        // Assert that the balance was removed from the share vault and added to the recipient address
+        assertEq(weth.balanceOf(mevEthShareVault), 0);
+        assertEq(weth.balanceOf(SamBacha), amount);
+    }
+
+    /**
+     * Test for failure conditions for the share vault recoverToken function, check for and state changes.
+     * When an unauthorized caller invokes this function, it should revert with an Auth.Unauthorized error.
+     */
+
+    function testNegativeRecoverTokenFromMevEthShareVault(uint256 amount) public {
+        address newShareVault = address(new MevEthShareVault(SamBacha, address(mevEth), FEE_REWARDS_PER_BLOCK));
+        _updateShareVault(newShareVault);
+
+        address mevEthShareVault = mevEth.mevEthShareVault();
+
+        // Allocate weth to the mevEthSharevault
+        vm.deal(address(this), amount);
+        weth.deposit{ value: amount }();
+        weth.transfer(mevEthShareVault, amount);
+        assertEq(weth.balanceOf(mevEthShareVault), amount);
+
+        // Expect a revert due to an unaurhtorized error
+        vm.expectRevert(Auth.Unauthorized.selector);
+        IMevEthShareVault(mevEthShareVault).recoverToken(address(weth), SamBacha, amount);
+
+        // Assert that the balance is still in the mevEthShareVault and the recipient address is still zero
+        assertEq(weth.balanceOf(mevEthShareVault), amount);
+        assertEq(weth.balanceOf(SamBacha), 0);
+    }
+
+    /**
+     * Test staking module recoverToken function, check for event emission and state changes.
+     * When an authorized caller invokes this function, it should emit a TokenRecovered event.
+     */
+    function testRecoverTokenFromStakingModule(uint256 amount) public {
+        address stakingModule = address(mevEth.stakingModule());
+
+        // Allocate weth to the mevEthSharevault
+        vm.deal(address(this), amount);
+        weth.deposit{ value: amount }();
+        weth.transfer(stakingModule, amount);
+        assertEq(weth.balanceOf(stakingModule), amount);
+
+        // Recover the token funds
+        vm.expectEmit(true, true, true, false, address(stakingModule));
+        emit TokenRecovered(SamBacha, address(weth), amount);
+        vm.prank(SamBacha);
+        IStakingModule(stakingModule).recoverToken(address(weth), SamBacha, amount);
+
+        // Assert that the balance was removed from the share vault and added to the recipient address
+        assertEq(weth.balanceOf(stakingModule), 0);
+        assertEq(weth.balanceOf(SamBacha), amount);
+    }
+
+    /**
+     * Test for failure conditions for the staking module recoverToken function, check for state changes.
+     * When an unauthorized caller invokes this function, it should revert with an Auth.Unauthorized error.
+     */
+
+    function testNegativeRecoverTokenFromStakingModule(uint256 amount) public {
+        address stakingModule = address(mevEth.stakingModule());
+
+        // Allocate weth to the mevEthSharevault
+        vm.deal(address(this), amount);
+        weth.deposit{ value: amount }();
+        weth.transfer(stakingModule, amount);
+        assertEq(weth.balanceOf(stakingModule), amount);
+
+        // Expect a revert due to an unaurhtorized error
+        vm.expectRevert(Auth.Unauthorized.selector);
+        IStakingModule(stakingModule).recoverToken(address(weth), SamBacha, amount);
+
+        // Assert that the balance is still in the mevEthShareVault and the recipient address is still zero
+        assertEq(weth.balanceOf(stakingModule), amount);
+        assertEq(weth.balanceOf(SamBacha), 0);
+    }
+
+    /**
      * Tests updating to MevEthShareVault.
      * Should update the share vault, transfer an amount to simulate rewards and successfully call mevEth.payRewards.
      */
@@ -621,7 +722,7 @@ contract MevAdminTest is MevEthTest {
         vm.assume(amount > 10_000);
 
         // Update the staking module to the WagyuStaker and create a new validator
-        address newShareVault = address(new MevEthShareVault(address(mevEth), FEE_REWARDS_PER_BLOCK));
+        address newShareVault = address(new MevEthShareVault(SamBacha, address(mevEth), FEE_REWARDS_PER_BLOCK));
         _updateShareVault(newShareVault);
 
         vm.deal(address(this), amount);
