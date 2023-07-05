@@ -105,7 +105,7 @@ contract MevEthTest is SafeTestTools, Test {
 
         address initialShareVault = address(safeInstance.safe);
 
-        address initialStakingModule = address(IStakingModule(address(new WagyuStaker(SamBacha,address(depositContract), address(mevEth)))));
+        address initialStakingModule = address(IStakingModule(address(new WagyuStaker(SamBacha, address(depositContract), address(mevEth)))));
         vm.prank(SamBacha);
         mevEth.init(initialShareVault, initialStakingModule);
 
