@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.8.20;
+pragma solidity 0.8.19;
 
 interface MevEthErrors {
     /// Errors
+    error BelowMinimum();
     error DepositFailed();
     error InsufficientBufferedEth();
     error TooManyValidatorRegistrations();
@@ -32,4 +33,6 @@ interface MevEthErrors {
     error InvalidPendingMevEthShareVault();
     error TransferExceedsAllowance();
     error TransferFailed();
+    error ZeroAddress();
+    error AlreadyInitialized();
 }
