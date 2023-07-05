@@ -70,6 +70,10 @@ contract MevEthTest is SafeTestTools, Test {
     event NewValidator(address indexed operator, bytes pubkey, bytes32 withdrawalCredentials, bytes signature, bytes32 deposit_data_root);
     event MevEthInitialized(address indexed mevEthShareVault, address indexed stakingModule);
     event Rewards(address sender, uint256 amount);
+    event AdminAdded(address indexed newAdmin);
+    event AdminDeleted(address indexed oldAdmin);
+    event OperatorAdded(address indexed newOperator);
+    event OperatorDeleted(address indexed oldOperator);
 
     function setUp() public virtual {
         // Deploy the BeaconChainDepositContract
