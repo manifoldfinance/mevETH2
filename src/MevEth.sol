@@ -245,12 +245,14 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
             revert MevEthErrors.PrematureMevEthShareVaultUpdateFinalization();
         }
 
+        /// @custom SAFETY: When finalizing the update to the MevEthShareVault, make sure to grant any remaining rewards from the existing share vault.
+
         emit MevEthShareVaultUpdateFinalized(mevEthShareVault, address(pendingMevEthShareVault));
 
-        //Update the mev share vault
+        // Update the mev share vault
         mevEthShareVault = pendingMevEthShareVault;
 
-        //Set the pending vault variables to zero
+        // Set the pending vault variables to zero
         pendingMevEthShareVault = address(0);
         pendingMevEthShareVaultCommittedTimestamp = 0;
     }

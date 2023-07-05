@@ -69,6 +69,7 @@ contract MevEthTest is SafeTestTools, Test {
     event MevEthShareVaultUpdateCanceled(address indexed oldVault, address indexed newVault);
     event NewValidator(address indexed operator, bytes pubkey, bytes32 withdrawalCredentials, bytes signature, bytes32 deposit_data_root);
     event MevEthInitialized(address indexed mevEthShareVault, address indexed stakingModule);
+    event TokenRecovered(address indexed recipient, address indexed token, uint256 indexed amount);
     event Rewards(address sender, uint256 amount);
     event AdminAdded(address indexed newAdmin);
     event AdminDeleted(address indexed oldAdmin);
@@ -104,7 +105,7 @@ contract MevEthTest is SafeTestTools, Test {
 
         address initialShareVault = address(safeInstance.safe);
 
-        address initialStakingModule = address(IStakingModule(address(new WagyuStaker(address(depositContract), address(mevEth)))));
+        address initialStakingModule = address(IStakingModule(address(new WagyuStaker(SamBacha, address(depositContract), address(mevEth)))));
         vm.prank(SamBacha);
         mevEth.init(initialShareVault, initialStakingModule);
 
