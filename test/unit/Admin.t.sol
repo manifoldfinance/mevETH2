@@ -82,7 +82,7 @@ contract MevAdminTest is MevEthTest {
      * The operators mapping should not contain the operator unless already added prior.
      */
 
-    function testNegativeAddAOperator(address newOperator) public {
+    function testNegativeAddOperator(address newOperator) public {
         vm.expectRevert(Auth.Unauthorized.selector);
         mevEth.addOperator(newOperator);
         assertFalse(mevEth.operators(newOperator));

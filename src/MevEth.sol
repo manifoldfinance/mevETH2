@@ -189,14 +189,14 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
             revert MevEthErrors.PrematureStakingModuleUpdateFinalization();
         }
 
+        emit StakingModuleUpdateFinalized(address(stakingModule), address(pendingStakingModule));
+
         //Update the staking module
         stakingModule = IStakingModule(address(pendingStakingModule));
 
         //Set the pending staking module variables to zero
         pendingStakingModule = IStakingModule(address(0));
         pendingStakingModuleCommittedTimestamp = 0;
-
-        emit StakingModuleUpdateFinalized(address(stakingModule), address(pendingStakingModule));
     }
 
     event StakingModuleUpdateCanceled(address indexed oldModule, address indexed pendingModule);
@@ -209,11 +209,11 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
             revert MevEthErrors.InvalidPendingStakingModule();
         }
 
+        emit StakingModuleUpdateCanceled(address(stakingModule), address(pendingStakingModule));
+
         //Set the pending staking module variables to zero
         pendingStakingModule = IStakingModule(address(0));
         pendingStakingModuleCommittedTimestamp = 0;
-
-        emit StakingModuleUpdateCanceled(address(stakingModule), address(pendingStakingModule));
     }
 
     event MevEthShareVaultUpdateCommitted(address indexed oldVault, address indexed pendingVault, uint64 indexed eligibleForFinalization);
@@ -247,14 +247,14 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
 
         /// @custom SAFETY: When finalizing the update to the MevEthShareVault, make sure to grant any remaining rewards from the existing share vault.
 
+        emit MevEthShareVaultUpdateFinalized(mevEthShareVault, address(pendingMevEthShareVault));
+
         // Update the mev share vault
         mevEthShareVault = pendingMevEthShareVault;
 
         // Set the pending vault variables to zero
         pendingMevEthShareVault = address(0);
         pendingMevEthShareVaultCommittedTimestamp = 0;
-
-        emit MevEthShareVaultUpdateFinalized(mevEthShareVault, address(pendingMevEthShareVault));
     }
 
     event MevEthShareVaultUpdateCanceled(address indexed oldVault, address indexed newVault);
@@ -267,11 +267,11 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
             revert MevEthErrors.InvalidPendingMevEthShareVault();
         }
 
+        emit MevEthShareVaultUpdateCanceled(mevEthShareVault, pendingMevEthShareVault);
+
         //Set the pending vault variables to zero
         pendingMevEthShareVault = address(0);
         pendingMevEthShareVaultCommittedTimestamp = 0;
-
-        emit MevEthShareVaultUpdateCanceled(mevEthShareVault, pendingMevEthShareVault);
     }
 
     /*//////////////////////////////////////////////////////////////
