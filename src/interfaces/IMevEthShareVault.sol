@@ -13,6 +13,8 @@ interface IMevEthShareVault {
     function payRewards() external;
 
     // Getter functions for public variables
+    function fees() external view returns (uint256 fees);
+    function rewards() external view returns (uint256 rewards);
     // function feeTo() external view returns (address feeTo);
     // function mevEth() external view returns (address mevEth);
     // function protocolBalance() external view returns (MevEthShareVault.ProtocolBalance memory protocolBalance);

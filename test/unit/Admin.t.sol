@@ -740,8 +740,10 @@ contract MevAdminTest is MevEthTest {
         vm.deal(address(this), amount);
         payable(newShareVault).transfer(amount);
 
-        vm.expectEmit();
-        emit Rewards(newShareVault, amount);
+        uint256 rewardsAmount = IMevEthShareVault(newShareVault).rewards();
+
+        vm.expectEmit(true, true, false, false, address(mevEth));
+        emit Rewards(newShareVault, rewardsAmount);
         IMevEthShareVault(newShareVault).payRewards();
         //TODO: assert balances after rewards are paid on mev eth share vault
 

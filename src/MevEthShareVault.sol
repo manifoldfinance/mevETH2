@@ -72,6 +72,14 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
         medianMevPayment = newMedian;
     }
 
+    function fees() external view returns (uint256) {
+        return protocolBalance.fees;
+    }
+
+    function rewards() external view returns (uint256) {
+        return protocolBalance.rewards;
+    }
+
     function sendFees() external onlyAdmin { //TODO:
     }
 
