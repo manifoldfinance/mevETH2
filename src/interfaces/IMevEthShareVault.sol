@@ -22,6 +22,7 @@ interface IMevEthShareVault {
     
     // Two-Step Ownable, have the same commit scheme as mevEth
     // TODO: @controlcpluscontrolv do we need these if we have admin updgrade functions?
+    //TODO: if we are going to have a fallback address in the case of failure during payRewards, we will might still want an address other than the admins mapping.
     function commitNewOwner(address newOwner) external;
     function setNewOwner() external;
     
