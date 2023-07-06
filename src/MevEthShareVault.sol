@@ -37,7 +37,7 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
     /// @param _medianMevPayment TODO:
     /// @param _medianValidatorPayment TODO:
 
-    constructor(address authority, address _mevEth, address _feeTo, uint256 _medianMevPayment, uint128 _medianValidatorPayment) Auth(authority) {
+    constructor(address authority, address _mevEth, address _feeTo, uint128 _medianMevPayment, uint128 _medianValidatorPayment) Auth(authority) {
         mevEth = _mevEth;
         medianMevPayment = _medianMevPayment;
         medianValidatorPayment = _medianValidatorPayment;
@@ -49,12 +49,12 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
         protocolBalance.rewards = 0;
     }
 
-    function setMedianValidatorPayment(uint256 newMedian) external onlyOperator {
+    function setMedianValidatorPayment(uint128 newMedian) external onlyOperator {
         //TODO: checks prior to updating
         medianValidatorPayment = newMedian;
     }
 
-    function setMedianMevPayment(uint256 newMedian) external onlyOperator {
+    function setMedianMevPayment(uint128 newMedian) external onlyOperator {
         //TODO: checks prior to updating
         medianMevPayment = newMedian;
     }

@@ -3,29 +3,28 @@
 pragma solidity ^0.8.19;
 
 interface IMevEthShareVault {
-
-    struct ProtocolBalance{
+    struct ProtocolBalance {
         // Accrued fees above the median mev payment
         uint128 fees;
         // Accrued mev payments at or below the median mev payment
         uint128 rewards;
     }
 
-    /* Function to handle mev payments, if the msg.sender is the validator, 
+    /* The receive function handles mev/validator payments. If if the msg.sender is the block.coinbase, 
     a ValditorPayment should be emitted and the fees/profits should be updated based on the median validator payment. 
     Otherwise, a MevPayment should be emitted and the fees/profits should be updated based on the medianMevPayment.
     */
-    function receive() external payable; 
-    
+
     // Function to send rewards to MevEth Contract. In the case of failure, this function sends the funds to the Admin as a fallback.
     function payRewards() external;
-    
+
     // Two-Step Ownable, have the same commit scheme as mevEth
     // TODO: @controlcpluscontrolv do we need these if we have admin updgrade functions?
-    //TODO: if we are going to have a fallback address in the case of failure during payRewards, we will might still want an address other than the admins mapping.
+    //TODO: if we are going to have a fallback address in the case of failure during payRewards, we will might still want an address other than the admins
+    // mapping.
     function commitNewOwner(address newOwner) external;
     function setNewOwner() external;
-    
+
     // Getter functions for public variables
     function feeTo() external view returns (address feeTo);
     function mevEth() external view returns (address mevEth);
@@ -45,9 +44,8 @@ interface IMevEthShareVault {
     function deleteAdmin(address oldAdmin) external;
     function addOperator(address newOperator) external;
     function deleteOperator(address oldOperator) external;
-    
+
     // Operator controls
     function setMedianValidatorPayment(uint256 newMedian) external;
     function setMedianMevPayment(uint256 newMedian) external;
-
 }

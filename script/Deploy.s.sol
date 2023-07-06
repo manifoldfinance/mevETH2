@@ -11,7 +11,8 @@ contract DeployScript is Script {
     error UnknownChain();
 
     //TODO: set this value to something realistic
-    uint256 constant INITIAL_FEE_REWARDS_PER_BLOCK = 0;
+    uint128 constant BASE_MEDIAN_MEV_PAYMENT = 0;
+    uint128 constant BASE_MEDIAN_VALIDATOR_PAYMENT = 0;
 
     function run() public {
         address authority = tx.origin;
@@ -37,7 +38,7 @@ contract DeployScript is Script {
         vm.startBroadcast();
         MevEth mevEth = new MevEth(authority, weth);
 
-        MevEthShareVault initialShareVault = new MevEthShareVault(authority, address(mevEth), INITIAL_FEE_REWARDS_PER_BLOCK);
+        MevEthShareVault initialShareVault = new MevEthShareVault(authority, address(mevEth), authority, BASE_MEDIAN_MEV_PAYMENT, BASE_MEDIAN_VALIDATOR_PAYMENT);
         IStakingModule initialStakingModule = new WagyuStaker(authority, beaconDepositContract, address(mevEth));
 
         mevEth.init(address(initialShareVault), address(initialStakingModule));

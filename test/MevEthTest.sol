@@ -51,6 +51,8 @@ contract MevEthTest is SafeTestTools, Test {
     address constant Operator04 = address(0x10);
 
     uint256 constant FEE_REWARDS_PER_BLOCK = 0;
+    uint128 constant BASE_MEDIAN_MEV_PAYMENT = 0.1 ether;
+    uint128 constant BASE_MEDIAN_VALIDATOR_PAYMENT = 0.1 ether;
 
     DepositContract internal depositContract;
 
