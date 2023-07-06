@@ -38,7 +38,8 @@ contract DeployScript is Script {
         vm.startBroadcast();
         MevEth mevEth = new MevEth(authority, weth);
 
-        MevEthShareVault initialShareVault = new MevEthShareVault(authority, address(mevEth), authority, BASE_MEDIAN_MEV_PAYMENT, BASE_MEDIAN_VALIDATOR_PAYMENT);
+        MevEthShareVault initialShareVault =
+            new MevEthShareVault(authority, address(mevEth), authority, authority, BASE_MEDIAN_MEV_PAYMENT, BASE_MEDIAN_VALIDATOR_PAYMENT);
         IStakingModule initialStakingModule = new WagyuStaker(authority, beaconDepositContract, address(mevEth));
 
         mevEth.init(address(initialShareVault), address(initialStakingModule));

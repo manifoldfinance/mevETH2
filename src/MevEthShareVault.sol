@@ -24,22 +24,35 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
     event MevPayment(uint256 indexed blockNumber, address indexed coinbase, uint256 indexed amount);
     event TokenRecovered(address indexed recipient, address indexed token, uint256 indexed amount);
 
-    uint128 medianMevPayment;
-    uint128 medianValidatorPayment;
     ProtocolBalance protocolBalance;
     address immutable mevEth;
+    uint128 medianMevPayment;
+    uint128 medianValidatorPayment;
     address feeTo;
+    address beneficiary;
 
     /// @notice Construction sets authority, MevEth, and averageFeeRewardsPerBlock
     /// @param authority The address of the controlling admin authority
     /// @param _mevEth The address of the WETH contract to use for deposits
     /// @param _feeTo TODO:
+    /// @param _beneficiary TODO:
     /// @param _medianMevPayment TODO:
     /// @param _medianValidatorPayment TODO:
 
-    constructor(address authority, address _mevEth, address _feeTo, uint128 _medianMevPayment, uint128 _medianValidatorPayment) Auth(authority) {
+    constructor(
+        address authority,
+        address _mevEth,
+        address _feeTo,
+        address _beneficiary,
+        uint128 _medianMevPayment,
+        uint128 _medianValidatorPayment
+    )
+        Auth(authority)
+    {
         mevEth = _mevEth;
         medianMevPayment = _medianMevPayment;
+        feeTo = _feeTo;
+        beneficiary = _beneficiary;
         medianValidatorPayment = _medianValidatorPayment;
     }
 
@@ -59,6 +72,9 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
         medianMevPayment = newMedian;
     }
 
+    function sendFees() external onlyAdmin { //TODO:
+    }
+
     function setFeeTo(address newFeeTo) external onlyAdmin {
         if (newFeeTo == address(0)) {
             revert MevEthErrors.ZeroAddress();
@@ -66,6 +82,8 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
 
         feeTo = newFeeTo;
     }
+
+    function setNewBeneficiary(address _newBeneficiary) external onlyAdmin { }
 
     function recoverToken(address token, address recipient, uint256 amount) external onlyAdmin {
         ERC20(token).safeTransfer(recipient, amount);

@@ -42,7 +42,7 @@ contract MevRewardsTest is MevEthTest {
         vm.assume(amount > 10_000);
 
         //Update the share vault
-        address newShareVault = address(new MevEthShareVault(SamBacha, address(mevEth), SamBacha, medianMevPayment, medianValidatorPayment));
+        address newShareVault = address(new MevEthShareVault(SamBacha, address(mevEth), SamBacha, SamBacha, medianMevPayment, medianValidatorPayment));
         _updateShareVault(newShareVault);
 
         address mevShare = mevEth.mevEthShareVault();
