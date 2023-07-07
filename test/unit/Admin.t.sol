@@ -17,6 +17,7 @@ contract MevAdminTest is MevEthTest {
      * and a new admin should be added to the admins mapping.
      */
     function testAddAdmin(address newAdmin) public {
+        vm.assume(newAdmin != address(0));
         vm.expectEmit(true, false, false, false, address(mevEth));
         emit AdminAdded(newAdmin);
         vm.prank(SamBacha);
@@ -307,7 +308,6 @@ contract MevAdminTest is MevEthTest {
         DepositContract newModule = new DepositContract();
         address existingStakingModule = address(mevEth.stakingModule());
         uint64 finalizationTimestamp = uint64(block.timestamp + mevEth.MODULE_UPDATE_TIME_DELAY());
-        uint64 committedTimestamp = uint64(block.timestamp);
         vm.prank(SamBacha);
         mevEth.commitUpdateStakingModule(IStakingModule(address(newModule)));
 
@@ -474,7 +474,6 @@ contract MevAdminTest is MevEthTest {
 
         // Commit an update to the mev share vault
         uint64 finalizationTimestamp = uint64(block.timestamp + mevEth.MODULE_UPDATE_TIME_DELAY());
-        uint256 committedTimestamp = block.timestamp;
         vm.prank(SamBacha);
         mevEth.commitUpdateMevEthShareVault(newVault);
 
@@ -556,7 +555,7 @@ contract MevAdminTest is MevEthTest {
      */
     function testInitMevEth() public {
         // Deploy the mevETH contract
-        MevEth mevEth = new MevEth(SamBacha, address(weth));
+        MevEth mevEth = new MevEth(SamBacha, address(weth), address(0));
 
         // Create new share vault and staking module
         address initialShareVault = address(new MevEthShareVault(SamBacha, address(mevEth), FEE_REWARDS_PER_BLOCK));
@@ -582,7 +581,7 @@ contract MevAdminTest is MevEthTest {
 
     function testNegativeInitMevEth() public {
         // Deploy the mevETH contract
-        MevEth mevEth = new MevEth(SamBacha, address(weth));
+        MevEth mevEth = new MevEth(SamBacha, address(weth), address(0));
 
         // Create new share vault and staking module
         address initialShareVault = address(new MevEthShareVault(SamBacha, address(mevEth), FEE_REWARDS_PER_BLOCK));
