@@ -17,6 +17,7 @@ contract MevAdminTest is MevEthTest {
      * and a new admin should be added to the admins mapping.
      */
     function testAddAdmin(address newAdmin) public {
+        vm.assume(newAdmin != address(0));
         vm.expectEmit(true, false, false, false, address(mevEth));
         emit AdminAdded(newAdmin);
         vm.prank(SamBacha);

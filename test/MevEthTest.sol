@@ -11,7 +11,7 @@ import "./mocks/WETH9.sol";
 import "./mocks/DepositContract.sol";
 import "./mocks/LZEndpointMock.sol";
 import "../src/MevEthShareVault.sol";
-import "../lib/safe-tools/src/SafeTestTools.sol";
+import { SafeInstance, SafeTestTools } from "../lib/safe-tools/src/SafeTestTools.sol";
 
 contract MevEthTest is Test {
     // LayerZero Ids
@@ -111,7 +111,10 @@ contract MevEthTest is Test {
         ownerPKs[5] = SAFE_OWNER_5_PRIVATE_KEY;
         ownerPKs[6] = SAFE_OWNER_6_PRIVATE_KEY;
 
-        SafeInstance memory safeInstance = _setupSafe(ownerPKs, 5);
+
+
+        SafeTestTools safeTestTools = new SafeTestTools(); 
+        SafeInstance memory safeInstance = safeTestTools._setupSafe(ownerPKs, 5);
         multisigSafeInstance = safeInstance;
 
         address initialShareVault = address(safeInstance.safe);

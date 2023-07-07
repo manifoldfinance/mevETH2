@@ -5,8 +5,7 @@ import "forge-std/Test.sol";
 import { LayerZeroHelper } from "pigeon/layerzero/LayerZeroHelper.sol";
 import "../MevEthTest.sol";
 import "src/interfaces/Errors.sol";
-import "manifold-oft/token/oft/v2/ICommonOFT.sol";
-import "manifold-oft/interfaces/ILayerZeroEndpoint.sol";
+import "src/interfaces/ICommonOFT.sol";
 
 contract LayerZeroPigeonTest is MevEthTest {
     LayerZeroHelper lzHelper;

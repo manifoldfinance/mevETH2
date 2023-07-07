@@ -7,7 +7,7 @@ out = 'out'
 libs = ['lib']
 optimizer = true
 optimizer_runs = 2000
-via_ir = true
+via_ir = false
 fuzz_runs = 500
 
 [profile.default.optimizer_details]
