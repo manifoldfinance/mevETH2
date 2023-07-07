@@ -132,7 +132,6 @@ contract MevEthTest is Test {
     function _updateStakingModule(IStakingModule newStakingModule) internal {
         // Commit update to the staking module
         uint64 finalizationTimestamp = uint64(block.timestamp + mevEth.MODULE_UPDATE_TIME_DELAY());
-        uint256 committedTimestamp = block.timestamp;
 
         vm.prank(SamBacha);
         mevEth.commitUpdateStakingModule(newStakingModule);
@@ -151,7 +150,6 @@ contract MevEthTest is Test {
     function _updateShareVault(address newShareVault) internal {
         // Commit update to the staking module
         uint64 finalizationTimestamp = uint64(block.timestamp + mevEth.MODULE_UPDATE_TIME_DELAY());
-        uint256 committedTimestamp = block.timestamp;
 
         vm.prank(SamBacha);
         mevEth.commitUpdateMevEthShareVault(newShareVault);

@@ -375,9 +375,8 @@ contract MevEth is OFTV2, IERC4626, ITinyMevEth {
         }
     }
 
-    /// @param receiver The address in question of who would be depositing, doesn't matter in this case
     /// @return maxAssets The maximum amount of assets that can be deposited
-    function maxDeposit(address receiver) external view returns (uint256 maxAssets) {
+    function maxDeposit(address) external view returns (uint256 maxAssets) {
         if (stakingPaused) {
             return 0;
         }
@@ -421,9 +420,8 @@ contract MevEth is OFTV2, IERC4626, ITinyMevEth {
         emit Deposit(msg.sender, receiver, assets, shares);
     }
 
-    /// @param receiver The address in question of who would be minting, doesn't matter in this case
     /// @return maxShares The maximum amount of shares that can be minted
-    function maxMint(address receiver) external view returns (uint256 maxShares) {
+    function maxMint(address) external view returns (uint256 maxShares) {
         if (stakingPaused) {
             return 0;
         }
