@@ -13,3 +13,12 @@
 	path = lib/manifold-oft
 	url = https://github.com/manifoldfinance/manifold-oft
 	branch = "main"
+[submodule "lib/safe-tools"]
+	path = lib/safe-tools
+	url = https://github.com/0xKitsune/safe-tools
+[submodule "lib/openzeppelin-contracts"]
+	path = lib/openzeppelin-contracts
+	url = https://github.com/OpenZeppelin/openzeppelin-contracts
+[submodule "lib/solady"]
+	path = lib/solady
+	url = https://github.com/Vectorized/solady

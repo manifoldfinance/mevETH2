@@ -31,5 +31,7 @@ interface IStakingModule {
 
     function VALIDATOR_DEPOSIT_SIZE() external view returns (uint256);
 
+    // onlyAdmin Functions
     function payValidatorWithdraw(uint256 amount) external;
+    function recoverToken(address token, address recipient, uint256 amount) external;
 }

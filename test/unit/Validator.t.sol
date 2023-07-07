@@ -94,25 +94,6 @@ contract ValidatorTest is MevEthTest {
         mevEth.createValidator(validatorData);
     }
 
-    // Helper function to update the staking module for testing
-    function _updateStakingModule(IStakingModule newStakingModule) internal {
-        // Commit update to the staking module
-        uint64 finalizationTimestamp = uint64(block.timestamp + mevEth.MODULE_UPDATE_TIME_DELAY());
-        uint256 committedTimestamp = block.timestamp;
-
-        vm.prank(SamBacha);
-        mevEth.commitUpdateStakingModule(newStakingModule);
-
-        // Warp to the finalization timestamp, finalize the update
-        vm.warp(finalizationTimestamp);
-        vm.prank(SamBacha);
-        mevEth.finalizeUpdateStakingModule();
-
-        assertEq(address(mevEth.pendingStakingModule()), address(0));
-        assertEq(mevEth.pendingStakingModuleCommittedTimestamp(), 0);
-        assertEq(address(mevEth.stakingModule()), address(newStakingModule));
-    }
-
     /**
      * Tests updating to Wagyu staking module. This function should update the staking module to the WagyuStaker and create a new validator
      * asserting that the new module's balance and validator count increase accordingly.
@@ -120,7 +101,7 @@ contract ValidatorTest is MevEthTest {
     function testUpdateToWagyuStakingModule() public {
         // Update the staking module to the WagyuStaker and create a new validator
         address depositContract = address(new DepositContract());
-        IStakingModule wagyuStakingModule = IStakingModule(address(new WagyuStaker(depositContract, address(mevEth))));
+        IStakingModule wagyuStakingModule = IStakingModule(address(new WagyuStaker(SamBacha, depositContract, address(mevEth))));
         _updateStakingModule(wagyuStakingModule);
 
         uint256 depositSize = mevEth.stakingModule().VALIDATOR_DEPOSIT_SIZE();
