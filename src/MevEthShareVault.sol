@@ -30,6 +30,7 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
     uint128 medianValidatorPayment;
     address feeTo;
     address beneficiary;
+    uint256  feePercent; //TODO: this is the percent applied to payments over the median to accrue fees //TODO: consider making this packed if efficient
 
     /// @notice Construction sets authority, MevEth, and averageFeeRewardsPerBlock
     /// @param authority The address of the controlling admin authority
@@ -38,6 +39,7 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
     /// @param _beneficiary TODO:
     /// @param _medianMevPayment TODO:
     /// @param _medianValidatorPayment TODO:
+    /// @param _feePercent TODO:
 
     constructor(
         address authority,
@@ -45,7 +47,8 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
         address _feeTo,
         address _beneficiary,
         uint128 _medianMevPayment,
-        uint128 _medianValidatorPayment
+        uint128 _medianValidatorPayment,
+        uint256 _feePercent
     )
         Auth(authority)
     {
@@ -54,21 +57,23 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
         feeTo = _feeTo;
         beneficiary = _beneficiary;
         medianValidatorPayment = _medianValidatorPayment;
+        feePercent = _feePercent;
     }
 
-    function payRewards() external {
+    function payRewards() external onlyOperator {
         //TODO: handle failure case and send to admin
+        //TODO: handle medians have not been updated yet
         ITinyMevEth(mevEth).grantRewards{ value: protocolBalance.rewards }();
         protocolBalance.rewards = 0;
     }
 
+
+
     function setMedianValidatorPayment(uint128 newMedian) external onlyOperator {
-        //TODO: checks prior to updating
         medianValidatorPayment = newMedian;
     }
 
     function setMedianMevPayment(uint128 newMedian) external onlyOperator {
-        //TODO: checks prior to updating
         medianMevPayment = newMedian;
     }
 
@@ -80,7 +85,9 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
         return protocolBalance.rewards;
     }
 
-    function sendFees() external onlyAdmin { //TODO:
+    function sendFees() external onlyAdmin { 
+        
+        //TODO:
     }
 
     function setFeeTo(address newFeeTo) external onlyAdmin {
@@ -91,23 +98,40 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
         feeTo = newFeeTo;
     }
 
+    function updateFeePercent(uint256 newFeePercent) external onlyAdmin{
+        feePercent = newFeePercent;
+    }
+
     function setNewBeneficiary(address _newBeneficiary) external onlyAdmin { }
 
     function recoverToken(address token, address recipient, uint256 amount) external onlyAdmin {
         ERC20(token).safeTransfer(recipient, amount);
         emit TokenRecovered(recipient, token, amount);
     }
+    
+
+
+    //TODO: write strong tests to ensure that the receive function is always being called when sending ether to the contract, otherwise the contract should revert
 
     receive() external payable {
-        if (msg.sender == block.coinbase) {
-            //TODO: handle as validator payment
 
-            //TODO: emit ValidatorPayment
-        } else {
-            //TODO: handle as mev payment
-            //TODO: emit MevPayment
-        }
+
+
+
+        //TODO: check the balance of the contract against the rewards + fees. Any gaps should be considered assumed validator payments
+        
+
+        //TODO: if asp > 0 handle assumed validator payments, anything above the median should have the fee applied
+        // NOTE: anything above the median, a percent is allocated to the fees, the rest is the rewards
+
+        //TODO: emit AssumedValidatorPayment;
+
+        //TODO: handle the msg.value as a mev payment
+        //TODO: emit MevPayment
+
     }
 
+
+    //TODO: remove this?
     fallback() external payable { }
 }

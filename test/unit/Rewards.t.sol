@@ -54,6 +54,7 @@ contract MevRewardsTest is MevEthTest {
 
         // Send validator payment
         vm.prank(block.coinbase);
+        vm.deal(block.coinbase, amount);
         payable(mevShare).transfer(amount);
 
         //TODO: assert balances after sending mev payment
