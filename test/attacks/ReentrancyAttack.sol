@@ -9,6 +9,8 @@ contract ReentrancyAttackTest is MevEthTest {
         mevEth.withdraw(msg.value, address(this), address(this));
     }
 
+    receive() payable external {}
+
     function testAttack(uint128 amount) external payable {
         vm.assume(amount > mevEth.MIN_DEPOSIT());
         vm.deal(address(this), amount);

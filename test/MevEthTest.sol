@@ -9,10 +9,17 @@ import "src/MevEth.sol";
 // Needed Periphery Contracts
 import "./mocks/WETH9.sol";
 import "./mocks/DepositContract.sol";
+import "./mocks/LZEndpointMock.sol";
 import "../src/MevEthShareVault.sol";
-import "../lib/safe-tools/src/SafeTestTools.sol";
+import { SafeInstance, SafeTestTools } from "../lib/safe-tools/src/SafeTestTools.sol";
 
-contract MevEthTest is SafeTestTools, Test {
+contract MevEthTest is Test {
+    // LayerZero Ids
+    uint16 constant ETH_ID = 101;
+    uint16 constant GOERLI_ID = 10_121;
+    uint16 constant POLYGON_ID = 109;
+    uint16 constant ARBITRUM_ID = 110;
+
     // Admin account
 
     uint256 constant SAM_BACHA_PRIVATE_KEY = 0x01;
@@ -60,6 +67,8 @@ contract MevEthTest is SafeTestTools, Test {
 
     WETH9 internal weth;
 
+    LZEndpointMock internal layerZeroEndpoint;
+
     //Events
     event StakingPaused();
     event StakingUnpaused();
@@ -86,8 +95,10 @@ contract MevEthTest is SafeTestTools, Test {
         // Deploy the WETH9 contract
         weth = new WETH9();
 
+        layerZeroEndpoint = new LZEndpointMock(ETH_ID);
+
         // Deploy the mevETH contract
-        mevEth = new MevEth(SamBacha, address(weth));
+        mevEth = new MevEth(SamBacha, address(weth), address(layerZeroEndpoint));
 
         // Initialize initial share vault as a multisig
 
@@ -102,7 +113,10 @@ contract MevEthTest is SafeTestTools, Test {
         ownerPKs[5] = SAFE_OWNER_5_PRIVATE_KEY;
         ownerPKs[6] = SAFE_OWNER_6_PRIVATE_KEY;
 
-        SafeInstance memory safeInstance = _setupSafe(ownerPKs, 5);
+
+
+        SafeTestTools safeTestTools = new SafeTestTools(); 
+        SafeInstance memory safeInstance = safeTestTools._setupSafe(ownerPKs, 5);
         multisigSafeInstance = safeInstance;
 
         address initialShareVault = address(safeInstance.safe);
@@ -120,7 +134,6 @@ contract MevEthTest is SafeTestTools, Test {
     function _updateStakingModule(IStakingModule newStakingModule) internal {
         // Commit update to the staking module
         uint64 finalizationTimestamp = uint64(block.timestamp + mevEth.MODULE_UPDATE_TIME_DELAY());
-        uint256 committedTimestamp = block.timestamp;
 
         vm.prank(SamBacha);
         mevEth.commitUpdateStakingModule(newStakingModule);
@@ -139,7 +152,6 @@ contract MevEthTest is SafeTestTools, Test {
     function _updateShareVault(address newShareVault) internal {
         // Commit update to the staking module
         uint64 finalizationTimestamp = uint64(block.timestamp + mevEth.MODULE_UPDATE_TIME_DELAY());
-        uint256 committedTimestamp = block.timestamp;
 
         vm.prank(SamBacha);
         mevEth.commitUpdateMevEthShareVault(newShareVault);

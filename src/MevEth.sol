@@ -21,19 +21,19 @@ import { FixedPointMathLib } from "solmate/utils/FixedPointMathLib.sol";
 import { ERC20 } from "solmate/tokens/ERC20.sol";
 import { IERC20 } from "./interfaces/IERC20.sol";
 import { IERC4626 } from "./interfaces/IERC4626.sol";
-import { Auth } from "./libraries/Auth.sol";
 import { IWETH } from "./interfaces/IWETH.sol";
 import { MevEthErrors } from "./interfaces/Errors.sol";
 import { IStakingModule } from "./interfaces/IStakingModule.sol";
 import { MevEthShareVault } from "./MevEthShareVault.sol";
 import { ITinyMevEth } from "./interfaces/ITinyMevEth.sol";
 import { WagyuStaker } from "./WagyuStaker.sol";
+import { OFTV2 } from "./layerZero/oft/OFTV2.sol";
 
 /// @title MevEth
 /// @author Manifold Finance
 /// @dev Contract that allows deposit of ETH, for a Liquid Staking Receipt (LSR) in return.
 /// @dev LSR is represented through an ERC4626 token and interface
-contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
+contract MevEth is OFTV2, IERC4626, ITinyMevEth {
     using SafeTransferLib for ERC20;
     using FixedPointMathLib for uint256;
 
@@ -69,13 +69,12 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
                                 Setup
     //////////////////////////////////////////////////////////////*/
 
-    /// @notice Construction creates mevETH token, sets authority, staking contract and weth address
+    /// @notice Construction creates mevETH token, sets authority and weth address
     /// @dev pending staking module and committed timestamp will both be zero on deployment
     /// @param authority The address of the controlling admin authority
     /// @param weth The address of the WETH contract to use for deposits
-    /// @dev When the contract is deployed, the pendingStakingModule, pendingStakingModuleCommitedTimestamp, pendingMevEthShareVault and
-    /// pendingMevEthShareVaultCommitedTimestamp are all zero initialized
-    constructor(address authority, address weth) Auth(authority) ERC20("Mev Liquid Staked Ether", "mevETH", 18) {
+    /// @param layerZeroEndpoint chain specific endpoint
+    constructor(address authority, address weth, address layerZeroEndpoint) OFTV2("Mev Liquid Staked Ether", "mevETH", 18, 8, authority, layerZeroEndpoint) {
         WETH = IWETH(weth);
         bufferPercentNumerator = 2; // set at 2 %
     }
@@ -376,9 +375,8 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
         }
     }
 
-    /// @param receiver The address in question of who would be depositing, doesn't matter in this case
     /// @return maxAssets The maximum amount of assets that can be deposited
-    function maxDeposit(address receiver) external view returns (uint256 maxAssets) {
+    function maxDeposit(address) external view returns (uint256 maxAssets) {
         if (stakingPaused) {
             return 0;
         }
@@ -422,9 +420,8 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
         emit Deposit(msg.sender, receiver, assets, shares);
     }
 
-    /// @param receiver The address in question of who would be minting, doesn't matter in this case
     /// @return maxShares The maximum amount of shares that can be minted
-    function maxMint(address receiver) external view returns (uint256 maxShares) {
+    function maxMint(address) external view returns (uint256 maxShares) {
         if (stakingPaused) {
             return 0;
         }

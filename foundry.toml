@@ -9,6 +9,7 @@ optimizer = true
 optimizer_runs = 2000
 via_ir = false
 fuzz_runs = 500
+deny_warnings = false
 
 [profile.default.optimizer_details]
 constantOptimizer = true
