@@ -113,9 +113,7 @@ contract MevEthTest is Test {
         ownerPKs[5] = SAFE_OWNER_5_PRIVATE_KEY;
         ownerPKs[6] = SAFE_OWNER_6_PRIVATE_KEY;
 
-
-
-        SafeTestTools safeTestTools = new SafeTestTools(); 
+        SafeTestTools safeTestTools = new SafeTestTools();
         SafeInstance memory safeInstance = safeTestTools._setupSafe(ownerPKs, 5);
         multisigSafeInstance = safeInstance;
 

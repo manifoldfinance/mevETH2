@@ -10,27 +10,29 @@ contract OFTV2 is BaseOFTV2, ERC20 {
     error InsufficientAllowance();
     error SharedDecimalsTooLarge();
 
-    uint internal immutable ld2sdRate;
+    uint256 internal immutable ld2sdRate;
 
     constructor(
-        string memory _name, 
-        string memory _symbol, 
+        string memory _name,
+        string memory _symbol,
         uint8 decimals,
         uint8 _sharedDecimals,
         address authority,
         address _lzEndpoint
-    ) 
-        ERC20(_name, _symbol, decimals) 
-        BaseOFTV2(_sharedDecimals, authority, _lzEndpoint) 
+    )
+        ERC20(_name, _symbol, decimals)
+        BaseOFTV2(_sharedDecimals, authority, _lzEndpoint)
     {
         if (_sharedDecimals > decimals) revert SharedDecimalsTooLarge();
         ld2sdRate = 10 ** (decimals - _sharedDecimals);
     }
 
-    /************************************************************************
-    * public functions
-    ************************************************************************/
-    function circulatingSupply() public view virtual override returns (uint) {
+    /**
+     *
+     * public functions
+     *
+     */
+    function circulatingSupply() public view virtual override returns (uint256) {
         return totalSupply;
     }
 
@@ -38,22 +40,24 @@ contract OFTV2 is BaseOFTV2, ERC20 {
         return address(this);
     }
 
-    /************************************************************************
-    * internal functions
-    ************************************************************************/
-    function _debitFrom(address _from, uint16, bytes32, uint _amount) internal virtual override returns (uint) {
+    /**
+     *
+     * internal functions
+     *
+     */
+    function _debitFrom(address _from, uint16, bytes32, uint256 _amount) internal virtual override returns (uint256) {
         address spender = msg.sender;
         if (_from != spender) _spendAllowance(_from, spender, _amount);
         _burn(_from, _amount);
         return _amount;
     }
 
-    function _creditTo(uint16, address _toAddress, uint _amount) internal virtual override returns (uint) {
+    function _creditTo(uint16, address _toAddress, uint256 _amount) internal virtual override returns (uint256) {
         _mint(_toAddress, _amount);
         return _amount;
     }
 
-    function _transferFrom(address _from, address _to, uint _amount) internal virtual override returns (uint) {
+    function _transferFrom(address _from, address _to, uint256 _amount) internal virtual override returns (uint256) {
         address spender = msg.sender;
         // if transfer from this contract, no need to check allowance
         if (_from != address(this) && _from != spender) _spendAllowance(_from, spender, _amount);
@@ -61,7 +65,7 @@ contract OFTV2 is BaseOFTV2, ERC20 {
         return _amount;
     }
 
-    function _ld2sdRate() internal view virtual override returns (uint) {
+    function _ld2sdRate() internal view virtual override returns (uint256) {
         return ld2sdRate;
     }
 

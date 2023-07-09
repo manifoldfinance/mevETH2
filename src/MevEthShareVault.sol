@@ -20,60 +20,61 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
         uint128 rewards;
     }
 
-    event ValidatorPayment(uint256 indexed blockNumber, address indexed coinbase, uint256 indexed amount);
+    event AssumedValidatorPayment(uint256 indexed blockNumber, address indexed coinbase, uint256 indexed amount);
     event MevPayment(uint256 indexed blockNumber, address indexed coinbase, uint256 indexed amount);
     event TokenRecovered(address indexed recipient, address indexed token, uint256 indexed amount);
+
+    error DataNotUpdated();
+    error FeesToHigh();
 
     ProtocolBalance protocolBalance;
     address immutable mevEth;
     uint128 medianMevPayment;
     uint128 medianValidatorPayment;
-    address feeTo;
-    address beneficiary;
-    uint256  feePercent; //TODO: this is the percent applied to payments over the median to accrue fees //TODO: consider making this packed if efficient
+    address protocolFeeTo;
+    uint256 dataLastUpdated;
+    uint256 feePercent; //TODO: this is the percent applied to payments over the median to accrue fees
 
     /// @notice Construction sets authority, MevEth, and averageFeeRewardsPerBlock
     /// @param authority The address of the controlling admin authority
     /// @param _mevEth The address of the WETH contract to use for deposits
-    /// @param _feeTo TODO:
-    /// @param _beneficiary TODO:
-    /// @param _medianMevPayment TODO:
-    /// @param _medianValidatorPayment TODO:
-    /// @param _feePercent TODO:
+    /// @param _protocolFeeTo The address which should recieve protocol fees
+    /// @param _medianMevPayment Initial expected mev payment
+    /// @param _feePercent The percent of which revenues above the median should be taken as fees
 
     constructor(
         address authority,
         address _mevEth,
-        address _feeTo,
+        address _protocolFeeTo,
         address _beneficiary,
         uint128 _medianMevPayment,
-        uint128 _medianValidatorPayment,
         uint256 _feePercent
     )
         Auth(authority)
     {
         mevEth = _mevEth;
         medianMevPayment = _medianMevPayment;
-        feeTo = _feeTo;
+        protocolFeeTo = _protocolFeeTo;
         beneficiary = _beneficiary;
         medianValidatorPayment = _medianValidatorPayment;
         feePercent = _feePercent;
+        dataLastUpdated = block.number;
     }
 
     function payRewards() external onlyOperator {
-        //TODO: handle failure case and send to admin
-        //TODO: handle medians have not been updated yet
-        ITinyMevEth(mevEth).grantRewards{ value: protocolBalance.rewards }();
+        if (dataLastUpdated != block.number) {
+            revert DataNotUpdated();
+        }
+        try ITinyMevEth(mevEth).grantRewards{ value: protocolBalance.rewards }() { }
+        catch {
+            // Catch the error and send to the admin for further fund recovery
+            payable(admin).send(protocolBalance.rewards);
+        }
         protocolBalance.rewards = 0;
     }
 
-
-
-    function setMedianValidatorPayment(uint128 newMedian) external onlyOperator {
-        medianValidatorPayment = newMedian;
-    }
-
     function setMedianMevPayment(uint128 newMedian) external onlyOperator {
+        dataLastUpdated = block.number;
         medianMevPayment = newMedian;
     }
 
@@ -85,53 +86,45 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
         return protocolBalance.rewards;
     }
 
-    function sendFees() external onlyAdmin { 
-        
-        //TODO:
+    function sendFees() external onlyAdmin {
+        require(protocolFeeTo.send(protocolBalance.fees), "fee payout failed");
+        protocolBalance.fees = 0;
     }
 
     function setFeeTo(address newFeeTo) external onlyAdmin {
-        if (newFeeTo == address(0)) {
-            revert MevEthErrors.ZeroAddress();
-        }
-
         feeTo = newFeeTo;
     }
 
-    function updateFeePercent(uint256 newFeePercent) external onlyAdmin{
+    function updateFeePercent(uint256 newFeePercent) external onlyAdmin {
         feePercent = newFeePercent;
     }
 
-    function setNewBeneficiary(address _newBeneficiary) external onlyAdmin { }
+    function logValidatorRewards(uint256 protocolFeesOwed) external onlyOperator {
+        // See https://twitter.com/_prestwich/status/1678082879765766144 for further explanation
+        // but essentially validator rewards accrue on CL, then can be sent over as a type of withdrawal, but avoid
+        // the fallback function, and just add straight to account balance, so we require an external operator to trigger this,
+        // then call this function to log the payment, however, because frequent withdrawals may not be possible or prudent, we rely on
+        // off-chain logic to correctly measure fees, fun fact: You can manipulate the value of validator rewards via SENDALL / SELFDESCTRUCT
+        // but because we are tracking this balance off chain, and it in essence just means you can donate money on behalf of the protocl, its
+        // stricty a non issue
+        ProtocolBalance balances = protocolBalance;
+        // Since validator payment skips the fallback, we can assume all unaccounted for eth is from the CL withdrawal
+        uint256 rewardsEarned = address(this).balance - (balances.fees + protocolBalance.rewards);
+        if (protocolFeesOwed > rewardsEarned) {
+            revert FeesToHigh();
+        }
+        emit AssumedValidatorPayment(block.number, block.coinbase, rewardsEarned);
+        protocolBalance.rewards += (rewardsEarned - protocolFeesOwed);
+        protocolFeesOwed += protocolFeesOwed;
+    }
 
     function recoverToken(address token, address recipient, uint256 amount) external onlyAdmin {
         ERC20(token).safeTransfer(recipient, amount);
         emit TokenRecovered(recipient, token, amount);
     }
-    
-
-
-    //TODO: write strong tests to ensure that the receive function is always being called when sending ether to the contract, otherwise the contract should revert
 
     receive() external payable {
-
-
-
-
-        //TODO: check the balance of the contract against the rewards + fees. Any gaps should be considered assumed validator payments
-        
-
-        //TODO: if asp > 0 handle assumed validator payments, anything above the median should have the fee applied
-        // NOTE: anything above the median, a percent is allocated to the fees, the rest is the rewards
-
-        //TODO: emit AssumedValidatorPayment;
-
-        //TODO: handle the msg.value as a mev payment
-        //TODO: emit MevPayment
-
+        emit MevPayment(block.number, block.coinbase, msg.value);
+        protocolBalance.rewards += msg.value;
     }
-
-
-    //TODO: remove this?
-    fallback() external payable { }
 }

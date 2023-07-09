@@ -2,8 +2,7 @@
 pragma solidity ^0.8.0;
 
 library ExcessivelySafeCall {
-    uint256 constant LOW_28_MASK =
-    0x00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
+    uint256 constant LOW_28_MASK = 0x00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
 
     /// @notice Use when you _really_ really _really_ don't trust the called
     /// contract. This prevents the called contract from causing reversion of
@@ -20,12 +19,7 @@ library ExcessivelySafeCall {
     /// @param _calldata The data to send to the remote contract
     /// @return success and returndata, as `.call()`. Returndata is capped to
     /// `_maxCopy` bytes.
-    function excessivelySafeCall(
-        address _target,
-        uint256 _gas,
-        uint16 _maxCopy,
-        bytes memory _calldata
-    ) internal returns (bool, bytes memory) {
+    function excessivelySafeCall(address _target, uint256 _gas, uint16 _maxCopy, bytes memory _calldata) internal returns (bool, bytes memory) {
         // set up for assembly call
         uint256 _toCopy;
         bool _success;
@@ -35,23 +29,22 @@ library ExcessivelySafeCall {
         // we call via assembly to avoid memcopying a very large returndata
         // returned by a malicious contract
         assembly {
-            _success := call(
-            _gas, // gas
-            _target, // recipient
-            0, // ether value
-            add(_calldata, 0x20), // inloc
-            mload(_calldata), // inlen
-            0, // outloc
-            0 // outlen
-            )
-        // limit our copy to 256 bytes
+            _success :=
+                call(
+                    _gas, // gas
+                    _target, // recipient
+                    0, // ether value
+                    add(_calldata, 0x20), // inloc
+                    mload(_calldata), // inlen
+                    0, // outloc
+                    0 // outlen
+                )
+            // limit our copy to 256 bytes
             _toCopy := returndatasize()
-            if gt(_toCopy, _maxCopy) {
-                _toCopy := _maxCopy
-            }
-        // Store the length of the copied bytes
+            if gt(_toCopy, _maxCopy) { _toCopy := _maxCopy }
+            // Store the length of the copied bytes
             mstore(_returnData, _toCopy)
-        // copy the bytes from returndata[0:_toCopy]
+            // copy the bytes from returndata[0:_toCopy]
             returndatacopy(add(_returnData, 0x20), 0, _toCopy)
         }
         return (_success, _returnData);
@@ -72,12 +65,7 @@ library ExcessivelySafeCall {
     /// @param _calldata The data to send to the remote contract
     /// @return success and returndata, as `.call()`. Returndata is capped to
     /// `_maxCopy` bytes.
-    function excessivelySafeStaticCall(
-        address _target,
-        uint256 _gas,
-        uint16 _maxCopy,
-        bytes memory _calldata
-    ) internal view returns (bool, bytes memory) {
+    function excessivelySafeStaticCall(address _target, uint256 _gas, uint16 _maxCopy, bytes memory _calldata) internal view returns (bool, bytes memory) {
         // set up for assembly call
         uint256 _toCopy;
         bool _success;
@@ -87,22 +75,21 @@ library ExcessivelySafeCall {
         // we call via assembly to avoid memcopying a very large returndata
         // returned by a malicious contract
         assembly {
-            _success := staticcall(
-            _gas, // gas
-            _target, // recipient
-            add(_calldata, 0x20), // inloc
-            mload(_calldata), // inlen
-            0, // outloc
-            0 // outlen
-            )
-        // limit our copy to 256 bytes
+            _success :=
+                staticcall(
+                    _gas, // gas
+                    _target, // recipient
+                    add(_calldata, 0x20), // inloc
+                    mload(_calldata), // inlen
+                    0, // outloc
+                    0 // outlen
+                )
+            // limit our copy to 256 bytes
             _toCopy := returndatasize()
-            if gt(_toCopy, _maxCopy) {
-                _toCopy := _maxCopy
-            }
-        // Store the length of the copied bytes
+            if gt(_toCopy, _maxCopy) { _toCopy := _maxCopy }
+            // Store the length of the copied bytes
             mstore(_returnData, _toCopy)
-        // copy the bytes from returndata[0:_toCopy]
+            // copy the bytes from returndata[0:_toCopy]
             returndatacopy(add(_returnData, 0x20), 0, _toCopy)
         }
         return (_success, _returnData);
@@ -117,17 +104,14 @@ library ExcessivelySafeCall {
      * @param _newSelector The new 4-byte selector
      * @param _buf The encoded contract args
      */
-    function swapSelector(bytes4 _newSelector, bytes memory _buf)
-    internal
-    pure
-    {
+    function swapSelector(bytes4 _newSelector, bytes memory _buf) internal pure {
         if (_buf.length < 4) revert();
         uint256 _mask = LOW_28_MASK;
         assembly {
-        // load the first word of
+            // load the first word of
             let _word := mload(add(_buf, 0x20))
-        // mask out the top 4 bytes
-        // /x
+            // mask out the top 4 bytes
+            // /x
             _word := and(_word, _mask)
             _word := or(_newSelector, _word)
             mstore(add(_buf, 0x20), _word)
