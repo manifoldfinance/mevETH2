@@ -15,21 +15,13 @@ interface IMevEthShareVault {
     // Getter functions for public variables
     function fees() external view returns (uint256 fees);
     function rewards() external view returns (uint256 rewards);
-    // function feeTo() external view returns (address feeTo);
-    // function mevEth() external view returns (address mevEth);
-    // function protocolBalance() external view returns (MevEthShareVault.ProtocolBalance memory protocolBalance);
-    // function medianValidatorPayment() external view returns (uint256 median);
-    // function medianMevPayment() external view returns (uint256 median);
-    // function beneficiary() external view returns (address beneficiary);
 
     // Admin controls
     function recoverToken(address token, address recipient, uint256 amount) external;
     // Send the protocol fees to the `feeTo` address
     function sendFees() external;
-    function setFeeTo(address newFeeTo) external;
+    function setProtocolFeeTo(address newFeeTo) external;
     function setNewBeneficiary(address newBeneficiary) external;
 
-    // Operator controls
-    function setMedianValidatorPayment(uint128 newMedian) external;
-    function setMedianMevPayment(uint128 newMedian) external;
+    //TODO: update the interface with log Rewards
 }

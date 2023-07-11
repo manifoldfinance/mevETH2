@@ -13,6 +13,7 @@ contract DeployScript is Script {
     //TODO: set this value to something realistic
     uint128 constant BASE_MEDIAN_MEV_PAYMENT = 0;
     uint128 constant BASE_MEDIAN_VALIDATOR_PAYMENT = 0;
+    uint16 constant SHARE_VAULT_FEE_PERCENT = 10_000; // In bips
 
     function run() public {
         address authority = tx.origin;
@@ -40,8 +41,7 @@ contract DeployScript is Script {
         vm.startBroadcast();
         MevEth mevEth = new MevEth(authority, weth, layerZeroEndpoint);
 
-        MevEthShareVault initialShareVault =
-            new MevEthShareVault(authority, address(mevEth), authority, authority, BASE_MEDIAN_MEV_PAYMENT, BASE_MEDIAN_VALIDATOR_PAYMENT);
+        MevEthShareVault initialShareVault = new MevEthShareVault(authority, address(mevEth), authority, authority);
         IStakingModule initialStakingModule = new WagyuStaker(authority, beaconDepositContract, address(mevEth));
 
         mevEth.init(address(initialShareVault), address(initialStakingModule));

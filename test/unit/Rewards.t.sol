@@ -36,13 +36,11 @@ contract MevRewardsTest is MevEthTest {
      * Tests granting rewards when the share vault is the MevEthShareVaul.
      */
 
-    function testGrantRewards(uint128 medianMevPayment, uint128 medianValidatorPayment, uint128 amount) public {
-        vm.assume(medianMevPayment >= BASE_MEDIAN_MEV_PAYMENT);
-        vm.assume(medianValidatorPayment >= BASE_MEDIAN_VALIDATOR_PAYMENT);
+    function testGrantRewards(uint128 amount) public {
         vm.assume(amount > 10_000);
 
         //Update the share vault
-        address newShareVault = address(new MevEthShareVault(SamBacha, address(mevEth), SamBacha, SamBacha, medianMevPayment, medianValidatorPayment));
+        address newShareVault = address(new MevEthShareVault(SamBacha, address(mevEth), SamBacha, SamBacha));
         _updateShareVault(newShareVault);
 
         address mevShare = mevEth.mevEthShareVault();

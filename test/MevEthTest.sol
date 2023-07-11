@@ -60,6 +60,7 @@ contract MevEthTest is Test {
     uint256 constant FEE_REWARDS_PER_BLOCK = 0;
     uint128 constant BASE_MEDIAN_MEV_PAYMENT = 0.1 ether;
     uint128 constant BASE_MEDIAN_VALIDATOR_PAYMENT = 0.1 ether;
+    uint16 constant SHARE_VAULT_FEE_PERCENT = 10_000; // In bips
 
     DepositContract internal depositContract;
 
@@ -86,6 +87,8 @@ contract MevEthTest is Test {
     event AdminDeleted(address indexed oldAdmin);
     event OperatorAdded(address indexed newOperator);
     event OperatorDeleted(address indexed oldOperator);
+    event MedianValidatorPaymentUpdated(uint128 indexed newMedian);
+    event MedianMevPaymentUpdated(uint128 indexed newMedian);
 
     function setUp() public virtual {
         // Deploy the BeaconChainDepositContract
