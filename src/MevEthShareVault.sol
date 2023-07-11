@@ -20,10 +20,14 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
         uint128 rewards;
     }
 
+
+
     event RewardPayment(uint256 indexed blockNumber, address indexed coinbase, uint256 indexed amount);
     event RewardsCollected(uint256 indexed protocolFeesOwed, uint256 indexed rewardsOwed);
     event TokenRecovered(address indexed recipient, address indexed token, uint256 indexed amount);
     event ProtocolFeeToUpdated(address indexed newProtocolFeeTo);
+    event FeesSent(uint256 indexed feesSent);
+    event RewardsPaid(uint256 indexed rewards);
 
     error SendError();
     error FeesTooHigh();
@@ -32,6 +36,7 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
     address immutable mevEth;
     address beneficiary;
     address protocolFeeTo;
+   
 
     /// @notice Construction sets authority, MevEth, and averageFeeRewardsPerBlock
     /// @param authority The address of the controlling admin authority
@@ -46,13 +51,18 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
     }
 
     function payRewards() external onlyOperator {
-        try ITinyMevEth(mevEth).grantRewards{ value: protocolBalance.rewards }() { }
+        uint256 rewards = protocolBalance.rewards;
+
+        try ITinyMevEth(mevEth).grantRewards{ value: rewards }() { }
         catch {
             // Catch the error and send to the admin for further fund recovery
-            bool success = payable(beneficiary).send(protocolBalance.rewards);
+            bool success = payable(beneficiary).send(rewards);
             if (!success) revert SendError();
         }
+
         protocolBalance.rewards = 0;
+
+        emit RewardsPaid(rewards);
     }
 
     function fees() external view returns (uint256) {
@@ -64,10 +74,16 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
     }
 
     function sendFees() external onlyAdmin {
-        bool success = payable(protocolFeeTo).send(protocolBalance.fees);
+        uint256 fees = protocolBalance.fees;
+
+        bool success = payable(protocolFeeTo).send(fees);
         if (!success) revert SendError();
         protocolBalance.fees = 0;
+
+        emit FeesSent(fees);
     }
+
+
 
     function setProtocolFeeTo(address newProtocolFeeTo) external onlyAdmin {
         protocolFeeTo = newProtocolFeeTo;
@@ -82,6 +98,8 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
     This then emits the RewardPayment event, allowing the offchain operators to track the protocolFeesOwed. 
     This approach trusts that the operators are acting honestly and the protocolFeesOwed is accurately caculated.
     */
+
+    //TODO: think through attack vectors
     function logRewards(uint128 protocolFeesOwed) external onlyOperator {
         ProtocolBalance memory balances = protocolBalance;
         uint256 rewardsEarned = address(this).balance - (balances.fees + protocolBalance.rewards);
@@ -100,6 +118,11 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
         emit RewardsCollected(protocolFeesOwed, rewardsEarned - protocolFeesOwed);
     }
 
+
+    function logWithdraws(uint256 withdrawsOwed){
+        //TODO:         
+    }
+
     function recoverToken(address token, address recipient, uint256 amount) external onlyAdmin {
         ERC20(token).safeTransfer(recipient, amount);
         emit TokenRecovered(recipient, token, amount);
@@ -107,6 +130,7 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
 
     function setNewBeneficiary(address newBeneficiary) external onlyAdmin {
         beneficiary = newBeneficiary;
+        emit 
     }
 
     receive() external payable {
