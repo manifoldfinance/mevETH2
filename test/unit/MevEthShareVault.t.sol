@@ -27,20 +27,22 @@ contract MevEthShareVaultTest is MevEthTest {
     function testSetProtocolFeeTo(address newProtocolFeeTo) public {
         address mevEthShareVault = mevEth.mevEthShareVault();
 
-        // vm.expectEmit(true, false, false, false, address(mevEthShareVault));
-        // emit EventHere(newProtocolFeeTo);
         vm.prank(SamBacha);
+        vm.expectEmit(true, false, false, false, address(mevEthShareVault));
+        emit ProtocolFeeToUpdated(newProtocolFeeTo);
         IMevEthShareVault(mevEthShareVault).setProtocolFeeTo(newProtocolFeeTo);
 
-        //TODO: assert effects
+        assertEq(IMevEthShareVault(mevEthShareVault).protocolFeeTo(), newProtocolFeeTo);
     }
 
     function testNegativeSetProtocolFeeTo(address newProtocolFeeTo) public {
         address mevEthShareVault = mevEth.mevEthShareVault();
+        address currentProtocolFeeTo = IMevEthShareVault(mevEthShareVault).protocolFeeTo();
+
         vm.expectRevert(Auth.Unauthorized.selector);
         IMevEthShareVault(mevEthShareVault).setProtocolFeeTo(newProtocolFeeTo);
 
-        //TODO: assert effects
+        assertEq(IMevEthShareVault(mevEthShareVault).protocolFeeTo(), currentProtocolFeeTo);
     }
 
     function testLogRewards() public { }
@@ -89,7 +91,11 @@ contract MevEthShareVaultTest is MevEthTest {
         assertEq(weth.balanceOf(SamBacha), 0);
     }
 
-    function testReceive() public { }
-
-    function testNegativeReceive() public { }
+    function testReceive(uint256 amount) public {
+        vm.deal(address(this), amount);
+        address mevEthShareVault = mevEth.mevEthShareVault();
+        vm.expectEmit(true, true, true, false, address(mevEthShareVault));
+        emit RewardPayment(block.number, block.coinbase, amount);
+        payable(mevEthShareVault).send(amount);
+    }
 }
