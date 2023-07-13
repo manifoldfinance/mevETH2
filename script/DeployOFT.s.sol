@@ -4,7 +4,7 @@ pragma solidity ^0.8.19;
 import "forge-std/Script.sol";
 import { OFTV2 } from "src/layerZero/oft/OFTV2.sol";
 
-contract DeployScript is Script {
+contract DeployOFTScript is Script {
     error UnknownChain();
     /// @dev https://layerzero.gitbook.io/docs/technical-reference/mainnet/supported-chain-ids
 

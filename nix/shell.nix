@@ -88,7 +88,7 @@
           name = "deploy-arbitrum";
           help = "Deploy the mevETH OFT on Arbitrum";
           command = ''
-            forge script $PRJ_ROOT/script/DeployOFT.s.sol:DeployScript \
+            forge script $PRJ_ROOT/script/DeployOFT.s.sol:DeployOFTScript \
               --chain-id 42161 \
               --rpc-url $ARBITRUM_MAINNET_RPC_URL \
               --broadcast \
@@ -103,7 +103,7 @@
           name = "deploy-optimism";
           help = "Deploy the mevETH OFT on Optimism";
           command = ''
-            forge script $PRJ_ROOT/script/DeployOFT.s.sol:DeployScript \
+            forge script $PRJ_ROOT/script/DeployOFT.s.sol:DeployOFTScript \
               --chain-id 42161 \
               --rpc-url $OPTIMISM_RPC_URL \
               --broadcast \
@@ -118,7 +118,7 @@
           name = "deploy-avalanche";
           help = "Deploy the mevETH OFT on Avalanche";
           command = ''
-            forge script $PRJ_ROOT/script/DeployOFT.s.sol:DeployScript \
+            forge script $PRJ_ROOT/script/DeployOFT.s.sol:DeployOFTScript \
               --chain-id 43114 \
               --rpc-url $AVALANCHE_RPC_URL \
               --broadcast \
@@ -133,7 +133,7 @@
           name = "deploy-bsc";
           help = "Deploy the mevETH OFT on BSC";
           command = ''
-            forge script $PRJ_ROOT/script/DeployOFT.s.sol:DeployScript \
+            forge script $PRJ_ROOT/script/DeployOFT.s.sol:DeployOFTScript \
               --chain-id 56 \
               --rpc-url $BSC_MAINNET_RPC_URL \
               --broadcast \
@@ -148,7 +148,7 @@
           name = "deploy-polygon";
           help = "Deploy the mevETH OFT on Polygon";
           command = ''
-            forge script $PRJ_ROOT/script/DeployOFT.s.sol:DeployScript \
+            forge script $PRJ_ROOT/script/DeployOFT.s.sol:DeployOFTScript \
               --chain-id 137 \
               --rpc-url $POLYGON_MAINNET_RPC_URL \
               --broadcast \
@@ -174,7 +174,7 @@
           name = "deploy-polygon-test";
           help = "Deploy the mevETH OFT Polygon Test";
           command = ''
-            forge script $PRJ_ROOT/script/DeployOFT.s.sol:DeployScript \
+            forge script $PRJ_ROOT/script/DeployOFT.s.sol:DeployOFTScript \
               --chain-id 137 \
               --fork-url $POLYGON_MAINNET_RPC_URL \
               -vvvvv
@@ -185,7 +185,7 @@
           name = "deploy-arbitrum-test";
           help = "Deploy the mevETH OFT Arbitrum Test";
           command = ''
-            forge script $PRJ_ROOT/script/DeployOFT.s.sol:DeployScript \
+            forge script $PRJ_ROOT/script/DeployOFT.s.sol:DeployOFTScript \
               --chain-id 42161 \
               --fork-url $ARBITRUM_MAINNET_RPC_URL \
               -vvvvv
@@ -196,7 +196,7 @@
           name = "deploy-bsc-test";
           help = "Deploy the mevETH OFT BSC Test";
           command = ''
-            forge script $PRJ_ROOT/script/DeployOFT.s.sol:DeployScript \
+            forge script $PRJ_ROOT/script/DeployOFT.s.sol:DeployOFTScript \
               --chain-id 56 \
               --fork-url $BSC_MAINNET_RPC_URL \
               -vvvvv
@@ -207,7 +207,7 @@
           name = "deploy-avalanche-test";
           help = "Deploy the mevETH OFT Avalanche Test";
           command = ''
-            forge script $PRJ_ROOT/script/DeployOFT.s.sol:DeployScript \
+            forge script $PRJ_ROOT/script/DeployOFT.s.sol:DeployOFTScript \
               --chain-id 43114 \
               --fork-url $AVALANCHE_RPC_URL \
               -vvvvv
@@ -218,7 +218,7 @@
           name = "deploy-optimism-test";
           help = "Deploy the mevETH OFT Optimism Test";
           command = ''
-            forge script $PRJ_ROOT/script/DeployOFT.s.sol:DeployScript \
+            forge script $PRJ_ROOT/script/DeployOFT.s.sol:DeployOFTScript \
               --chain-id 42161 \
               --fork-url $OPTIMISM_RPC_URL \
               -vvvvv

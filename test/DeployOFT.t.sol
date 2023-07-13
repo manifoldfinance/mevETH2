@@ -18,7 +18,7 @@ contract DeployOFTTest is Test {
     uint256 ARB;
     uint256 AVA;
     uint256 OPT;
-    DeployScript deploy;
+    DeployOFTScript deploy;
 
     function setUp() public virtual {
         POLY = vm.createSelectFork(POLYGON_MAINNET_RPC_URL);
@@ -30,7 +30,7 @@ contract DeployOFTTest is Test {
 
     function _deploy(uint256 forkId) internal {
         vm.selectFork(forkId);
-        deploy = new DeployScript();
+        deploy = new DeployOFTScript();
         deploy.run();
     }
 
