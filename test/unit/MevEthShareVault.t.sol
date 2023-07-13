@@ -2,6 +2,7 @@
 pragma solidity 0.8.19;
 
 import "../MevEthTest.sol";
+import { MevEthShareVault } from "../MevEthShareVault.sol";
 import "src/libraries/Auth.sol";
 import "../mocks/DepositContract.sol";
 import { IStakingModule } from "../../src/interfaces/IStakingModule.sol";
@@ -16,13 +17,57 @@ contract MevEthShareVaultTest is MevEthTest {
     //     _updateShareVault(newShareVault);
     // }
 
-    function testPayRewards() public { }
+    function testPayRewards(uint256 rewards) public {
+        address mevEthShareVault = mevEth.mevEthShareVault();
+        _addToProtocolBalance(0, rewards);
 
-    function testNegativePayRewards() public { }
+        vm.prank(Operator1);
+        vm.expectEmit(true, false, false, false, address(mevEthShareVault));
+        emit RewardsPaid(amount);
+        IMevEthShareVault(mevEthShareVault).payRewards();
 
-    function testSendFees() public { }
+        assertEq(IMevEthShareVault(mevEthShareVault).fees(), 0);
+        assertEq(IMevEthShareVault(mevEthShareVault).rewards(), 0);
+    }
 
-    function testNegativeSendFees() public { }
+    function testNegativePayRewards(uint256 rewards) public {
+        address mevEthShareVault = mevEth.mevEthShareVault();
+
+        _addToProtocolBalance(0, rewards);
+        vm.expectRevert(Auth.Unauthorized.selector);
+        IMevEthShareVault(mevEthShareVault).payRewards();
+
+        assertEq(IMevEthShareVault(mevEthShareVault).fees(), 0);
+        assertEq(IMevEthShareVault(mevEthShareVault).rewards(), rewards);
+    }
+
+    function testSendFees(uint256 fees) public {
+        address mevEthShareVault = mevEth.mevEthShareVault();
+
+        _addToProtocolBalance(fees, 0);
+
+        vm.prank(SamBacha);
+        vm.expectEmit(true, false, false, false, address(mevEthShareVault));
+        emit FeesSent(fees);
+        IMevEthShareVault(mevEthShareVault).sendFees();
+
+        assertEq(IMevEthShareVault(mevEthShareVault).fees(), 0);
+        assertEq(IMevEthShareVault(mevEthShareVault).rewards(), 0);
+    }
+
+    function testNegativeSendFees() public {
+        address mevEthShareVault = mevEth.mevEthShareVault();
+
+        _addToProtocolBalance(fees, 0);
+
+        vm.expectRevert(Auth.Unauthorized.selector);
+        IMevEthShareVault(mevEthShareVault).sendFees();
+
+        //TODO: also test when there is a send error
+
+        assertEq(IMevEthShareVault(mevEthShareVault).fees(), fees);
+        assertEq(IMevEthShareVault(mevEthShareVault).rewards(), 0);
+    }
 
     function testSetProtocolFeeTo(address newProtocolFeeTo) public {
         address mevEthShareVault = mevEth.mevEthShareVault();
@@ -45,9 +90,50 @@ contract MevEthShareVaultTest is MevEthTest {
         assertEq(IMevEthShareVault(mevEthShareVault).protocolFeeTo(), currentProtocolFeeTo);
     }
 
-    function testLogRewards() public { }
+    function testLogRewards(uint256 fees, uint256 rewards) public {
+        uint256 sum;
+        unchecked {
+            sum = fees + rewards;
+        }
+        vm.assume(sum >= fees && sum >= rewards);
 
-    function testNegativeLogRewards() public { }
+        uint256 amount = fees + rewards;
+
+        vm.deal(address(this), amount);
+        address mevEthShareVault = mevEth.mevEthShareVault();
+        payable(mevEthShareVault).send(amount);
+
+        vm.prank(Operator1);
+        vm.expectEmit(true, false, false, false, address(mevEthShareVault));
+        emit ProtocolFeeToUpdated(newProtocolFeeTo);
+        IMevEthShareVault(mevEthShareVault).logRewards(fees);
+
+        assertEq(IMevEthShareVault(mevEthShareVault).rewards(), fees);
+        assertEq(IMevEthShareVault(mevEthShareVault).rewards(), amount);
+    }
+
+    function testNegativeLogRewards() public {
+        uint256 sum;
+        unchecked {
+            sum = fees + rewards;
+        }
+        vm.assume(sum >= fees && sum >= rewards);
+
+        uint256 amount = fees + rewards;
+
+        vm.deal(address(this), amount);
+        address mevEthShareVault = mevEth.mevEthShareVault();
+        payable(mevEthShareVault).send(amount);
+
+        vm.expectRevert(Auth.Unauthorized.selector);
+        IMevEthShareVault(mevEthShareVault).logRewards(fees);
+
+        vm.expectRevert(MevEthShareVault.FeesTooHigh.selector);
+        IMevEthShareVault(mevEthShareVault).logRewards(amount + 1);
+
+        assertEq(IMevEthShareVault(mevEthShareVault).rewards(), 0);
+        assertEq(IMevEthShareVault(mevEthShareVault).rewards(), 0);
+    }
 
     function recoverToken(uint128 amount) public {
         vm.assume(amount > 10_000);
@@ -97,5 +183,19 @@ contract MevEthShareVaultTest is MevEthTest {
         vm.expectEmit(true, true, true, false, address(mevEthShareVault));
         emit RewardPayment(block.number, block.coinbase, amount);
         payable(mevEthShareVault).send(amount);
+    }
+
+    function _addToProtocolBalance(uint256 fees, uint256 rewards) {
+        uint256 amount = fees + rewards;
+
+        vm.deal(address(this), amount);
+        address mevEthShareVault = mevEth.mevEthShareVault();
+        payable(mevEthShareVault).send(amount);
+
+        vm.prank(Operator1);
+        IMevEthShareVault(mevEthShareVault).logRewards(fees);
+
+        assertEq(IMevEthShareVault(mevEthShareVault).rewards(), fees);
+        assertEq(IMevEthShareVault(mevEthShareVault).rewards(), amount);
     }
 }
