@@ -94,7 +94,7 @@ contract MevAdminTest is MevEthTest {
 
     function testNegativeAddOperator(address newOperator) public {
         vm.assume(newOperator != 0x7109709ECfa91a80626fF3989D68f67F5b1DD12D);
-        vm.assume(newAdmin != Operator01);
+        vm.assume(newOperator != Operator01);
         vm.assume(newOperator != address(0));
         vm.expectRevert(Auth.Unauthorized.selector);
         mevEth.addOperator(newOperator);
