@@ -20,14 +20,13 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
         uint128 rewards;
     }
 
-
-
     event RewardPayment(uint256 indexed blockNumber, address indexed coinbase, uint256 indexed amount);
     event RewardsCollected(uint256 indexed protocolFeesOwed, uint256 indexed rewardsOwed);
     event TokenRecovered(address indexed recipient, address indexed token, uint256 indexed amount);
     event ProtocolFeeToUpdated(address indexed newProtocolFeeTo);
     event FeesSent(uint256 indexed feesSent);
     event RewardsPaid(uint256 indexed rewards);
+    event BeneficiaryUpdated(address indexed beneficiary);
 
     error SendError();
     error FeesTooHigh();
@@ -36,7 +35,6 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
     address immutable mevEth;
     address beneficiary;
     address protocolFeeTo;
-   
 
     /// @notice Construction sets authority, MevEth, and averageFeeRewardsPerBlock
     /// @param authority The address of the controlling admin authority
@@ -83,8 +81,6 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
         emit FeesSent(fees);
     }
 
-
-
     function setProtocolFeeTo(address newProtocolFeeTo) external onlyAdmin {
         protocolFeeTo = newProtocolFeeTo;
         emit ProtocolFeeToUpdated(newProtocolFeeTo);
@@ -118,9 +114,8 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
         emit RewardsCollected(protocolFeesOwed, rewardsEarned - protocolFeesOwed);
     }
 
-
-    function logWithdraws(uint256 withdrawsOwed){
-        //TODO:         
+    function logWithdraws(uint256 withdrawsOwed) {
+        //TODO:
     }
 
     function recoverToken(address token, address recipient, uint256 amount) external onlyAdmin {
@@ -130,7 +125,7 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
 
     function setNewBeneficiary(address newBeneficiary) external onlyAdmin {
         beneficiary = newBeneficiary;
-        emit 
+        emit BeneficiaryUpdated(newBeneficiary);
     }
 
     receive() external payable {

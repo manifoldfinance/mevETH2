@@ -2,7 +2,7 @@
 pragma solidity 0.8.19;
 
 import "../MevEthTest.sol";
-import { MevEthShareVault } from "../MevEthShareVault.sol";
+import { MevEthShareVault } from "src/MevEthShareVault.sol";
 import "src/libraries/Auth.sol";
 import "../mocks/DepositContract.sol";
 import { IStakingModule } from "../../src/interfaces/IStakingModule.sol";
@@ -183,6 +183,24 @@ contract MevEthShareVaultTest is MevEthTest {
         vm.expectEmit(true, true, true, false, address(mevEthShareVault));
         emit RewardPayment(block.number, block.coinbase, amount);
         payable(mevEthShareVault).send(amount);
+    }
+
+    function testSetNewBeneficiary(address newBeneficiary) public {
+        vm.prank(SamBacha);
+        vm.expectEmit(true, false, false, false, address(mevEthShareVault));
+        emit BeneficiaryUpdated(newBeneficiary);
+        IMevEthShareVault(mevEthShareVault).setNewBeneficiary(newBeneficiary);
+        assertEq(IMevEthShareVault(mevEthShareVault).beneficiary(), newBeneficiary);
+    }
+
+    function testNegativeSetNewBeneficiary(address newBeneficiary) public {
+        address currentBeneficiary = IMevEthShareVault(mevEthShareVault).beneficiary();
+
+        vm.prank(SamBacha);
+        vm.expectRevert(Auth.Unauthorized.selector);
+        IMevEthShareVault(mevEthShareVault).setNewBeneficiary(newBeneficiary);
+
+        assertEq(IMevEthShareVault(mevEthShareVault).beneficiary(), currentBeneficiary);
     }
 
     function _addToProtocolBalance(uint256 fees, uint256 rewards) {
