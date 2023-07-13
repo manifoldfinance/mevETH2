@@ -114,10 +114,6 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
         emit RewardsCollected(protocolFeesOwed, rewardsEarned - protocolFeesOwed);
     }
 
-    function logWithdraws(uint256 withdrawsOwed) public {
-        //TODO:
-    }
-
     function recoverToken(address token, address recipient, uint256 amount) external onlyAdmin {
         ERC20(token).safeTransfer(recipient, amount);
         emit TokenRecovered(recipient, token, amount);

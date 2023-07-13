@@ -12,7 +12,8 @@ import "../../lib/safe-tools/src/SafeTestTools.sol";
 contract MevEthShareVaultTest is MevEthTest {
     MevEthShareVault mevEthShareVault;
 
-    function setup() public {
+    function setUp() public override {
+        super.setUp();
         mevEthShareVault = MevEthShareVault(payable(mevEth.mevEthShareVault()));
 
         //Update the share vault to MevEthShareVault
