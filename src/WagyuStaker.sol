@@ -4,9 +4,9 @@ pragma solidity 0.8.19;
 import { ITinyMevEth } from "./interfaces/ITinyMevEth.sol";
 import { IStakingModule } from "./interfaces/IStakingModule.sol";
 import { IBeaconDepositContract } from "./interfaces/IBeaconDepositContract.sol";
-import { SafeTransferLib } from "solmate/src/utils/SafeTransferLib.sol";
+import { SafeTransferLib } from "solmate/utils/SafeTransferLib.sol";
 import { Auth } from "./libraries/Auth.sol";
-import { ERC20 } from "solmate/src/tokens/ERC20.sol";
+import { ERC20 } from "solmate/tokens/ERC20.sol";
 
 /// @title 🥩 Wagyu Staker 🥩
 /// @dev This contract stakes Ether inside of the BeaconChainDepositContract directly

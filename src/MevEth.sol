@@ -16,9 +16,9 @@ pragma solidity 0.8.19;
                 "$b.$$"     
 /////////////////////////////////////////////*/
 
-import { SafeTransferLib } from "solmate/src/utils/SafeTransferLib.sol";
-import { FixedPointMathLib } from "solmate/src/utils/FixedPointMathLib.sol";
-import { ERC20 } from "solmate/src/tokens/ERC20.sol";
+import { SafeTransferLib } from "solmate/utils/SafeTransferLib.sol";
+import { FixedPointMathLib } from "solmate/utils/FixedPointMathLib.sol";
+import { ERC20 } from "solmate/tokens/ERC20.sol";
 import { IERC20 } from "./interfaces/IERC20.sol";
 import { IERC4626 } from "./interfaces/IERC4626.sol";
 import { IWETH } from "./interfaces/IWETH.sol";

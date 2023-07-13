@@ -2,8 +2,8 @@
 pragma solidity 0.8.19;
 
 import { Auth } from "./libraries/Auth.sol";
-import { SafeTransferLib } from "solmate/src/utils/SafeTransferLib.sol";
-import { ERC20 } from "solmate/src/tokens/ERC20.sol";
+import { SafeTransferLib } from "solmate/utils/SafeTransferLib.sol";
+import { ERC20 } from "solmate/tokens/ERC20.sol";
 import { ITinyMevEth } from "./interfaces/ITinyMevEth.sol";
 import { IMevEthShareVault } from "./interfaces/IMevEthShareVault.sol";
 

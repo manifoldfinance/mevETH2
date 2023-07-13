@@ -31,6 +31,7 @@
     "ethers": "^6.6.3",
     "hardhat": "^2.16.1",
     "hardhat-deploy": "^0.11.34",
+    "hardhat-preprocessor": "^0.1.5",
     "hardhat-tracer": "^2.5.1",
     "prettier": "^2",
     "prettier-plugin-solidity": "^1.1.3",
