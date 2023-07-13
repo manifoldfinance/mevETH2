@@ -1,0 +1,58 @@
+{
+  "name": "mev3",
+  "private": true,
+  "version": "0.0.1",
+  "description": "",
+  "files": [
+    "/dist/**/*",
+    "/contracts",
+    "/contracts/base",
+    "/contracts/interfaces",
+    "/contracts/libraries",
+    "/artifacts/contracts/**/*.json",
+    "!artifacts/contracts/**/*.dbg.json",
+    "!artifacts/contracts/test/**/*",
+    "!artifacts/contracts/base/**/*"
+  ],
+  "directories": {
+    "doc": "docs",
+    "lib": "lib",
+    "test": "test",
+    "contracts": "src"
+  },
+  "scripts": {
+    "build": "forge build",
+    "compile": "npx hardhat compile",
+    "coverage": "npx hardhat coverage",
+    "test": "forge test",
+    "lint": "npx gts lint",
+    "fmt": "npx prettier --config prettier.config.js --write contracts/",
+    "clean": "echo 'cleaning up' && rm -rf ./artifacts && rm -rf ./dist && rm -rf ./coverage && rm -rf ./build && rm -rf ./cache && rm -rf ./reports && rm -rf ./types && rm -rf ./coverage.json && rm -rf ./hardhat.config.ts && rm -rf ./tsconfig.json && rm -rf ./ts",
+    "fix": "npx gts fix"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/manifoldfinance/meveth.git"
+  },
+  "keywords": [
+    "solidity",
+    "ethereum",
+    "smart contracts",
+    "defi"
+  ],
+  "bugs": {
+    "url": "https://github.com/manifoldfinance/meveth/issues"
+  },
+  "author": "SEE CONTRIBUTORS",
+  "license": "SEE LICENSE IN LICENSE",
+  "dependencies": {
+    "@openzeppelin/contracts": "^4.9.2",
+    "forge-std": "git+https://github.com/foundry-rs/forge-std#74cfb77e308dd188d2f58864aaf44963ae6b88b1",
+    "safe-tools": "git+https://github.com/0xKitsune/safe-tools#42fa7ec87264590f7a00633f9e2d4d6e05db6d42",
+    "solady": "git+https://github.com/Vectorized/solady#v0.0.107",
+    "solmate": "git+https://github.com/transmissions11/solmate#bfc9c25865a274a7827fea5abf6e4fb64fc64e6c"
+  },
+  "volta": {
+    "node": "18.16.1"
+  }
+}

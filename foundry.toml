@@ -1,53 +1,136 @@
-# See more config options https://github.com/foundry-rs/foundry/tree/master/config
-
+# -*- mode: toml; -*-
 [profile.default]
-solc_version = '0.8.19'
-src = 'src'
-out = 'out'
-libs = ['lib']
+src = "src"
+test = "test"
+script = "script"
+out = "out"
+libs = ["lib"]
+remappings = [
+    "@openzeppelin/=lib/manifold-oft/lib/openzeppelin-contracts/",
+    "ds-test/=lib/forge-std/lib/ds-test/src/",
+    "erc4626-tests/=lib/openzeppelin-contracts/lib/erc4626-tests/",
+    "forge-std/=lib/forge-std/src/",
+    "hardhat-deploy/=lib/manifold-oft/lib/hardhat-deploy/",
+    "manifold-oft/=lib/manifold-oft/contracts/",
+    "openzeppelin-contracts/=lib/openzeppelin-contracts/",
+    "openzeppelin/=lib/openzeppelin-contracts/contracts/",
+    "pigeon/=lib/pigeon/src/",
+    "safe-contracts/=lib/safe-tools/lib/safe-contracts/contracts/",
+    "safe-tools/=lib/safe-tools/src/",
+    "solady/=lib/pigeon/lib/solady/src/",
+    "solmate/=lib/solmate/src/",
+]
+# @see {@link https://github.com/foundry-rs/foundry/issues/4060}
+auto_detect_remappings = false
+libraries = []
+cache = true
+cache_path = "cache"
+broadcast = "broadcast"
+allow_paths = []
+include_paths = []
+force = false
+# Not all networks support PUSH0 just yet!
+evm_version = "shanghai"
+gas_reports = ["*"]
+gas_reports_ignore = []
+auto_detect_solc = true
+offline = false
 optimizer = true
-optimizer_runs = 2000
-via_ir = true
-fuzz_runs = 500
+optimizer_runs = 200
+verbosity = 0
+ignored_error_codes = ["license", "code-size", "init-code-size"]
 deny_warnings = false
+build_info = true
+ffi = false
+sender = "0x1804c8ab1f12e6bbf3894d4083f33e07309d1f38"
+tx_origin = "0x1804c8ab1f12e6bbf3894d4083f33e07309d1f38"
+initial_balance = "0xffffffffffffffffffffffff"
+block_number = 1
+gas_limit = 9223372036854775807
+# in wei
+block_base_fee_per_gas = 7
+block_coinbase = "0x0000000000000000000000000000000000000000"
+block_timestamp = 1
+block_difficulty = 0
+block_prevrandao = "0x0000000000000000000000000000000000000000000000000000000000000000"
+memory_limit = 33554432
 
-[profile.default.optimizer_details]
-constantOptimizer = true
-yul = true
+# includes the contract's metadata in the contract's json artifact
+extra_output = ['irOptimized', 'evm.assembly']
+# emits the output selection as separate json artifact files
+extra_output_files = ['metadata']
+names = false
+sizes = false
 
-[profile.default.optimizer_details.yulDetails]
-stackAllocation = true
+via_ir = false
+no_storage_caching = false
+no_rpc_rate_limit = false
+use_literal_content = false
+bytecode_hash = "none"
+cbor_metadata = false
+sparse_mode = false
 
-[profile.mainnet]
-solc_version = '0.8.19'
-src = 'src'
-out = 'out'
-libs = ['lib']
-chain_id = 1
+[[profile.default.fs_permissions]]
+access = "read"
+path = "out"
 
-[profile.goerli]
-src = 'src'
-out = 'out'
-libs = ['lib']
-chain_id = 5
-
-[profile.ci]
-solc_version = '0.8.19'
-src = 'src'
-out = 'out'
-libs = ['lib']
-
-[etherscan]
-mainnet = { key = "${ETHERSCAN_API_KEY}" }
-goerli = { key = "${ETHERSCAN_API_KEY}" }
-
-[rpc_endpoints]
-mainnet = "${RPC_MAINNET}"
-goerli = "${RPC_GOERLI}"
+[profile.default.rpc_storage_caching]
+chains = "all"
+endpoints = "all"
 
 [fmt]
-line_length = 160
-bracket_spacing = true
-multiline_func_header = "all"
-number_underscore = "thousands"
-wrap_comments = true
+line_length = 120
+tab_width = 4
+bracket_spacing = false
+int_types = "long"
+multiline_func_header = "attributes_first"
+quote_style = "double"
+number_underscore = "preserve"
+single_line_statement_blocks = "preserve"
+override_spacing = false
+wrap_comments = false
+ignore = []
+contract_new_lines = false
+
+[doc]
+out = "docs"
+title = ""
+book = "book.toml"
+homepage = "README.md"
+ignore = []
+
+[fuzz]
+# The number of fuzz runs for fuzz tests
+max_test_rejects = 120_000
+runs = 10_000
+# The maximum number of test case rejections allowed by proptest, to be
+# encountered during usage of `vm.assume` cheatcode. This will be used
+# to set the `max_global_rejects` value in proptest test runner config.
+# `max_local_rejects` option isn't exposed here since we're not using
+# `prop_filter`. default:
+dictionary_weight = 40
+include_storage = true
+include_push_bytes = true
+max_fuzz_dictionary_addresses = 15728640
+max_fuzz_dictionary_values = 6553600
+
+[invariant]
+runs = 256
+depth = 15
+fail_on_revert = false
+call_override = false
+dictionary_weight = 80
+include_storage = true
+# The flag indicating whether to include push bytes values
+include_push_bytes = true
+max_fuzz_dictionary_addresses = 15728640
+max_fuzz_dictionary_values = 6553600
+shrink_sequence = true
+
+[profile.default.optimizer_details]
+# constantOptimizer = true
+yul = true
+# this sets the `yulDetails` of the `optimizer_details` for the `default` profile
+[profile.default.optimizer_details.yulDetails]
+stackAllocation = false
+optimizerSteps = 'u'
