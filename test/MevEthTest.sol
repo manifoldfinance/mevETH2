@@ -87,11 +87,14 @@ contract MevEthTest is Test {
     event AdminDeleted(address indexed oldAdmin);
     event OperatorAdded(address indexed newOperator);
     event OperatorDeleted(address indexed oldOperator);
-    event MedianValidatorPaymentUpdated(uint128 indexed newMedian);
-    event MedianMevPaymentUpdated(uint128 indexed newMedian);
+
+    // MevEthShareVault Events
     event RewardPayment(uint256 indexed blockNumber, address indexed coinbase, uint256 indexed amount);
     event ProtocolFeeToUpdated(address indexed newProtocolFeeTo);
     event BeneficiaryUpdated(address indexed beneficiary);
+    event RewardsCollected(uint256 indexed protocolFeesOwed, uint256 indexed rewardsOwed);
+    event FeesSent(uint256 indexed feesSent);
+    event RewardsPaid(uint256 indexed rewards);
 
     function setUp() public virtual {
         // Deploy the BeaconChainDepositContract

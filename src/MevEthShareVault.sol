@@ -33,8 +33,8 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
 
     ProtocolBalance protocolBalance;
     address immutable mevEth;
-    address beneficiary;
-    address protocolFeeTo;
+    address public beneficiary;
+    address public protocolFeeTo;
 
     /// @notice Construction sets authority, MevEth, and averageFeeRewardsPerBlock
     /// @param authority The address of the controlling admin authority
@@ -49,36 +49,36 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
     }
 
     function payRewards() external onlyOperator {
-        uint256 rewards = protocolBalance.rewards;
+        uint256 _rewards = protocolBalance.rewards;
 
-        try ITinyMevEth(mevEth).grantRewards{ value: rewards }() { }
+        try ITinyMevEth(mevEth).grantRewards{ value: _rewards }() { }
         catch {
             // Catch the error and send to the admin for further fund recovery
-            bool success = payable(beneficiary).send(rewards);
+            bool success = payable(beneficiary).send(_rewards);
             if (!success) revert SendError();
         }
 
         protocolBalance.rewards = 0;
 
-        emit RewardsPaid(rewards);
+        emit RewardsPaid(_rewards);
     }
 
-    function fees() external view returns (uint256) {
+    function fees() external view returns (uint128) {
         return protocolBalance.fees;
     }
 
-    function rewards() external view returns (uint256) {
+    function rewards() external view returns (uint128) {
         return protocolBalance.rewards;
     }
 
     function sendFees() external onlyAdmin {
-        uint256 fees = protocolBalance.fees;
+        uint256 _fees = protocolBalance.fees;
 
-        bool success = payable(protocolFeeTo).send(fees);
+        bool success = payable(protocolFeeTo).send(_fees);
         if (!success) revert SendError();
         protocolBalance.fees = 0;
 
-        emit FeesSent(fees);
+        emit FeesSent(_fees);
     }
 
     function setProtocolFeeTo(address newProtocolFeeTo) external onlyAdmin {
@@ -114,7 +114,7 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
         emit RewardsCollected(protocolFeesOwed, rewardsEarned - protocolFeesOwed);
     }
 
-    function logWithdraws(uint256 withdrawsOwed) {
+    function logWithdraws(uint256 withdrawsOwed) public {
         //TODO:
     }
 
