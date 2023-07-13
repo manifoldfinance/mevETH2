@@ -1,0 +1,44 @@
+{
+  "name": "meveth",
+  "private": true,
+  "version": "0.0.0",
+  "description": "To make the most of this repository, you should have the following installed:",
+  "directories": {
+    "doc": "docs",
+    "lib": "lib",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "SEE LICENSE IN LICENSE",
+  "dependencies": {
+    "@openzeppelin/contracts": "^4.9.2",
+    "forge-std": "git+https://github.com/foundry-rs/forge-std#74cfb77e308dd188d2f58864aaf44963ae6b88b1",
+    "safe-tools": "git+https://github.com/0xKitsune/safe-tools#42fa7ec87264590f7a00633f9e2d4d6e05db6d42",
+    "solady": "git+https://github.com/Vectorized/solady#v0.0.107",
+    "solmate": "git+https://github.com/transmissions11/solmate#bfc9c25865a274a7827fea5abf6e4fb64fc64e6c"
+  },
+  "devDependencies": {
+    "@i0san/hardhat-nextjs": "^1.0.0",
+    "@nomicfoundation/hardhat-network-helpers": "^1.0.8",
+    "@nomicfoundation/hardhat-toolbox": "^3.0.0",
+    "@swc-node/core": "^1.10.4",
+    "@swc-node/register": "^1.6.6",
+    "@typechain/ethers-v6": "^0.4.0",
+    "ethers": "^6.6.3",
+    "hardhat": "^2.16.1",
+    "hardhat-deploy": "^0.11.34",
+    "hardhat-tracer": "^2.5.1",
+    "prettier": "^2",
+    "prettier-plugin-solidity": "^1.1.3",
+    "ts-node": "^10.9.1",
+    "tslib": "^2.6.0",
+    "typechain": "^8.2.0",
+    "typedoc": "^0.24.8",
+    "typedoc-plugin-markdown": "^3.15.3",
+    "typescript": "5.0.2"
+  }
+}
