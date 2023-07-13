@@ -333,6 +333,57 @@ contract MevEth is OFTV2, IERC4626, ITinyMevEth {
     }
 
     /*//////////////////////////////////////////////////////////////
+                            WITHDRAWAL QUEUE
+    //////////////////////////////////////////////////////////////*/
+    struct WithdrawalTicket {
+        address receiver;
+        uint256 amount;
+    }
+
+    struct Queue {
+        uint128 first;
+        uint128 last;
+        uint256 length;
+    }
+
+    event WithdrawalQueueOpened(address indexed receipient, uint256 indexed assets);
+
+    Queue queue;
+
+    mapping(uint256 ticketNumber => WithdrawalTicket ticket) public withdrawalQueue;
+
+    function processWithdrawalQueue() public {
+        Queue memory _queue;
+        while (queue.length != 0) {
+            uint256 first = _queue.first;
+            WithdrawalTicket memory currentTicket = withdrawalQueue[_queue.first];
+            uint256 assetsOwed = currentTicket.amount;
+            address receipient = currentTicket.receiver;
+            if (address(this).balance > assetsOwed) {
+                _queue.length--;
+                if (_queue.length != 0) {
+                    _queue.first += 1;
+                }
+                delete withdrawalQueue[_queue.first];
+
+                WETH.deposit{value: assetsOwed }();
+                // SafeTransfer not needed because we know the impl
+                WETH.transfer(receipient, assetsOwed);
+            } else {
+                queue = _queue;
+                return;
+            }
+        }
+
+        queue = Queue({
+            first: 0,
+            last: 0,
+            length: 0
+        });
+    }
+        
+
+    /*//////////////////////////////////////////////////////////////
                             ERC4626 Support
     //////////////////////////////////////////////////////////////*/
 
@@ -495,8 +546,18 @@ contract MevEth is OFTV2, IERC4626, ITinyMevEth {
 
         emit Withdraw(msg.sender, owner, receiver, assets, shares);
 
-        WETH.deposit{ value: assets }();
-        ERC20(address(WETH)).safeTransfer(receiver, assets);
+        if (address(this).balance >= assets) {
+            WETH.deposit{ value: assets }();
+            ERC20(address(WETH)).safeTransfer(receiver, assets);
+        } else {
+            emit WithdrawalQueueOpened(receiver, assets);
+            withdrawalQueue[queue.last+1] = WithdrawalTicket({
+                receiver: receiver,
+                amount: assets
+            });
+            queue.last += 1;
+            queue.length +=1;
+        }
     }
 
     /// @param owner The address in question of who would be redeeming their shares
@@ -538,8 +599,18 @@ contract MevEth is OFTV2, IERC4626, ITinyMevEth {
 
         emit Withdraw(msg.sender, owner, receiver, assets, shares);
 
-        WETH.deposit{ value: assets }();
-        ERC20(address(WETH)).safeTransfer(receiver, assets);
+        if (address(this).balance >= assets) {
+            WETH.deposit{ value: assets }();
+            ERC20(address(WETH)).safeTransfer(receiver, assets);
+        } else {
+            emit WithdrawalQueueOpened(receiver, assets);
+            withdrawalQueue[queue.last+1] = WithdrawalTicket({
+                receiver: receiver,
+                amount: assets
+            });
+            queue.last += 1;
+            queue.length +=1;
+        }
     }
 
     /*//////////////////////////////////////////////////////////////
