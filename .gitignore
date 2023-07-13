@@ -1,6 +1,7 @@
 # -*- mode: gitignore; -*-
 /out
 cache/
+cache_hardhat/
 artifacts/
 logs
 *.log

@@ -3,7 +3,7 @@ pragma solidity 0.8.19;
 
 import "../MevEthTest.sol";
 import "src/libraries/Auth.sol";
-import "../mocks/DepositContract.sol";
+import "src/mocks/DepositContract.sol";
 import { IStakingModule } from "../../src/interfaces/IStakingModule.sol";
 import "../../src/interfaces/IMevEthShareVault.sol";
 import "../../lib/safe-tools/src/SafeTestTools.sol";

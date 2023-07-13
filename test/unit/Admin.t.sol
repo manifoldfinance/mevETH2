@@ -6,7 +6,7 @@ import { IMevEthShareVault } from "../../src/interfaces/IMevEthShareVault.sol";
 import "../MevEthTest.sol";
 import "../../src/MevEth.sol";
 import "src/libraries/Auth.sol";
-import "../mocks/DepositContract.sol";
+import "src/mocks/DepositContract.sol";
 import "../../src/MevEthShareVault.sol";
 
 contract MevAdminTest is MevEthTest {

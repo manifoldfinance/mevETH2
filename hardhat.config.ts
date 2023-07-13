@@ -2,14 +2,15 @@
  * 
  */
 
-import "@nomicfoundation/hardhat-toolbox";
-import { config as dotenvConfig } from "dotenv";
-import "hardhat-deploy";
 import type { HardhatUserConfig } from "hardhat/config";
-import type { NetworkUserConfig } from "hardhat/types";
-import { resolve } from "path";
 import "hardhat-preprocessor";
 import fs from "fs";
+require("@nomiclabs/hardhat-waffle");
+require(`@nomiclabs/hardhat-etherscan`);
+require("solidity-coverage");
+require('hardhat-gas-reporter');
+require('hardhat-deploy');
+require('hardhat-deploy-ethers');
 
 function getRemappings() {
   return fs
@@ -22,7 +23,87 @@ function getRemappings() {
 const config: HardhatUserConfig = {
     defaultNetwork: "hardhat",
     namedAccounts: {
-      deployer: 0,
+      deployer: {
+        default: 0,    // wallet address 0, of the mnemonic in .env
+      },
+    },
+    networks: {
+      ethereum: {
+        url: "https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161", // public infura endpoint
+        chainId: 1,
+        
+      },
+      bsc: {
+        url: "https://bsc-dataseed1.binance.org",
+        chainId: 56,
+        
+      },
+      avalanche: {
+        url: "https://api.avax.network/ext/bc/C/rpc",
+        chainId: 43114,
+        
+      },
+      polygon: {
+        url: "https://rpc-mainnet.maticvigil.com",
+        chainId: 137,
+        
+      },
+      arbitrum: {
+        url: `https://arb1.arbitrum.io/rpc`,
+        chainId: 42161,
+        
+      },
+      optimism: {
+        url: `https://mainnet.optimism.io`,
+        chainId: 10,
+        
+      },
+      fantom: {
+        url: `https://rpcapi.fantom.network`,
+        chainId: 250,
+        
+      },
+      metis: {
+        url: `https://andromeda.metis.io/?owner=1088`,
+        chainId: 1088,
+        
+      },
+  
+      goerli: {
+        url: "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161", // public infura endpoint
+        chainId: 5,
+        
+      },
+      'bsc-testnet': {
+        url: 'https://data-seed-prebsc-1-s1.binance.org:8545/',
+        chainId: 97,
+        
+      },
+      fuji: {
+        url: `https://api.avax-test.network/ext/bc/C/rpc`,
+        chainId: 43113,
+        
+      },
+      mumbai: {
+        url: "https://rpc-mumbai.maticvigil.com/",
+        chainId: 80001,
+        
+      },
+      'arbitrum-goerli': {
+        url: `https://goerli-rollup.arbitrum.io/rpc/`,
+        chainId: 421613,
+        
+      },
+      'optimism-goerli': {
+        url: `https://goerli.optimism.io/`,
+        chainId: 420,
+        
+      },
+      'fantom-testnet': {
+        url: `https://rpc.ankr.com/fantom_testnet`,
+        chainId: 4002,
+        
+      }
     },
     /*  networks: {
       hardhat: {
@@ -74,10 +155,11 @@ const config: HardhatUserConfig = {
         // https://hardhat.org/hardhat-network/#solidity-optimizer-support
         optimizer: {
           enabled: true,
-          runs: 800,
+          runs: 1,
         },
       },
     },
+    allowUnlimitedContractSize: true,
     typechain: {
       outDir: "types",
       target: "ethers-v6",

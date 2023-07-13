@@ -7,9 +7,9 @@ import "forge-std/Test.sol";
 import "src/MevEth.sol";
 
 // Needed Periphery Contracts
-import "./mocks/WETH9.sol";
-import "./mocks/DepositContract.sol";
-import "./mocks/LZEndpointMock.sol";
+import "src/mocks/WETH9.sol";
+import "src/mocks/DepositContract.sol";
+import "src/mocks/LZEndpointMock.sol";
 import "../src/MevEthShareVault.sol";
 import { SafeInstance, SafeTestTools } from "../lib/safe-tools/src/SafeTestTools.sol";
 
@@ -111,9 +111,7 @@ contract MevEthTest is Test {
         ownerPKs[5] = SAFE_OWNER_5_PRIVATE_KEY;
         ownerPKs[6] = SAFE_OWNER_6_PRIVATE_KEY;
 
-
-
-        SafeTestTools safeTestTools = new SafeTestTools(); 
+        SafeTestTools safeTestTools = new SafeTestTools();
         SafeInstance memory safeInstance = safeTestTools._setupSafe(ownerPKs, 5);
         multisigSafeInstance = safeInstance;
 
