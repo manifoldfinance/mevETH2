@@ -14,11 +14,14 @@ contract MevEthShareVaultTest is MevEthTest {
 
     function setUp() public override {
         super.setUp();
-        mevEthShareVault = MevEthShareVault(payable(mevEth.mevEthShareVault()));
 
         //Update the share vault to MevEthShareVault
         address newShareVault = address(new MevEthShareVault(SamBacha, address(mevEth), SamBacha, SamBacha));
         _updateShareVault(newShareVault);
+
+        mevEthShareVault = MevEthShareVault(payable(mevEth.mevEthShareVault()));
+        vm.prank(SamBacha);
+        mevEthShareVault.addOperator(Operator01);
     }
 
     function testPayRewards(uint128 rewards) public {
@@ -110,7 +113,7 @@ contract MevEthShareVaultTest is MevEthTest {
         mevEthShareVault.logRewards(fees);
 
         assertEq(mevEthShareVault.fees(), fees);
-        assertEq(mevEthShareVault.rewards(), amount);
+        assertEq(mevEthShareVault.rewards(), rewards);
     }
 
     function testNegativeLogRewards(uint128 fees, uint128 rewards) public {
