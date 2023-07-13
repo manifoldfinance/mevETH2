@@ -3,6 +3,8 @@ pragma solidity 0.8.19;
 
 import { IStakingModule } from "../../src/interfaces/IStakingModule.sol";
 import { IMevEthShareVault } from "../../src/interfaces/IMevEthShareVault.sol";
+import { MevEthShareVault } from "src/MevEthShareVault.sol";
+
 import "../MevEthTest.sol";
 import "../../src/MevEth.sol";
 import "src/libraries/Auth.sol";
@@ -727,16 +729,27 @@ contract MevAdminTest is MevEthTest {
 
         // Create a new vault and cache the current vault
         address newShareVault = address(new MevEthShareVault(SamBacha, address(mevEth), SamBacha, SamBacha));
+        vm.prank(SamBacha);
+        MevEthShareVault(payable(newShareVault)).addOperator(Operator01);
+
         // Update the staking module to the WagyuStaker and create a new validator
         _updateShareVault(newShareVault);
 
         vm.deal(address(this), amount);
         payable(newShareVault).transfer(amount);
 
+        vm.prank(Operator01);
+        IMevEthShareVault(newShareVault).logRewards(0);
+
         uint256 rewardsAmount = IMevEthShareVault(newShareVault).rewards();
 
         vm.expectEmit(true, true, false, false, address(mevEth));
         emit Rewards(newShareVault, rewardsAmount);
+
+        vm.expectEmit(true, false, false, false, address(newShareVault));
+        emit RewardsPaid(rewardsAmount);
+
+        vm.prank(SamBacha);
         IMevEthShareVault(newShareVault).payRewards();
         //TODO: assert balances after rewards are paid on mev eth share vault
 

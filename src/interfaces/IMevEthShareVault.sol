@@ -16,12 +16,13 @@ interface IMevEthShareVault {
     function fees() external view returns (uint128 fees);
     function rewards() external view returns (uint128 rewards);
 
+    // Function to update the protocol balance, allocating to the fees and rewards
+    function logRewards(uint128 protocolFeesOwed) external;
+
     // Admin controls
     function recoverToken(address token, address recipient, uint256 amount) external;
     // Send the protocol fees to the `feeTo` address
     function sendFees() external;
     function setProtocolFeeTo(address newFeeTo) external;
     function setNewBeneficiary(address newBeneficiary) external;
-
-    //TODO: update the interface with log Rewards
 }
