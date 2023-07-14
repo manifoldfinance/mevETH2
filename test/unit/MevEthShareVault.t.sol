@@ -3,6 +3,7 @@ pragma solidity 0.8.19;
 
 import "../MevEthTest.sol";
 import { MevEthShareVault } from "src/MevEthShareVault.sol";
+import { Empty } from "test/mocks/Empty.sol";
 import "src/libraries/Auth.sol";
 import "../mocks/DepositContract.sol";
 import { IStakingModule } from "../../src/interfaces/IStakingModule.sol";
@@ -35,7 +36,7 @@ contract MevEthShareVaultTest is MevEthTest {
         assertEq(mevEthShareVault.fees(), 0);
         assertEq(mevEthShareVault.rewards(), 0);
 
-        //TODO: assert that the rewards were sent
+        assertEq(address(mevEth).balance, rewards);
     }
 
     function testNegativePayRewards(uint128 rewards) public {
@@ -46,7 +47,7 @@ contract MevEthShareVaultTest is MevEthTest {
         assertEq(mevEthShareVault.fees(), 0);
         assertEq(mevEthShareVault.rewards(), rewards);
 
-        //TODO: assert that the rewards were not sent
+        assertEq(address(mevEth).balance, 0);
     }
 
     function testSendFees(uint128 fees) public {
@@ -60,7 +61,7 @@ contract MevEthShareVaultTest is MevEthTest {
         assertEq(mevEthShareVault.fees(), 0);
         assertEq(mevEthShareVault.rewards(), 0);
 
-        //TODO: assert that feeto has the fees
+        assertEq(mevEthShareVault.protocolFeeTo().balance, fees);
     }
 
     function testNegativeSendFees(uint128 fees) public {
@@ -69,7 +70,13 @@ contract MevEthShareVaultTest is MevEthTest {
         vm.expectRevert(Auth.Unauthorized.selector);
         mevEthShareVault.sendFees();
 
-        //TODO: also test when there is a send error
+        address newProtocolFeeTo = address(new Empty());
+        vm.prank(SamBacha);
+        mevEthShareVault.setProtocolFeeTo(newProtocolFeeTo);
+
+        vm.prank(SamBacha);
+        vm.expectRevert(MevEthShareVault.SendError.selector);
+        mevEthShareVault.sendFees();
 
         assertEq(mevEthShareVault.fees(), fees);
         assertEq(mevEthShareVault.rewards(), 0);
