@@ -73,8 +73,7 @@ contract MevEthShareVaultTest is MevEthTest {
 
         assertEq(mevEthShareVault.fees(), fees);
         assertEq(mevEthShareVault.rewards(), 0);
-
-        //TODO: assert that feeto did not get the fees
+        assertEq(mevEthShareVault.protocolFeeTo().balance, 0);
     }
 
     function testSetProtocolFeeTo(address newProtocolFeeTo) public {
@@ -212,6 +211,6 @@ contract MevEthShareVaultTest is MevEthTest {
         mevEthShareVault.logRewards(fees);
 
         assertEq(mevEthShareVault.fees(), fees);
-        assertEq(mevEthShareVault.rewards(), amount);
+        assertEq(mevEthShareVault.rewards(), rewards);
     }
 }
