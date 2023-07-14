@@ -194,10 +194,8 @@ contract MevEthShareVaultTest is MevEthTest {
     function testNegativeSetNewBeneficiary(address newBeneficiary) public {
         address currentBeneficiary = mevEthShareVault.beneficiary();
 
-        vm.prank(SamBacha);
         vm.expectRevert(Auth.Unauthorized.selector);
         mevEthShareVault.setNewBeneficiary(newBeneficiary);
-
         assertEq(mevEthShareVault.beneficiary(), currentBeneficiary);
     }
 
