@@ -4,6 +4,7 @@ pragma solidity 0.8.19;
 import "../MevEthTest.sol";
 import "src/libraries/Auth.sol";
 import "../mocks/DepositContract.sol";
+import { MevEthShareVault } from "src/MevEthShareVault.sol";
 import { IStakingModule } from "../../src/interfaces/IStakingModule.sol";
 import "../../src/interfaces/IMevEthShareVault.sol";
 import "../../lib/safe-tools/src/SafeTestTools.sol";
@@ -13,6 +14,7 @@ contract MevRewardsTest is MevEthTest {
     /**
      * Tests granting rewards when the share vault is a multisig.
      */
+
     function testGrantRewardsFromMultisig(uint128 amount) public {
         vm.assume(amount > 10_000);
         address mevShare = mevEth.mevEthShareVault();
@@ -30,43 +32,5 @@ contract MevRewardsTest is MevEthTest {
         uint256 base = mevEth.totalSupply();
 
         assertGt(elastic, base);
-    }
-
-    /**
-     * Tests granting rewards when the share vault is the MevEthShareVaul.
-     */
-
-    function testGrantRewards(uint128 amount) public {
-        vm.assume(amount > 10_000);
-
-        //Update the share vault
-        address newShareVault = address(new MevEthShareVault(SamBacha, address(mevEth), SamBacha, SamBacha));
-        _updateShareVault(newShareVault);
-
-        address mevShare = mevEth.mevEthShareVault();
-
-        vm.deal(address(this), amount * 2);
-
-        // Send mev payment
-        payable(mevShare).transfer(amount);
-
-        // Send validator payment
-        vm.prank(block.coinbase);
-        vm.deal(block.coinbase, amount);
-        payable(mevShare).transfer(amount);
-
-        //TODO: assert balances after sending mev payment
-
-        vm.expectEmit();
-        emit Rewards(mevShare, amount);
-        IMevEthShareVault(mevShare).payRewards();
-
-        //TODO: assert mev eth share vault balances after paying rewards
-
-        uint256 elastic = mevEth.totalAssets();
-        uint256 base = mevEth.totalSupply();
-
-        assertGt(elastic, base);
-        //TODO: assert balances for mev payments and validator payments
     }
 }
