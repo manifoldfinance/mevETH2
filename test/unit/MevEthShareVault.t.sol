@@ -121,7 +121,7 @@ contract MevEthShareVaultTest is MevEthTest {
         unchecked {
             sum = fees + rewards;
         }
-        vm.assume(sum >= fees && sum >= rewards);
+        vm.assume(sum >= fees && sum >= rewards && fees + rewards < type(uint128).max - 1);
 
         uint128 amount = fees + rewards;
 
@@ -132,6 +132,7 @@ contract MevEthShareVaultTest is MevEthTest {
         mevEthShareVault.logRewards(fees);
 
         vm.expectRevert(MevEthShareVault.FeesTooHigh.selector);
+        vm.prank(Operator01);
         mevEthShareVault.logRewards(amount + 1);
 
         assertEq(mevEthShareVault.fees(), 0);
