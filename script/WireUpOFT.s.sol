@@ -13,14 +13,14 @@ contract WireUpOFTScript is Script {
     /// @param localMevEth local mevETH contract
     /// @param lzChainIds list of remote lz chain ids to set trusted remotes for
     /// @param remoteMevEths list of remote mevETH contracts to set trusted remotes for
-    function run(uint16 defaultFeeBp, address localMevETH, uint16[] calldata lzChainIds, address[] calldata remoteMevEths) public {
+    function run(uint16 defaultFeeBp, address localMevEth, uint16[] calldata lzChainIds, address[] calldata remoteMevEths) public {
         uint256 length = lzChainIds.length;
         if (length != remoteMevEths.length) revert ListMismatch();
         vm.startBroadcast();
         for (uint256 i; i < length; i++) {
-            OFTWithFee(localMevETH).setTrustedRemote(lzChainIds[i], abi.encodePacked(remoteMevEths[i], localMevETH));
+            OFTWithFee(localMevEth).setTrustedRemote(lzChainIds[i], abi.encodePacked(remoteMevEths[i], localMevEth));
         }
-        OFTWithFee(localMevETH).setDefaultFeeBp(defaultFeeBp);
+        OFTWithFee(localMevEth).setDefaultFeeBp(defaultFeeBp);
         vm.stopBroadcast();
     }
 }
