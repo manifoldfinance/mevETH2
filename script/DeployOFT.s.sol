@@ -2,7 +2,7 @@
 pragma solidity ^0.8.19;
 
 import "forge-std/Script.sol";
-import { OFTV2 } from "src/layerZero/oft/OFTV2.sol";
+import { OFTWithFee } from "src/layerZero/oft/OFTWithFee.sol";
 
 contract DeployOFTScript is Script {
     error UnknownChain();
@@ -61,7 +61,7 @@ contract DeployOFTScript is Script {
             revert UnknownChain();
         }
         vm.startBroadcast();
-        new OFTV2("Mev Liquid Staked Ether", "mevETH", 18, 8, authority, layerZeroEndpoint);
+        new OFTWithFee("Mev Liquid Staked Ether", "mevETH", 18, 8, authority, layerZeroEndpoint);
         vm.stopBroadcast();
     }
 }
