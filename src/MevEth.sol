@@ -27,13 +27,13 @@ import { IStakingModule } from "./interfaces/IStakingModule.sol";
 import { MevEthShareVault } from "./MevEthShareVault.sol";
 import { ITinyMevEth } from "./interfaces/ITinyMevEth.sol";
 import { WagyuStaker } from "./WagyuStaker.sol";
-import { OFTV2 } from "./layerZero/oft/OFTV2.sol";
+import { OFTWithFee } from "./layerZero/oft/OFTWithFee.sol";
 
 /// @title MevEth
 /// @author Manifold Finance
 /// @dev Contract that allows deposit of ETH, for a Liquid Staking Receipt (LSR) in return.
 /// @dev LSR is represented through an ERC4626 token and interface
-contract MevEth is OFTV2, IERC4626, ITinyMevEth {
+contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     using SafeTransferLib for ERC20;
     using FixedPointMathLib for uint256;
 
@@ -74,7 +74,13 @@ contract MevEth is OFTV2, IERC4626, ITinyMevEth {
     /// @param authority The address of the controlling admin authority
     /// @param weth The address of the WETH contract to use for deposits
     /// @param layerZeroEndpoint chain specific endpoint
-    constructor(address authority, address weth, address layerZeroEndpoint) OFTV2("Mev Liquid Staked Ether", "mevETH", 18, 8, authority, layerZeroEndpoint) {
+    constructor(
+        address authority,
+        address weth,
+        address layerZeroEndpoint
+    )
+        OFTWithFee("Mev Liquid Staked Ether", "mevETH", 18, 8, authority, layerZeroEndpoint)
+    {
         WETH = IWETH(weth);
         bufferPercentNumerator = 2; // set at 2 %
     }
