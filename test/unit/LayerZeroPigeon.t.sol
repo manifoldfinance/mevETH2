@@ -9,8 +9,8 @@ import "src/interfaces/ICommonOFT.sol";
 
 contract LayerZeroPigeonTest is MevEthTest {
     LayerZeroHelper lzHelper;
-    OFTV2 public polyMevEth;
-    OFTV2 public arbMevEth;
+    OFTWithFee public polyMevEth;
+    OFTWithFee public arbMevEth;
 
     string constant name = "Mev Liquid Staked Ether";
     string constant symbol = "mevETH";
@@ -43,7 +43,7 @@ contract LayerZeroPigeonTest is MevEthTest {
         mevEth = new MevEth(SamBacha, mainnetWeth, L1_lzEndpoint);
 
         ARBITRUM_FORK_ID = vm.createSelectFork(RPC_ARBITRUM_MAINNET);
-        arbMevEth = new OFTV2(name, symbol, 18, 8, SamBacha, arbitrumEndpoint);
+        arbMevEth = new OFTWithFee(name, symbol, 18, 8, SamBacha, arbitrumEndpoint);
 
         // set trusted remotes
         vm.prank(SamBacha);
@@ -81,7 +81,7 @@ contract LayerZeroPigeonTest is MevEthTest {
 
         vm.recordLogs();
         // send tokens from mainnet to simulated arbitrum
-        mevEth.sendFrom{ value: nativeFee }(User01, ARBITRUM_ID, _addressToBytes32(User02), amount, callParams);
+        mevEth.sendFrom{ value: nativeFee }(User01, ARBITRUM_ID, _addressToBytes32(User02), amount, amount, callParams);
         vm.stopPrank();
         Vm.Log[] memory logs = vm.getRecordedLogs();
         lzHelper.help(arbitrumEndpoint, 100_000, ARBITRUM_FORK_ID, logs);
