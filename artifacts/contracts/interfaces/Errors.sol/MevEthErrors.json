@@ -1,0 +1,166 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "MevEthErrors",
+  "sourceName": "contracts/interfaces/Errors.sol",
+  "abi": [
+    {
+      "inputs": [],
+      "name": "AlreadyInitialized",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "BeaconDepositFailed",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "BelowMinimum",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "DepositFailed",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "DepositTooLow",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "DepositTooSmall",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "ExceedsStakingAllowance",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InsufficientBufferedEth",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InvalidOperator",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InvalidPendingMevEthShareVault",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InvalidPendingStakingModule",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InvalidSender",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InvalidWithdrawalCredentials",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "MaxValidatorError",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "NotAuthorized",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "NotEnoughEth",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "OperatorMaxValidatorsReached",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "OperatorNotCommitted",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "OperatorsNotCommitted",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "PrematureMevEthShareVaultUpdateFinalization",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "PrematureStakingModuleUpdateFinalization",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "ReportedBeaconValidatorsDecreased",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "ReportedBeaconValidatorsGreaterThanTotalValidators",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "StakingPaused",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "TooManyValidatorRegistrations",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "TransferExceedsAllowance",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "TransferFailed",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "ValidatorPreviouslyRegistered",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "ZeroAddress",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "ZeroShares",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "ZeroValue",
+      "type": "error"
+    }
+  ],
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

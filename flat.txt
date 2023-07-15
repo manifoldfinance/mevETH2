@@ -1,0 +1,6 @@
+lib/forge-std/lib/ds-test/src/
+--include lib/forge-std/src/
+--include lib/solmate/src/
+--include lib/pigeon/src/
+--include lib/pigeon/lib/solady/src/
+--include lib/manifold-oft/contracts/
