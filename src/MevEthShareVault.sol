@@ -50,6 +50,7 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
 
     function payRewards() external onlyOperator {
         uint256 _rewards = protocolBalance.rewards;
+        protocolBalance.rewards = 0;
 
         try ITinyMevEth(mevEth).grantRewards{ value: _rewards }() { }
         catch {
@@ -57,8 +58,6 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
             bool success = payable(beneficiary).send(_rewards);
             if (!success) revert SendError();
         }
-
-        protocolBalance.rewards = 0;
 
         emit RewardsPaid(_rewards);
     }

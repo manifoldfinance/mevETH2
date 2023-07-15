@@ -111,7 +111,7 @@ contract MevEthShareVaultTest is MevEthTest {
         uint256 amount = fees + rewards;
 
         vm.deal(address(this), amount);
-        payable(mevEthShareVault).send(amount);
+        payable(mevEthShareVault).transfer(amount);
 
         vm.prank(Operator01);
         vm.expectEmit(true, true, false, false, address(mevEthShareVault));
@@ -132,7 +132,7 @@ contract MevEthShareVaultTest is MevEthTest {
         uint128 amount = fees + rewards;
 
         vm.deal(address(this), amount);
-        payable(mevEthShareVault).send(amount);
+        payable(mevEthShareVault).transfer(amount);
 
         vm.expectRevert(Auth.Unauthorized.selector);
         mevEthShareVault.logRewards(fees);
@@ -187,7 +187,7 @@ contract MevEthShareVaultTest is MevEthTest {
         vm.deal(address(this), amount);
         vm.expectEmit(true, true, true, false, address(mevEthShareVault));
         emit RewardPayment(block.number, block.coinbase, amount);
-        payable(mevEthShareVault).send(amount);
+        payable(mevEthShareVault).transfer(amount);
     }
 
     function testSetNewBeneficiary(address newBeneficiary) public {
@@ -210,7 +210,7 @@ contract MevEthShareVaultTest is MevEthTest {
         uint256 amount = fees + rewards;
 
         vm.deal(address(this), amount);
-        payable(mevEthShareVault).send(amount);
+        payable(mevEthShareVault).transfer(amount);
 
         vm.prank(Operator01);
         mevEthShareVault.logRewards(fees);
