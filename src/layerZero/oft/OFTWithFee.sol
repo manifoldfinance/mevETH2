@@ -3,26 +3,17 @@
 pragma solidity ^0.8.0;
 
 import { ERC20 } from "solmate/tokens/ERC20.sol";
-import "./BaseOFTV2.sol";
+import "./BaseOFTWithFee.sol";
 
-contract OFTV2 is BaseOFTV2, ERC20 {
+contract OFTWithFee is BaseOFTWithFee, ERC20 {
+
     // Custom errors save gas
     error InsufficientAllowance();
     error SharedDecimalsTooLarge();
 
     uint internal immutable ld2sdRate;
 
-    constructor(
-        string memory _name, 
-        string memory _symbol, 
-        uint8 decimals,
-        uint8 _sharedDecimals,
-        address authority,
-        address _lzEndpoint
-    ) 
-        ERC20(_name, _symbol, decimals) 
-        BaseOFTV2(_sharedDecimals, authority, _lzEndpoint) 
-    {
+    constructor(string memory _name, string memory _symbol, uint8 decimals, uint8 _sharedDecimals, address authority, address _lzEndpoint) ERC20(_name, _symbol, decimals) BaseOFTWithFee(_sharedDecimals, authority, _lzEndpoint) {
         if (_sharedDecimals > decimals) revert SharedDecimalsTooLarge();
         ld2sdRate = 10 ** (decimals - _sharedDecimals);
     }
