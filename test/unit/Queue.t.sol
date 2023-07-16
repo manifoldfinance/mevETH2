@@ -6,35 +6,93 @@ import "../MevEthTest.sol";
 import "src/interfaces/Errors.sol";
 
 contract QueueTest is MevEthTest {
-  function testOverflowsDepositsToQueue() public {
-    vm.deal(User01, 96 ether);
-    vm.startPrank(User01);
+    function testOverflowsDepositsToQueueWithWithdraw() public {
+        vm.deal(User01, 64 ether);
+        vm.startPrank(User01);
 
-    IStakingModule.ValidatorData memory validatorData = mockValidatorData(User01, 32 ether / 1 gwei);
-    
-    // Deposit 1 ETH
-    weth.deposit{value: 96 ether}();
-    // Approve the mevETH contract to spend 1 ETH
-    weth.approve(address(mevEth), 96 ether);
+        IStakingModule.ValidatorData memory validatorData = mockValidatorData(User01, 32 ether / 1 gwei);
 
-    // Deposit 1 ETH into the mevETH contract
-    mevEth.deposit(96 ether, User01);
+        // Deposit 64 ETH
+        weth.deposit{ value: 64 ether }();
+        // Approve the mevETH contract to spend 1 ETH
+        weth.approve(address(mevEth), 64 ether);
 
-    vm.stopPrank();
-    vm.startPrank(Operator01);
-    mevEth.createValidator(validatorData);
+        // Deposit 64 ETH into the mevETH contract
+        mevEth.deposit(64 ether, User01);
 
-    assertEq(address(mevEth).balance, 64 ether);
-    (uint128 elastic, uint128 base) = mevEth.fraction();
-    assertEq(base, 96 ether);
-    assertEq(elastic, 96 ether);
+        vm.stopPrank();
+        vm.startPrank(Operator01);
+        mevEth.createValidator(validatorData);
 
-    vm.stopPrank();
-    vm.startPrank(User01);
-    vm.recordLogs();
-    mevEth.withdraw(1 ether, User01, User01);
-    //Vm.Log[] memory entries = vm.getRecordedLogs();
+        assertEq(address(mevEth).balance, 32 ether);
 
-    //assertEq(entries[1].topics[0], keccak256("WithdrawalQueueOpened(address,uint256)"));
-  }
+        vm.stopPrank();
+        vm.startPrank(User01);
+        vm.recordLogs();
+        mevEth.withdraw(63 ether, User01, User01);
+        Vm.Log[] memory entries = vm.getRecordedLogs();
+
+        assertEq(entries[4].topics[0], keccak256("WithdrawalQueueOpened(address,uint256)"));
+        assertEq(uint256(entries[4].topics[2]), 31 ether);
+
+        assertEq(weth.balanceOf(User01), 32 ether);
+
+        // Now that an unprocessed withdrawal has been created
+        // time to ensure it can be properly processed back
+
+        vm.stopPrank();
+        vm.startPrank(address(mevEth.stakingModule()));
+
+        vm.deal(address(mevEth.stakingModule()), 32 ether);
+        IStakingModule(mevEth.stakingModule()).payValidatorWithdraw(32 ether);
+
+        mevEth.processWithdrawalQueue();
+
+        assertEq(weth.balanceOf(User01), 63 ether);
+    }
+
+    function testOverflowsDepositsToQueueWithRedeem() public {
+        vm.deal(User01, 64 ether);
+        vm.startPrank(User01);
+
+        IStakingModule.ValidatorData memory validatorData = mockValidatorData(User01, 32 ether / 1 gwei);
+
+        // Deposit 64 ETH
+        weth.deposit{ value: 64 ether }();
+        // Approve the mevETH contract to spend 1 ETH
+        weth.approve(address(mevEth), 64 ether);
+
+        // Deposit 64 ETH into the mevETH contract
+        mevEth.deposit(64 ether, User01);
+
+        vm.stopPrank();
+        vm.startPrank(Operator01);
+        mevEth.createValidator(validatorData);
+
+        assertEq(address(mevEth).balance, 32 ether);
+
+        vm.stopPrank();
+        vm.startPrank(User01);
+        vm.recordLogs();
+        mevEth.redeem(mevEth.convertToShares(63 ether), User01, User01);
+        Vm.Log[] memory entries = vm.getRecordedLogs();
+
+        assertEq(entries[4].topics[0], keccak256("WithdrawalQueueOpened(address,uint256)"));
+        assertEq(uint256(entries[4].topics[2]), 31 ether);
+
+        assertEq(weth.balanceOf(User01), 32 ether);
+
+        // Now that an unprocessed withdrawal has been created
+        // time to ensure it can be properly processed back
+
+        vm.stopPrank();
+        vm.startPrank(address(mevEth.stakingModule()));
+
+        vm.deal(address(mevEth.stakingModule()), 32 ether);
+        IStakingModule(mevEth.stakingModule()).payValidatorWithdraw(32 ether);
+
+        mevEth.processWithdrawalQueue();
+
+        assertEq(weth.balanceOf(User01), 63 ether);
+    }
 }

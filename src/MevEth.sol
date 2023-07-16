@@ -28,6 +28,7 @@ import { MevEthShareVault } from "./MevEthShareVault.sol";
 import { ITinyMevEth } from "./interfaces/ITinyMevEth.sol";
 import { WagyuStaker } from "./WagyuStaker.sol";
 import { OFTV2 } from "./layerZero/oft/OFTV2.sol";
+import { console } from "forge-std/console.sol";
 
 /// @title MevEth
 /// @author Manifold Finance
@@ -340,48 +341,34 @@ contract MevEth is OFTV2, IERC4626, ITinyMevEth {
         uint256 amount;
     }
 
-    struct Queue {
-        uint128 first;
-        uint128 last;
-        uint256 length;
-    }
-
     event WithdrawalQueueOpened(address indexed receipient, uint256 indexed assets);
 
-    Queue queue;
+    uint256 queueLength;
+    uint256 queueBottom; // Point in the mapping at which previous values should be ignored
 
     mapping(uint256 ticketNumber => WithdrawalTicket ticket) public withdrawalQueue;
 
     function processWithdrawalQueue() public {
-        Queue memory _queue;
-        while (queue.length != 0) {
-            uint256 first = _queue.first;
-            WithdrawalTicket memory currentTicket = withdrawalQueue[_queue.first];
+        uint256 length = queueLength;
+        while (length != queueBottom) {
+            WithdrawalTicket memory currentTicket = withdrawalQueue[length];
             uint256 assetsOwed = currentTicket.amount;
             address receipient = currentTicket.receiver;
-            if (address(this).balance > assetsOwed) {
-                _queue.length--;
-                if (_queue.length != 0) {
-                    _queue.first += 1;
-                }
-                delete withdrawalQueue[_queue.first];
-
-                WETH.deposit{value: assetsOwed }();
+            if (address(this).balance >= assetsOwed) {
+                WETH.deposit{ value: assetsOwed }();
                 // SafeTransfer not needed because we know the impl
                 WETH.transfer(receipient, assetsOwed);
+                // While not strictly neccessary persay, important for
+                // added safety
+                delete withdrawalQueue[length];
+                length--;
             } else {
-                queue = _queue;
+                queueLength = length;
                 return;
             }
         }
-
-        queue = Queue({
-            first: 0,
-            last: 0,
-            length: 0
-        });
+        queueBottom = length;
     }
-        
 
     /*//////////////////////////////////////////////////////////////
                             ERC4626 Support
@@ -524,6 +511,7 @@ contract MevEth is OFTV2, IERC4626, ITinyMevEth {
     /// @param owner The address of the owner of the mevEth
     /// @return shares The amount of shares burned
     function withdraw(uint256 assets, address receiver, address owner) external returns (uint256 shares) {
+        processWithdrawalQueue();
         shares = convertToShares(assets);
 
         if (owner != msg.sender) {
@@ -538,7 +526,7 @@ contract MevEth is OFTV2, IERC4626, ITinyMevEth {
             fraction.base -= uint128(shares);
         }
 
-        if (fraction.base > 10_000) {
+        if (fraction.base < 10_000) {
             revert MevEthErrors.BelowMinimum();
         }
 
@@ -550,13 +538,14 @@ contract MevEth is OFTV2, IERC4626, ITinyMevEth {
             WETH.deposit{ value: assets }();
             ERC20(address(WETH)).safeTransfer(receiver, assets);
         } else {
-            emit WithdrawalQueueOpened(receiver, assets);
-            withdrawalQueue[queue.last+1] = WithdrawalTicket({
-                receiver: receiver,
-                amount: assets
-            });
-            queue.last += 1;
-            queue.length +=1;
+            uint256 availableBalance = address(this).balance;
+            WETH.deposit{ value: availableBalance }();
+            ERC20(address(WETH)).safeTransfer(receiver, availableBalance);
+
+            uint256 amountOwed = assets - availableBalance;
+            emit WithdrawalQueueOpened(receiver, amountOwed);
+            queueLength++;
+            withdrawalQueue[queueLength] = WithdrawalTicket({ receiver: receiver, amount: amountOwed });
         }
     }
 
@@ -577,6 +566,7 @@ contract MevEth is OFTV2, IERC4626, ITinyMevEth {
     /// @param owner The address of the owner of the mevEth
     /// @return assets The amount of assets withdrawn
     function redeem(uint256 shares, address receiver, address owner) external returns (uint256 assets) {
+        processWithdrawalQueue();
         assets = convertToAssets(shares);
 
         if (owner != msg.sender) {
@@ -591,7 +581,7 @@ contract MevEth is OFTV2, IERC4626, ITinyMevEth {
             fraction.base -= uint128(shares);
         }
 
-        if (fraction.base > 10_000) {
+        if (fraction.base < 10_000) {
             revert MevEthErrors.BelowMinimum();
         }
 
@@ -603,13 +593,15 @@ contract MevEth is OFTV2, IERC4626, ITinyMevEth {
             WETH.deposit{ value: assets }();
             ERC20(address(WETH)).safeTransfer(receiver, assets);
         } else {
-            emit WithdrawalQueueOpened(receiver, assets);
-            withdrawalQueue[queue.last+1] = WithdrawalTicket({
-                receiver: receiver,
-                amount: assets
-            });
-            queue.last += 1;
-            queue.length +=1;
+            uint256 availableBalance = address(this).balance;
+            WETH.deposit{ value: availableBalance }();
+            ERC20(address(WETH)).safeTransfer(receiver, availableBalance);
+
+            uint256 amountOwed = assets - availableBalance;
+
+            emit WithdrawalQueueOpened(receiver, amountOwed);
+            queueLength++;
+            withdrawalQueue[queueLength] = WithdrawalTicket({ receiver: receiver, amount: amountOwed });
         }
     }
 

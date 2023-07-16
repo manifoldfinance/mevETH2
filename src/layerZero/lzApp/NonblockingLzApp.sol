@@ -14,15 +14,13 @@ error AmountTooSmall();
  * NOTE: if the srcAddress is not configured properly, it will still block the message pathway from (srcChainId, srcAddress)
  */
 abstract contract NonblockingLzApp is LzApp {
-
     // Custom errors save gas
     error CallerMustBeLzApp();
     error NoStoredMessage();
-    
 
     using ExcessivelySafeCall for address;
 
-    constructor(address authority, address _endpoint) LzApp(authority, _endpoint) {}
+    constructor(address authority, address _endpoint) LzApp(authority, _endpoint) { }
 
     mapping(uint16 => mapping(bytes => mapping(uint64 => bytes32))) public failedMessages;
 
@@ -31,7 +29,9 @@ abstract contract NonblockingLzApp is LzApp {
 
     // overriding the virtual function in LzReceiver
     function _blockingLzReceive(uint16 _srcChainId, bytes memory _srcAddress, uint64 _nonce, bytes memory _payload) internal virtual override {
-        (bool success, bytes memory reason) = address(this).excessivelySafeCall(gasleft(), 150, abi.encodeWithSelector(this.nonblockingLzReceive.selector, _srcChainId, _srcAddress, _nonce, _payload));
+        (bool success, bytes memory reason) = address(this).excessivelySafeCall(
+            gasleft(), 150, abi.encodeWithSelector(this.nonblockingLzReceive.selector, _srcChainId, _srcAddress, _nonce, _payload)
+        );
         // try-catch all errors/exceptions
         if (!success) {
             _storeFailedMessage(_srcChainId, _srcAddress, _nonce, _payload, reason);
