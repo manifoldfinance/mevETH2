@@ -38,7 +38,7 @@ contract ERC4626Test is MevEthTest {
         vm.assume(amount > mevEth.MIN_DEPOSIT());
         vm.deal(User01, amount);
         vm.startPrank(User01);
-        mevEth.deposit{value: amount}(amount, User01);
+        mevEth.deposit{ value: amount }(amount, User01);
         assertEq(mevEth.previewWithdraw(amount), amount);
     }
 
@@ -46,7 +46,7 @@ contract ERC4626Test is MevEthTest {
         vm.assume(amount > mevEth.MIN_DEPOSIT());
         vm.deal(User01, amount);
         vm.startPrank(User01);
-        mevEth.deposit{value: amount}(amount, User01);
+        mevEth.deposit{ value: amount }(amount, User01);
         assertEq(mevEth.previewRedeem(amount), amount);
     }
 
@@ -54,7 +54,7 @@ contract ERC4626Test is MevEthTest {
         vm.assume(amount > mevEth.MIN_DEPOSIT());
         vm.deal(User01, amount);
         vm.startPrank(User01);
-        mevEth.deposit{value: amount}(amount, User01);
+        mevEth.deposit{ value: amount }(amount, User01);
         assertEq(mevEth.maxWithdraw(User01), amount);
     }
 
@@ -62,7 +62,7 @@ contract ERC4626Test is MevEthTest {
         vm.assume(amount > mevEth.MIN_DEPOSIT());
         vm.deal(User01, amount);
         vm.startPrank(User01);
-        mevEth.deposit{value: amount}(amount, User01);
+        mevEth.deposit{ value: amount }(amount, User01);
         assertEq(mevEth.maxRedeem(User01), amount);
     }
 
@@ -78,7 +78,7 @@ contract ERC4626Test is MevEthTest {
         vm.startPrank(User01);
 
         // Deposit 1 ETH
-        weth.deposit{value: 1 ether}();
+        weth.deposit{ value: 1 ether }();
         // Approve the mevETH contract to spend 1 ETH
         weth.approve(address(mevEth), 1 ether);
 
@@ -107,7 +107,7 @@ contract ERC4626Test is MevEthTest {
         vm.startPrank(User01);
 
         // Deposit 1 ETH
-        weth.deposit{value: amount}();
+        weth.deposit{ value: amount }();
         // Approve the mevETH contract to spend 1 ETH
         weth.approve(address(mevEth), amount);
 
@@ -135,7 +135,7 @@ contract ERC4626Test is MevEthTest {
         vm.startPrank(User01);
 
         // Deposit 1 ETH
-        weth.deposit{value: amount}();
+        weth.deposit{ value: amount }();
         weth.approve(address(mevEth), amount);
 
         // Deposit 1 ETH into the mevETH contract
@@ -164,7 +164,7 @@ contract ERC4626Test is MevEthTest {
         vm.startPrank(user);
 
         // Deposit amount in mevETH
-        mevEth.deposit{value: amount}(amount, user);
+        mevEth.deposit{ value: amount }(amount, user);
     }
 
     /* 
@@ -262,7 +262,7 @@ contract ERC4626Test is MevEthTest {
 
         uint256 sharesOut = mevEth.convertToShares(1 ether);
 
-        weth.deposit{value: 1 ether}();
+        weth.deposit{ value: 1 ether }();
         weth.approve(address(mevEth), 1 ether);
 
         // Mint 1 mevETH
@@ -283,7 +283,7 @@ contract ERC4626Test is MevEthTest {
 
         uint256 sharesOut = mevEth.convertToShares(amount);
 
-        weth.deposit{value: amount}();
+        weth.deposit{ value: amount }();
         weth.approve(address(mevEth), amount);
 
         // Mint 1 mevETH
@@ -302,7 +302,7 @@ contract ERC4626Test is MevEthTest {
         vm.startPrank(User01);
 
         // Deposit 1 ETH
-        weth.deposit{value: amount}();
+        weth.deposit{ value: amount }();
         weth.approve(address(mevEth), amount);
 
         uint256 shares = mevEth.convertToShares(amount);
