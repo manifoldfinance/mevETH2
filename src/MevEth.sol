@@ -28,7 +28,6 @@ import { MevEthShareVault } from "./MevEthShareVault.sol";
 import { ITinyMevEth } from "./interfaces/ITinyMevEth.sol";
 import { WagyuStaker } from "./WagyuStaker.sol";
 import { OFTV2 } from "./layerZero/oft/OFTV2.sol";
-import { console } from "forge-std/console.sol";
 
 /// @title MevEth
 /// @author Manifold Finance
