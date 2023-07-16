@@ -3,9 +3,10 @@
 pragma solidity ^0.8.0;
 
 import { ERC20 } from "solmate/tokens/ERC20.sol";
-import "./BaseOFTV2.sol";
+import "./BaseOFTWithFee.sol";
 
-contract OFTV2 is BaseOFTV2, ERC20 {
+contract OFTWithFee is BaseOFTWithFee, ERC20 {
+
     // Custom errors save gas
     error InsufficientAllowance();
     error SharedDecimalsTooLarge();
