@@ -13,8 +13,8 @@ interface IMevEthShareVault {
     function payRewards() external;
 
     // Getter functions for public variables
-    function fees() external view returns (uint128 fees);
-    function rewards() external view returns (uint128 rewards);
+    function fees() external view returns (uint128);
+    function rewards() external view returns (uint128);
 
     // Function to update the protocol balance, allocating to the fees and rewards
     function logRewards(uint128 protocolFeesOwed) external;

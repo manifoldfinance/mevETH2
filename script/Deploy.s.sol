@@ -10,11 +10,6 @@ import { IStakingModule } from "src/interfaces/IStakingModule.sol";
 contract DeployScript is Script {
     error UnknownChain();
 
-    //TODO: set this value to something realistic
-    uint128 constant BASE_MEDIAN_MEV_PAYMENT = 0;
-    uint128 constant BASE_MEDIAN_VALIDATOR_PAYMENT = 0;
-    uint16 constant SHARE_VAULT_FEE_PERCENT = 10_000; // In bips
-
     function run() public {
         address authority = tx.origin;
         uint256 chainId;
