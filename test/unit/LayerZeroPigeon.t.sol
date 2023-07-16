@@ -35,6 +35,7 @@ contract LayerZeroPigeonTest is MevEthTest {
     string RPC_ARBITRUM_MAINNET = vm.envString("ARBITRUM_MAINNET_RPC_URL");
 
     function setUp() public override {
+        super.setUp();
         L1_FORK_ID = vm.createSelectFork(RPC_ETH_MAINNET);
         lzHelper = new LayerZeroHelper();
 

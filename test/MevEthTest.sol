@@ -58,6 +58,9 @@ contract MevEthTest is Test {
     address constant Operator04 = address(0x10);
 
     uint256 constant FEE_REWARDS_PER_BLOCK = 0;
+    uint128 constant BASE_MEDIAN_MEV_PAYMENT = 0.1 ether;
+    uint128 constant BASE_MEDIAN_VALIDATOR_PAYMENT = 0.1 ether;
+    uint16 constant SHARE_VAULT_FEE_PERCENT = 10_000; // In bips
 
     DepositContract internal depositContract;
 
@@ -84,6 +87,14 @@ contract MevEthTest is Test {
     event AdminDeleted(address indexed oldAdmin);
     event OperatorAdded(address indexed newOperator);
     event OperatorDeleted(address indexed oldOperator);
+
+    // MevEthShareVault Events
+    event RewardPayment(uint256 indexed blockNumber, address indexed coinbase, uint256 indexed amount);
+    event ProtocolFeeToUpdated(address indexed newProtocolFeeTo);
+    event BeneficiaryUpdated(address indexed beneficiary);
+    event RewardsCollected(uint256 indexed protocolFeesOwed, uint256 indexed rewardsOwed);
+    event FeesSent(uint256 indexed feesSent);
+    event RewardsPaid(uint256 indexed rewards);
 
     function setUp() public virtual {
         // Deploy the BeaconChainDepositContract
