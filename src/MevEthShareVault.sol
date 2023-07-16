@@ -73,10 +73,10 @@ contract MevEthShareVault is Auth, ReentrancyGuard, IMevEthShareVault {
 
     function sendFees() external onlyAdmin nonReentrant {
         uint256 _fees = protocolBalance.fees;
+        protocolBalance.fees = 0;
 
         bool success = payable(protocolFeeTo).send(_fees);
         if (!success) revert SendError();
-        protocolBalance.fees = 0;
 
         emit FeesSent(_fees);
     }
