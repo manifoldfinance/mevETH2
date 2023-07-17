@@ -97,7 +97,7 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
     //TODO: think through attack vectors
     function logRewards(uint128 protocolFeesOwed) external onlyOperator {
         ProtocolBalance memory balances = protocolBalance;
-        uint256 rewardsEarned = address(this).balance - (balances.fees + protocolBalance.rewards);
+        uint256 rewardsEarned = address(this).balance - (balances.fees + balances.rewards);
         if (protocolFeesOwed > uint128(rewardsEarned)) {
             revert FeesTooHigh();
         }
@@ -121,6 +121,10 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
     function setNewBeneficiary(address newBeneficiary) external onlyAdmin {
         beneficiary = newBeneficiary;
         emit BeneficiaryUpdated(newBeneficiary);
+    }
+
+    function payValidatorWithdraw(uint128 amount) external onlyAdmin {
+        ITinyMevEth(mevEth).grantValidatorWithdraw{ value: amount }();
     }
 
     receive() external payable {

@@ -110,8 +110,7 @@ contract MevEthShareVaultTest is MevEthTest {
 
         uint256 amount = fees + rewards;
 
-        vm.deal(address(this), amount);
-        payable(mevEthShareVault).transfer(amount);
+        vm.deal(address(mevEthShareVault), amount);
 
         vm.prank(Operator01);
         vm.expectEmit(true, true, false, false, address(mevEthShareVault));
@@ -131,8 +130,7 @@ contract MevEthShareVaultTest is MevEthTest {
 
         uint128 amount = fees + rewards;
 
-        vm.deal(address(this), amount);
-        payable(mevEthShareVault).transfer(amount);
+        vm.deal(address(mevEthShareVault), amount);
 
         vm.expectRevert(Auth.Unauthorized.selector);
         mevEthShareVault.logRewards(fees);
@@ -217,5 +215,109 @@ contract MevEthShareVaultTest is MevEthTest {
 
         assertEq(mevEthShareVault.fees(), fees);
         assertEq(mevEthShareVault.rewards(), rewards);
+    }
+
+    function testPayValidatorWithdrawGt32Ether(uint128 amount) public {
+        vm.assume(amount > 32 ether && amount < type(uint128).max);
+        // Assume that the amount is greater than the minimum deposit amount
+        vm.assume(amount >= mevEth.MIN_DEPOSIT());
+
+        vm.deal(address(mevEthShareVault), amount);
+        vm.deal(address(this), amount);
+
+        _mockMevEthDeposit(amount, address(this));
+        (uint128 elasticBefore, uint128 baseBefore) = mevEth.fraction();
+        assertEq(elasticBefore, amount);
+        assertEq(baseBefore, amount);
+
+        uint128 expectedElastic;
+        unchecked {
+            expectedElastic = elasticBefore + uint128(amount - 32 ether);
+        }
+        // Make sure that the amount does not overflow the elastic
+        vm.assume(expectedElastic >= elasticBefore);
+
+        vm.prank(SamBacha);
+        mevEthShareVault.payValidatorWithdraw(amount);
+
+        (uint128 elasticAfter, uint128 baseAfter) = mevEth.fraction();
+        assertEq(elasticAfter, expectedElastic);
+        assertEq(baseAfter, baseBefore);
+    }
+
+    function testPayValidatorWithdrawLt32Ether(uint128 amount) public {
+        vm.assume(amount > 0 && amount < 32 ether);
+        // Assume that the amount is greater than the minimum deposit amount
+        vm.assume(amount >= mevEth.MIN_DEPOSIT());
+
+        vm.deal(address(mevEthShareVault), amount);
+        vm.deal(address(this), amount);
+
+        _mockMevEthDeposit(amount, address(this));
+        (uint128 elasticBefore, uint128 baseBefore) = mevEth.fraction();
+        assertEq(elasticBefore, amount);
+        assertEq(baseBefore, amount);
+
+        uint128 expectedElastic;
+        unchecked {
+            expectedElastic = elasticBefore - uint128(32 ether - amount);
+        }
+        // Make sure that the amount does not underflow the elastic
+        vm.assume(expectedElastic < elasticBefore);
+
+        vm.prank(SamBacha);
+        mevEthShareVault.payValidatorWithdraw(amount);
+
+        (uint128 elasticAfter, uint128 baseAfter) = mevEth.fraction();
+        assertEq(elasticAfter, expectedElastic);
+        assertEq(baseAfter, baseBefore);
+    }
+
+    function testPayValidatorWithdrawEq32Ether() public {
+        uint128 amount = 32 ether;
+        vm.deal(address(mevEthShareVault), amount);
+
+        (uint256 elasticBefore, uint256 baseBefore) = mevEth.fraction();
+
+        vm.prank(SamBacha);
+        mevEthShareVault.payValidatorWithdraw(amount);
+
+        (uint256 elasticAfter, uint256 baseAfter) = mevEth.fraction();
+
+        assertEq(elasticAfter, elasticBefore);
+        assertEq(baseAfter, baseBefore);
+    }
+
+    function testNegativePayValidatorWithdraw() public {
+        uint128 minDeposit = mevEth.MIN_DEPOSIT();
+        // Expect Unauthorized
+        vm.expectRevert(Auth.Unauthorized.selector);
+        mevEthShareVault.payValidatorWithdraw(minDeposit);
+
+        // Expect ZeroValue error
+        vm.prank(SamBacha);
+        vm.expectRevert(MevEthErrors.ZeroValue.selector);
+        mevEthShareVault.payValidatorWithdraw(0);
+
+        // Configure MevEth elastic and base to uint128 max
+        uint256 amount = type(uint128).max;
+        vm.deal(address(mevEthShareVault), amount);
+        vm.deal(address(this), amount);
+        _mockMevEthDeposit(amount, address(this));
+
+        (uint256 elastic, uint256 base) = mevEth.fraction();
+        assertEq(elastic, amount);
+        assertEq(base, amount);
+
+        // Expect overflow when msg.value > 32 eth and elastic + msg.value - 32 ether > max uint128
+        vm.prank(SamBacha);
+        vm.expectRevert(stdError.arithmeticError);
+        mevEthShareVault.payValidatorWithdraw(33 ether);
+    }
+
+    function _mockMevEthDeposit(uint256 amount, address receiver) internal {
+        weth.deposit{ value: amount }();
+        weth.approve(address(mevEth), amount);
+        mevEth.deposit(amount, receiver);
     }
 }

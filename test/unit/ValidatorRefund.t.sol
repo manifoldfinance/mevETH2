@@ -5,8 +5,6 @@ import "../MevEthTest.sol";
 import { IStakingModule } from "../../src/interfaces/IStakingModule.sol";
 
 contract MevValidatorRefundTest is MevEthTest {
-    event ValidatorWithdraw(address sender, uint256 amount);
-
     function testGrantValidatorWithdraw() public {
         uint256 amount = 32 ether;
         address staker = address(mevEth.stakingModule());
@@ -19,6 +17,7 @@ contract MevValidatorRefundTest is MevEthTest {
 
         vm.expectEmit();
         emit ValidatorWithdraw(staker, amount);
+        vm.prank(SamBacha);
         IStakingModule(staker).payValidatorWithdraw(amount);
 
         assertEq(elastic, mevEth.totalAssets());

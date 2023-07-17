@@ -9,6 +9,7 @@ contract QueueTest is MevEthTest {
     function testOverflowsDepositsToQueueWithWithdraw() public {
         vm.deal(User01, 64 ether);
         vm.startPrank(User01);
+        address stakingModuleAddress = address(mevEth.stakingModule());
 
         IStakingModule.ValidatorData memory validatorData = mockValidatorData(User01, 32 ether / 1 gwei);
 
@@ -41,11 +42,12 @@ contract QueueTest is MevEthTest {
         // time to ensure it can be properly processed back
 
         vm.stopPrank();
-        vm.startPrank(address(mevEth.stakingModule()));
 
-        vm.deal(address(mevEth.stakingModule()), 32 ether);
-        IStakingModule(mevEth.stakingModule()).payValidatorWithdraw(32 ether);
+        vm.deal(stakingModuleAddress, 32 ether);
+        vm.prank(SamBacha);
+        IStakingModule(stakingModuleAddress).payValidatorWithdraw(32 ether);
 
+        vm.startPrank(stakingModuleAddress);
         mevEth.processWithdrawalQueue();
 
         assertEq(weth.balanceOf(User01), 63 ether);
@@ -54,6 +56,8 @@ contract QueueTest is MevEthTest {
     function testOverflowsDepositsToQueueWithRedeem() public {
         vm.deal(User01, 64 ether);
         vm.startPrank(User01);
+
+        address stakingModuleAddress = address(mevEth.stakingModule());
 
         IStakingModule.ValidatorData memory validatorData = mockValidatorData(User01, 32 ether / 1 gwei);
 
@@ -86,11 +90,12 @@ contract QueueTest is MevEthTest {
         // time to ensure it can be properly processed back
 
         vm.stopPrank();
-        vm.startPrank(address(mevEth.stakingModule()));
 
-        vm.deal(address(mevEth.stakingModule()), 32 ether);
-        IStakingModule(mevEth.stakingModule()).payValidatorWithdraw(32 ether);
+        vm.deal(stakingModuleAddress, 32 ether);
+        vm.prank(SamBacha);
+        IStakingModule(stakingModuleAddress).payValidatorWithdraw(32 ether);
 
+        vm.startPrank(stakingModuleAddress);
         mevEth.processWithdrawalQueue();
 
         assertEq(weth.balanceOf(User01), 63 ether);

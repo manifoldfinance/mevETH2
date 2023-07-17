@@ -71,8 +71,7 @@ contract WagyuStaker is Auth, IStakingModule {
         validators = newValidators;
     }
 
-    // TODO: permission check
-    function payValidatorWithdraw(uint256 amount) external {
+    function payValidatorWithdraw(uint256 amount) external onlyAdmin {
         ITinyMevEth(MEV_ETH).grantValidatorWithdraw{ value: amount }();
     }
 

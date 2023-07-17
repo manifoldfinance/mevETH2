@@ -35,4 +35,5 @@ interface MevEthErrors {
     error TransferFailed();
     error ZeroAddress();
     error AlreadyInitialized();
+    error MsgValueGtU128();
 }

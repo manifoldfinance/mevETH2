@@ -305,10 +305,12 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
 
     function grantRewards() external payable {
         processWithdrawalQueue();
-        unchecked {
-            fraction.elastic += uint128(msg.value);
-        }
         if (msg.sender != mevEthShareVault) revert MevEthErrors.InvalidSender();
+
+        /// @dev Note that while a small possiblity, it is possible for the MevEthShareVault rewards + fraction.elastic to overflow a uint128
+        /// @dev in this case, the grantRewards call will fail and the funds will be secured to the MevEthShareVault.beneficiary address.
+
+        fraction.elastic += uint128(msg.value);
         emit Rewards(msg.sender, msg.value);
     }
 
@@ -318,7 +320,8 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     event ValidatorWithdraw(address sender, uint256 amount);
 
     function grantValidatorWithdraw() external payable {
-        if (msg.sender != address(stakingModule)) revert MevEthErrors.InvalidSender();
+        if (!(msg.sender == address(stakingModule) || msg.sender == mevEthShareVault)) revert MevEthErrors.InvalidSender();
+
         if (msg.value == 0) {
             revert MevEthErrors.ZeroValue();
         }
@@ -327,16 +330,14 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         if (msg.value == 32 ether) {
             return;
         }
+
         if (msg.value < 32 ether) {
+            /// @dev Elastic will always be at least equal to base. Base will always be at least equal to the MIN_DEPOSIT amount.
             // assume slashed value so reduce elastic balance accordingly
-            unchecked {
-                fraction.elastic -= uint128(32 ether - msg.value);
-            }
+            fraction.elastic -= uint128(32 ether - msg.value);
         } else {
             // account for any unclaimed rewards
-            unchecked {
-                fraction.elastic += uint128(msg.value - 32 ether);
-            }
+            fraction.elastic += uint128(msg.value - 32 ether);
         }
     }
 
