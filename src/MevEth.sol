@@ -37,6 +37,39 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     using SafeTransferLib for ERC20;
     using FixedPointMathLib for uint256;
 
+    /*//////////////////////////////////////////////////////////////
+                            Configuration Variables
+    //////////////////////////////////////////////////////////////*/
+
+    /// @notice Inidicates if staking is paused
+    bool public stakingPaused;
+    /// @notice Indicates if contract is initialized
+    bool public initialized;
+    /// @notice Amount of ETH to retain on contract for withdrawls as a percent numerator
+    uint8 public bufferPercentNumerator;
+    /// @notice Timestamp when pending staking module update can be finalized
+    uint64 public pendingStakingModuleCommittedTimestamp;
+    /// @notice Timestamp when pending mevEthShareVault update can be finalized
+    uint64 public pendingMevEthShareVaultCommittedTimestamp;
+    /// @notice Time delay before staking module or share vault can be finalized
+    uint64 public constant MODULE_UPDATE_TIME_DELAY = 7 days;
+    /// @notice Max amount of ETH that can be deposited
+    uint128 public constant MAX_DEPOSIT = 2 ** 128 - 1;
+    /// @notice Min amount of ETH that can be deposited
+    uint128 public constant MIN_DEPOSIT = 10_000_000_000_000_000; // 0.01 eth
+    /// @notice The address of the MevEthShareVault
+    address public mevEthShareVault;
+    /// @notice The address of the pending MevEthShareVault when a new vault has been comitted but not finalized
+    address public pendingMevEthShareVault;
+    /// @notice The staking module used to stake Ether
+    IStakingModule public stakingModule;
+    /// @notice The pending staking module when a new module has been comitted but not finalized
+    IStakingModule public pendingStakingModule;
+    /// @notice WETH Implementation used by MevEth
+    IWETH public immutable WETH;
+    /// @notice Struct used to accounting the ETH staked within MevEth
+    Fraction public fraction;
+
     /// @notice Central struct used for share accounting + math
     /// @param elastic Represents total amount of staked ether, including rewards accrued / slashed
     /// @param base Represents claims to ownership of the staked ether
@@ -44,26 +77,6 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         uint128 elastic;
         uint128 base;
     }
-
-    /*//////////////////////////////////////////////////////////////
-                            Configuration Variables
-    //////////////////////////////////////////////////////////////*/
-    bool public stakingPaused;
-    bool public initialized;
-    /// @notice amount of eth to retain on contract for withdrawls as a percent numerator
-    uint8 public bufferPercentNumerator;
-    uint64 public pendingStakingModuleCommittedTimestamp;
-    uint64 public pendingMevEthShareVaultCommittedTimestamp;
-    uint64 public constant MODULE_UPDATE_TIME_DELAY = 7 days;
-    uint128 public constant MAX_DEPOSIT = 2 ** 128 - 1;
-    uint128 public constant MIN_DEPOSIT = 10_000_000_000_000_000; // 0.01 eth
-    address public mevEthShareVault;
-    address public pendingMevEthShareVault;
-    IStakingModule public stakingModule;
-    IStakingModule public pendingStakingModule;
-    /// @notice WETH Implementation used by MevEth
-    IWETH public immutable WETH;
-    Fraction public fraction;
 
     /*//////////////////////////////////////////////////////////////
                                 Setup
@@ -94,9 +107,8 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /*//////////////////////////////////////////////////////////////
                             Admin Control Panel
     //////////////////////////////////////////////////////////////*/
-    /**
-     * @dev Emitted when contract is initialized
-     */
+
+    /// @dev Emitted when contract is initialized
     event MevEthInitialized(address indexed mevEthShareVault, address indexed stakingModule);
 
     /// @param initialShareVault The initial share vault to set when initializing the contract.
