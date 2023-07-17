@@ -283,19 +283,25 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
                             Registry For Validators
     //////////////////////////////////////////////////////////////*/
 
+    /// @notice Event emitted when a new validator is created
+    event ValidatorCreated(address indexed stakingModule, IStakingModule.ValidatorData newValidator);
+
     /// @notice This function passes through the needed Ether to the Staking module, and the assosiated credentials with it
     /// @param newData The data needed to create a new validator
     function createValidator(IStakingModule.ValidatorData calldata newData) external onlyOperator stakingUnpaused {
+        IStakingModule _stakingModule = stakingModule;
         // Determine how big deposit is for the validator
         // *Note this will change if Rocketpool or similar modules are used
-        uint256 depositSize = stakingModule.VALIDATOR_DEPOSIT_SIZE();
+        uint256 depositSize = _stakingModule.VALIDATOR_DEPOSIT_SIZE();
 
         if (address(this).balance < depositSize + calculateNeededEtherBuffer()) {
             revert MevEthErrors.NotEnoughEth();
         }
 
         // Deposit the Ether into the staking contract
-        stakingModule.deposit{ value: depositSize }(newData);
+        _stakingModule.deposit{ value: depositSize }(newData);
+
+        emit ValidatorCreated(address(_stakingModule), newData);
     }
 
     /**
