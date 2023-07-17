@@ -26,6 +26,7 @@
 
       packages = with pkgs; [
         age
+        dasel
         foundry
         solc
         sops
