@@ -89,7 +89,6 @@ contract MevEthTest is Test {
     event OperatorDeleted(address indexed oldOperator);
     event ValidatorWithdraw(address sender, uint256 amount);
 
-    // MevEthShareVault Events
     event RewardPayment(uint256 indexed blockNumber, address indexed coinbase, uint256 indexed amount);
     event ProtocolFeeToUpdated(address indexed newProtocolFeeTo);
     event BeneficiaryUpdated(address indexed beneficiary);
