@@ -28,9 +28,6 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
     event RewardsPaid(uint256 indexed rewards);
     event BeneficiaryUpdated(address indexed beneficiary);
 
-    error SendError();
-    error FeesTooHigh();
-
     ProtocolBalance protocolBalance;
     address immutable mevEth;
     address public beneficiary;
@@ -56,7 +53,7 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
         catch {
             // Catch the error and send to the admin for further fund recovery
             bool success = payable(beneficiary).send(_rewards);
-            if (!success) revert SendError();
+            if (!success) revert MevEthErrors.SendError();
         }
 
         emit RewardsPaid(_rewards);
@@ -75,7 +72,7 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
         protocolBalance.fees = 0;
 
         bool success = payable(protocolFeeTo).send(_fees);
-        if (!success) revert SendError();
+        if (!success) revert MevEthErrors.SendError();
 
         emit FeesSent(_fees);
     }
@@ -99,7 +96,7 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
         ProtocolBalance memory balances = protocolBalance;
         uint256 rewardsEarned = address(this).balance - (balances.fees + balances.rewards);
         if (protocolFeesOwed > uint128(rewardsEarned)) {
-            revert FeesTooHigh();
+            revert MevEthErrors.FeesTooHigh();
         }
 
         uint128 _rewards;

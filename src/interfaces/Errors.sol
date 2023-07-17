@@ -35,5 +35,8 @@ interface MevEthErrors {
     error TransferFailed();
     error ZeroAddress();
     error AlreadyInitialized();
-    error MsgValueGtU128();
+    error SendError();
+    error FeesTooHigh();
+    error WrongDepositAmount();
+    error UnAuthorizedCaller();
 }

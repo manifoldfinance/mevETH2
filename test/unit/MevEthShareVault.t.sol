@@ -75,7 +75,7 @@ contract MevEthShareVaultTest is MevEthTest {
         mevEthShareVault.setProtocolFeeTo(newProtocolFeeTo);
 
         vm.prank(SamBacha);
-        vm.expectRevert(MevEthShareVault.SendError.selector);
+        vm.expectRevert(MevEthErrors.SendError.selector);
         mevEthShareVault.sendFees();
 
         assertEq(mevEthShareVault.fees(), fees);
@@ -135,7 +135,7 @@ contract MevEthShareVaultTest is MevEthTest {
         vm.expectRevert(Auth.Unauthorized.selector);
         mevEthShareVault.logRewards(fees);
 
-        vm.expectRevert(MevEthShareVault.FeesTooHigh.selector);
+        vm.expectRevert(MevEthErrors.FeesTooHigh.selector);
         vm.prank(Operator01);
         mevEthShareVault.logRewards(amount + 1);
 
