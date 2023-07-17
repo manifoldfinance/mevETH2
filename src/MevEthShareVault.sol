@@ -27,6 +27,7 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
     event FeesSent(uint256 indexed feesSent);
     event RewardsPaid(uint256 indexed rewards);
     event BeneficiaryUpdated(address indexed beneficiary);
+    event ValidatorWithdraw(address sender, uint256 amount);
 
     ProtocolBalance protocolBalance;
     address immutable mevEth;
@@ -122,6 +123,7 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
 
     function payValidatorWithdraw(uint128 amount) external onlyAdmin {
         ITinyMevEth(mevEth).grantValidatorWithdraw{ value: amount }();
+        emit ValidatorWithdraw(msg.sender, amount);
     }
 
     receive() external payable {

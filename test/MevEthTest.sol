@@ -88,6 +88,7 @@ contract MevEthTest is Test {
     event OperatorAdded(address indexed newOperator);
     event OperatorDeleted(address indexed oldOperator);
     event ValidatorWithdraw(address sender, uint256 amount);
+    event ValidatorCreated(address indexed stakingModule, IStakingModule.ValidatorData newValidator);
 
     event RewardPayment(uint256 indexed blockNumber, address indexed coinbase, uint256 indexed amount);
     event ProtocolFeeToUpdated(address indexed newProtocolFeeTo);

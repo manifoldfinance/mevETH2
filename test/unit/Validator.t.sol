@@ -22,9 +22,13 @@ contract ValidatorTest is MevEthTest {
 
         //Cache the balance before validator creation, create the validator, and check the balance after
         uint256 balanceBeforeCreation = address(mevEth).balance;
-        vm.prank(Operator01);
 
+        address stakingModule = address(mevEth.stakingModule());
+        vm.expectEmit(true, false, false, true, address(mevEth));
+        emit ValidatorCreated(stakingModule, validatorData);
+        vm.prank(Operator01);
         mevEth.createValidator(validatorData);
+
         uint256 balanceAfterCreation = address(mevEth).balance;
         assertEq(stakingModuleDepositSize, balanceBeforeCreation - balanceAfterCreation);
     }
