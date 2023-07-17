@@ -20,6 +20,7 @@
         alejandra.enable = true; # nix
         deadnix.enable = true; # nix
         prettier.enable = true; # json,html,markdown and so on
+        shfmt.enable = true;
       };
 
       settings.formatter = let
