@@ -305,7 +305,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
 
     function grantRewards() external payable {
         processWithdrawalQueue();
-        if (msg.sender != mevEthShareVault) revert MevEthErrors.InvalidSender();
+        if (!(msg.sender == address(stakingModule) || msg.sender == mevEthShareVault)) revert MevEthErrors.InvalidSender();
 
         /// @dev Note that while a small possiblity, it is possible for the MevEthShareVault rewards + fraction.elastic to overflow a uint128
         /// @dev in this case, the grantRewards call will fail and the funds will be secured to the MevEthShareVault.beneficiary address.
