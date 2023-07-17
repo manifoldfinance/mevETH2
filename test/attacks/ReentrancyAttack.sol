@@ -4,11 +4,11 @@ pragma solidity 0.8.19;
 import "../MevEthTest.sol";
 
 contract ReentrancyAttackTest is MevEthTest {
-    function setUp() override public {
+    function setUp() public override {
         super.setUp();
         vm.deal(User02, 0.1 ether);
         vm.prank(User02);
-        mevEth.deposit{value: 0.1 ether}(0.1 ether, address(this));
+        mevEth.deposit{ value: 0.1 ether }(0.1 ether, address(this));
     }
 
     // Fallback is called when MevEth sends Ether to this contract.
