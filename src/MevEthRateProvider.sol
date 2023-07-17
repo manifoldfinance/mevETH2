@@ -14,23 +14,24 @@
 
 pragma solidity ^0.8.19;
 
-import "./interfaces/IRateProvider.sol";
-import "./interfaces/IMevEth.sol";
+import "src/interfaces/IRateProvider.sol";
+import "src/interfaces/IMevEth.sol";
 
 /**
  * @title MevEth Rate Provider
  * @notice Returns the value of mevETH in terms of ETH
  */
 contract MevETHRateProvider is IRateProvider {
+    /// @notice The address of the mevETH contract
     IMevEth public immutable mevETH;
 
+    /// @notice Constructs the MevETHRateProvider contract, setting the mevETH address
     constructor(IMevEth _mevETH) {
         mevETH = _mevETH;
     }
 
-    /**
-     * @return the value of mevETH in terms of ETH
-     */
+    /// @notice Returns the value of mevETH in terms of ETH
+    /// @return the value of mevETH in terms of ETH
     function getRate() external view override returns (uint256) {
         return mevETH.convertToAssets(1 ether);
     }
