@@ -1,24 +1,128 @@
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+# SPDXVersion: SPDX-2.0
+# DataLicense: CC0-1.0
+# PackageOriginator: Manifold Finance, Inc
+# FileCopyrightText: Copyright 2023 Manifold Finance, Inc.
+# Solidity Semgrep Actions Workflow
+# Version 2023.07.17:53252e1d-0a43-5c72-aafe-ce349f120e6b
+
+name: semgrep
+
 on:
-  workflow_dispatch: {}
+  # Scan changed files in PRs (diff-aware scanning):
   pull_request: {}
-  push:
-    branches:
-    - main
-    - master
-    paths:
-    - .github/workflows/semgrep.yml
+  # On-demand
+  workflow_dispatch: {}
   schedule:
-  # random HH:MM to avoid a load spike on GitHub Actions at 00:00
-  - cron: 39 13 * * *
-name: Semgrep
+    # random HH:MM to avoid a load spike on GitHub Actions at 00:00
+    - cron: '39 13 * * *'
+  push:
+    paths:
+      - "**.sol"
+      - ".github/workflows/semgrep.yml"
+
+defaults:
+  run:
+    shell: bash
+# ensure permissions are explicitly defined
+# by configuring one we disable the remaining permissions
+# see: https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idpermissions
+permissions:
+  contents: read
+
+# ensure multiple CI processes are not running analysis on contracts
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request_target' && github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+env:
+  ETH_RPC_URL:  ${{ secrets.ETH_RPC_URL }}
+  ETH_RPC_URL3: ${{ secrets.ETH_RPC_URL3 }}
+  COMMIT_SHA: ${{ github.event.pull_request.head.sha }}
+  PULL_NUMBER: ${{ github.event.pull_request.number }}
+  RUN_ID: ${{ github.run_id }}
+  SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+
 jobs:
   semgrep:
-    name: semgrep/ci
-    runs-on: ubuntu-20.04
-    env:
-      SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+    # User-definable name of this GitHub Actions job:
+    # If you are self-hosting, change the following `runs-on` value:
+    # <https://github.com/actions/runner-images/blob/releases/ubuntu22/20230710/README.md#available-images>
+    # <ubuntu-22.04:sha256:0bced47fffa3361afa981854fcabcd4577cd43cebbb808cea2b1f33a3dd7f508>
+    name: Test ${{ matrix.test-version }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        test-version: ['1.0.0']
+        os: ['ubuntu-22.04']
+
     container:
-      image: returntocorp/semgrep
+      # A Docker image with Semgrep installed. Do not change this.
+      image: returntocorp/semgrep:sha-ebbf6f9
+
+
+    # Skip any PR created by dependabot to avoid permission issues:
+    if: (github.actor != 'dependabot[bot]')
+
     steps:
-    - uses: actions/checkout@v3
-    - run: semgrep ci
+      # Fetch project source with GitHub Actions Checkout.
+      - uses: actions/checkout@v3
+      # Fetch semgrep rules
+      - name: Fetching base and head commit (push)
+        if: github.event_name == 'push'
+        env:
+          PUSHED_COMMITS: ${{ toJSON(github.event.commits) }}
+        run: |
+          if [[ ${{ github.event.before }} == 0000000000000000000000000000000000000000 ]]
+          then
+            before=$(echo "$PUSHED_COMMITS" | jq .[0].id --raw-output)
+
+            git fetch --no-tags --prune --no-recurse-submodules --depth=2 origin $before ${{ github.event.after }}
+
+            echo "BASE=$(git rev-parse $before~1)" >> $GITHUB_ENV
+          else
+            git fetch --no-tags --prune --no-recurse-submodules --depth=1 origin ${{ github.event.before }} ${{ github.event.after }}
+
+            echo "BASE=${{ github.event.before }}" >> $GITHUB_ENV
+          fi
+
+          echo "HEAD=${{ github.event.after }}" >> $GITHUB_ENV
+
+      - name: Fetching base and head commit (pull_request)
+        if: github.event_name == 'pull_request'
+        run: |
+          git fetch --no-tags --prune --no-recurse-submodules --depth=$((${{ github.event.pull_request.commits }} + 1)) origin ${{ github.event.pull_request.head.sha }}
+          git fetch --no-tags --prune --no-recurse-submodules --depth=10 origin ${{ github.event.pull_request.base.sha }}
+          git checkout --progress --force ${{ github.event.pull_request.head.sha }}
+
+          while [[ -n $(git rev-list shallow ^${{ github.event.pull_request.base.sha }}) ]]
+          do
+            git fetch --no-tags --prune --no-recurse-submodules --deepen=10 origin ${{ github.event.pull_request.base.sha }}
+          done
+
+          base=$(git rev-list ${{ github.event.pull_request.head.sha }} ^${{ github.event.pull_request.base.sha }} | tail --lines 1 | xargs -I {} git rev-parse {}~1)
+
+          echo "BASE=$base" >> $GITHUB_ENV
+          echo "HEAD=${{ github.event.pull_request.head.sha }}" >> $GITHUB_ENV
+
+      - name: Fetch semgrep rules
+        id: fetch-rules
+        uses: actions/checkout@v3
+        with:
+          repository: decurity/semgrep-smart-contracts
+          path: rules
+
+      # Run security and gas optimization rules
+      - run: semgrep ci --sarif --output=semgrep.sarif || true
+        id: semgrep
+        env:
+           SEMGREP_RULES: rules/solidity/security rules/solidity/performance
+      # Upload findings to GitHub Advanced Security Dashboard
+      - name: Upload findings to GitHub Advanced Security Dashboard
+        uses: github/codeql-action/upload-sarif@v2
+        id: sarif
+        with:
+          sarif_file: semgrep.sarif
+        if: always()
