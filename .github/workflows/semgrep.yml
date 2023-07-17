@@ -62,7 +62,6 @@ jobs:
       # A Docker image with Semgrep installed. Do not change this.
       image: returntocorp/semgrep:sha-ebbf6f9
 
-
     # Skip any PR created by dependabot to avoid permission issues:
     if: (github.actor != 'dependabot[bot]')
 
@@ -78,7 +77,9 @@ jobs:
       - run: semgrep ci --sarif --output=semgrep.sarif || true
         id: semgrep
         env:
-           SEMGREP_RULES: rules/solidity/security rules/solidity/performance
+           SEMGREP_RULES: "rules/solidity/security rules/solidity/performance"
+           SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+
       # Upload findings to GitHub Advanced Security Dashboard
       - name: Upload findings to GitHub Advanced Security Dashboard
         uses: github/codeql-action/upload-sarif@v2
