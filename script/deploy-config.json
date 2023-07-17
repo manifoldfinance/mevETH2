@@ -1,0 +1,51 @@
+{
+  "MAINNET": {
+    "ACTION": "Deploy",
+    "CHAIN_ID": "1",
+    "RPC_ENDPOINT": "https://mainnet.infura.io/v3/YOUR-PROJECT-ID",
+    "ETHERSCAN_API_KEY": "YourEtherscanAPIKey",
+    "EXTRA_FOUNDRY_ARGS": "--optimize --optimizer-runs 2000"
+  },
+  "GOERLI": {
+    "ACTION": "Deploy",
+    "CHAIN_ID": "5",
+    "RPC_ENDPOINT": "https://goerli.infura.io/v3/YOUR-PROJECT-ID",
+    "ETHERSCAN_API_KEY": "YourEtherscanAPIKey",
+    "EXTRA_FOUNDRY_ARGS": "--optimize --optimizer-runs 2000"
+  },
+  "ARBITRUM": {
+    "ACTION": "DeployOFT",
+    "CHAIN_ID": "42161",
+    "RPC_ENDPOINT": "https://arb1.arbitrum.io/rpc",
+    "ETHERSCAN_API_KEY": "YourEtherscanAPIKey",
+    "EXTRA_FOUNDRY_ARGS": "--optimize --optimizer-runs 2000"
+  },
+  "OPTIMISM": {
+    "ACTION": "DeployOFT",
+    "CHAIN_ID": "42161",
+    "RPC_ENDPOINT": "https://mainnet.optimism.io",
+    "ETHERSCAN_API_KEY": "YourEtherscanAPIKey",
+    "EXTRA_FOUNDRY_ARGS": "--optimize --optimizer-runs 2000"
+  },
+  "AVALANCHE": {
+    "ACTION": "DeployOFT",
+    "CHAIN_ID": "43114",
+    "RPC_ENDPOINT": "https://api.avax.network/ext/bc/C/rpc",
+    "ETHERSCAN_API_KEY": "YourEtherscanAPIKey",
+    "EXTRA_FOUNDRY_ARGS": "--optimize --optimizer-runs 2000"
+  },
+  "BSC": {
+    "ACTION": "DeployOFT",
+    "CHAIN_ID": "56",
+    "RPC_ENDPOINT": "https://bsc-dataseed1.binance.org",
+    "ETHERSCAN_API_KEY": "YourEtherscanAPIKey",
+    "EXTRA_FOUNDRY_ARGS": "--optimize --optimizer-runs 2000"
+  },
+  "POLYGON": {
+    "ACTION": "DeployOFT",
+    "CHAIN_ID": "137",
+    "RPC_ENDPOINT": "https://polygon-rpc.com",
+    "ETHERSCAN_API_KEY": "YourEtherscanAPIKey",
+    "EXTRA_FOUNDRY_ARGS": "--optimize --optimizer-runs 2000"
+  }
+}
