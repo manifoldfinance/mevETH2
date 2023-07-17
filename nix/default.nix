@@ -5,7 +5,6 @@
     ./docs.nix
     ./formatter.nix
     ./packages.nix
-    ./process-compose.nix
     ./shell.nix
   ];
 }
