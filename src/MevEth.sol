@@ -356,6 +356,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     }
 
     event WithdrawalQueueOpened(address indexed receipient, uint256 indexed assets);
+    event WithdrawalQueueClosed(address indexed receipient, uint256 indexed assets);
 
     uint256 queueLength;
 
@@ -368,13 +369,14 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
             uint256 assetsOwed = currentTicket.amount;
             address receipient = currentTicket.receiver;
             if (address(this).balance >= assetsOwed) {
-                WETH.deposit{ value: assetsOwed }();
-                // SafeTransfer not needed because we know the impl
-                ERC20(address(WETH)).safeTransfer(receipient, assetsOwed);
                 // While not strictly neccessary persay, important for
                 // added safety
                 delete withdrawalQueue[length-1];
                 length--;
+                emit WithdrawalQueueClosed(receipient, assetsOwed);
+                WETH.deposit{ value: assetsOwed }();
+                // SafeTransfer not needed because we know the impl
+                ERC20(address(WETH)).safeTransfer(receipient, assetsOwed);
             } else {
                 queueLength = length;
                 return;
@@ -519,6 +521,30 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         shares = convertToShares(assets);
     }
 
+    /// @dev internal withdraw
+    /// @param receiver The address user whom should receive the mevEth out
+    /// @param owner The address of the owner of the mevEth
+    /// @param assets The amount of assets that should be withdrawn
+    /// @param shares The amount of shares corresponding to assets withdrawn
+    function _withdraw(address receiver, address owner, uint256 assets, uint256 shares) internal {
+        if (address(this).balance >= assets) {
+            emit Withdraw(msg.sender, owner, receiver, assets, shares);
+            WETH.deposit{ value: assets }();
+            ERC20(address(WETH)).safeTransfer(receiver, assets);
+        } else {
+            uint256 availableBalance = address(this).balance;
+            uint256 amountOwed = assets - availableBalance;
+            emit WithdrawalQueueOpened(receiver, amountOwed);
+            withdrawalQueue[queueLength] = WithdrawalTicket({ receiver: receiver, amount: amountOwed });
+            queueLength++;
+            if (!_isZero(availableBalance)) {
+                emit Withdraw(msg.sender, owner, receiver, availableBalance, convertToShares(availableBalance));
+                WETH.deposit{ value: availableBalance }();
+                ERC20(address(WETH)).safeTransfer(receiver, availableBalance);
+            }
+        }
+    }
+
     /// @param assets The amount of assets that should be withdrawn
     /// @param receiver The address user whom should receive the mevEth out
     /// @param owner The address of the owner of the mevEth
@@ -544,21 +570,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
 
         _burn(owner, shares);
 
-        emit Withdraw(msg.sender, owner, receiver, assets, shares);
-
-        if (address(this).balance >= assets) {
-            WETH.deposit{ value: assets }();
-            ERC20(address(WETH)).safeTransfer(receiver, assets);
-        } else {
-            uint256 availableBalance = address(this).balance;
-            uint256 amountOwed = assets - availableBalance;
-            emit WithdrawalQueueOpened(receiver, amountOwed);
-            withdrawalQueue[queueLength] = WithdrawalTicket({ receiver: receiver, amount: amountOwed });
-            queueLength++;
-
-            WETH.deposit{ value: availableBalance }();
-            ERC20(address(WETH)).safeTransfer(receiver, availableBalance);
-        }
+        _withdraw(receiver, owner, assets, shares);
     }
 
     /// @param owner The address in question of who would be redeeming their shares
@@ -598,21 +610,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
 
         _burn(owner, shares);
 
-        emit Withdraw(msg.sender, owner, receiver, assets, shares);
-
-        if (address(this).balance >= assets) {
-            WETH.deposit{ value: assets }();
-            ERC20(address(WETH)).safeTransfer(receiver, assets);
-        } else {
-            uint256 availableBalance = address(this).balance;
-            uint256 amountOwed = assets - availableBalance;
-            emit WithdrawalQueueOpened(receiver, amountOwed);
-            withdrawalQueue[queueLength] = WithdrawalTicket({ receiver: receiver, amount: amountOwed });
-            queueLength++;
-
-            WETH.deposit{ value: availableBalance }();
-            ERC20(address(WETH)).safeTransfer(receiver, availableBalance);
-        }
+        _withdraw(receiver, owner, assets, shares);
     }
 
     /*//////////////////////////////////////////////////////////////

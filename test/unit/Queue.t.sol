@@ -33,8 +33,8 @@ contract QueueTest is MevEthTest {
         mevEth.withdraw(63 ether, User01, User01);
         Vm.Log[] memory entries = vm.getRecordedLogs();
 
-        assertEq(entries[2].topics[0], keccak256("WithdrawalQueueOpened(address,uint256)"));
-        assertEq(uint256(entries[2].topics[2]), 31 ether);
+        assertEq(entries[1].topics[0], keccak256("WithdrawalQueueOpened(address,uint256)"));
+        assertEq(uint256(entries[1].topics[2]), 31 ether);
 
         assertEq(weth.balanceOf(User01), 32 ether);
 
@@ -47,8 +47,10 @@ contract QueueTest is MevEthTest {
         vm.prank(SamBacha);
         IStakingModule(stakingModuleAddress).payValidatorWithdraw(32 ether);
 
-        vm.startPrank(stakingModuleAddress);
-        mevEth.processWithdrawalQueue();
+        Vm.Log[] memory entries2 = vm.getRecordedLogs();
+
+        assertEq(entries2[0].topics[0], keccak256("WithdrawalQueueClosed(address,uint256)"));
+        assertEq(uint256(entries2[0].topics[2]), 31 ether);
 
         assertEq(weth.balanceOf(User01), 63 ether);
     }
@@ -81,8 +83,8 @@ contract QueueTest is MevEthTest {
         mevEth.redeem(mevEth.convertToShares(63 ether), User01, User01);
         Vm.Log[] memory entries = vm.getRecordedLogs();
 
-        assertEq(entries[2].topics[0], keccak256("WithdrawalQueueOpened(address,uint256)"));
-        assertEq(uint256(entries[2].topics[2]), 31 ether);
+        assertEq(entries[1].topics[0], keccak256("WithdrawalQueueOpened(address,uint256)"));
+        assertEq(uint256(entries[1].topics[2]), 31 ether);
 
         assertEq(weth.balanceOf(User01), 32 ether);
 
@@ -94,9 +96,10 @@ contract QueueTest is MevEthTest {
         vm.deal(stakingModuleAddress, 32 ether);
         vm.prank(SamBacha);
         IStakingModule(stakingModuleAddress).payValidatorWithdraw(32 ether);
+        Vm.Log[] memory entries2 = vm.getRecordedLogs();
 
-        vm.startPrank(stakingModuleAddress);
-        mevEth.processWithdrawalQueue();
+        assertEq(entries2[0].topics[0], keccak256("WithdrawalQueueClosed(address,uint256)"));
+        assertEq(uint256(entries2[0].topics[2]), 31 ether);
 
         assertEq(weth.balanceOf(User01), 63 ether);
     }
