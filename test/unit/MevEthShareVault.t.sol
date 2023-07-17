@@ -237,6 +237,10 @@ contract MevEthShareVaultTest is MevEthTest {
         // Make sure that the amount does not overflow the elastic
         vm.assume(expectedElastic >= elasticBefore);
 
+        vm.expectEmit(true, true, false, false, address(mevEth));
+        emit ValidatorWithdraw(address(mevEthShareVault), amount);
+        vm.expectEmit(true, true, false, false, address(mevEthShareVault));
+        emit ValidatorWithdraw(SamBacha, amount);
         vm.prank(SamBacha);
         mevEthShareVault.payValidatorWithdraw(amount);
 
@@ -265,6 +269,10 @@ contract MevEthShareVaultTest is MevEthTest {
         // Make sure that the amount does not underflow the elastic
         vm.assume(expectedElastic < elasticBefore);
 
+        vm.expectEmit(true, true, false, false, address(mevEth));
+        emit ValidatorWithdraw(address(mevEthShareVault), amount);
+        vm.expectEmit(true, true, false, false, address(mevEthShareVault));
+        emit ValidatorWithdraw(SamBacha, amount);
         vm.prank(SamBacha);
         mevEthShareVault.payValidatorWithdraw(amount);
 
@@ -279,6 +287,10 @@ contract MevEthShareVaultTest is MevEthTest {
 
         (uint256 elasticBefore, uint256 baseBefore) = mevEth.fraction();
 
+        vm.expectEmit(true, true, false, false, address(mevEth));
+        emit ValidatorWithdraw(address(mevEthShareVault), amount);
+        vm.expectEmit(true, true, false, false, address(mevEthShareVault));
+        emit ValidatorWithdraw(SamBacha, amount);
         vm.prank(SamBacha);
         mevEthShareVault.payValidatorWithdraw(amount);
 

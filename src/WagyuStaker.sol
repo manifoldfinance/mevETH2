@@ -33,6 +33,7 @@ contract WagyuStaker is Auth, IStakingModule {
 
     event NewValidator(address indexed operator, bytes pubkey, bytes32 withdrawalCredentials, bytes signature, bytes32 deposit_data_root);
     event TokenRecovered(address indexed recipient, address indexed token, uint256 indexed amount);
+    event ValidatorWithdraw(address sender, uint256 amount);
 
     /// @notice Construction sets authority, MevEth, and deposit contract addresses
     /// @param authority The address of the controlling admin authority
@@ -73,6 +74,7 @@ contract WagyuStaker is Auth, IStakingModule {
 
     function payValidatorWithdraw(uint256 amount) external onlyAdmin {
         ITinyMevEth(MEV_ETH).grantValidatorWithdraw{ value: amount }();
+        emit ValidatorWithdraw(msg.sender, amount);
     }
 
     function recoverToken(address token, address recipient, uint256 amount) external onlyAdmin {
