@@ -7,54 +7,6 @@ import "../mocks/DepositContract.sol";
 import { IStakingModule } from "../../src/interfaces/IStakingModule.sol";
 
 contract ValidatorTest is MevEthTest {
-    function mockValidatorData(address operator, uint256 depositAmount) internal pure returns (IStakingModule.ValidatorData memory) {
-        bytes memory pubkey =
-            abi.encodePacked(bytes32(0x1234567890123456789012345678901234567890123456789012345678901234), bytes16(0x12345678901234567890123456789012));
-        bytes32 withdrawalCredentials = bytes32(0x1234567890123456789012345678901234567890123456789012345678901234);
-
-        bytes memory signatureFirst64Bytes = abi.encodePacked(
-            bytes32(0x1234567890123456789012345678901234567890123456789012345678901234),
-            bytes32(0x1234567890123456789012345678901234567890123456789012345678901234)
-        );
-
-        bytes32 signatureLast32Bytes = bytes32(0x1234567890123456789012345678901234567890123456789012345678901234);
-        bytes memory signature = abi.encodePacked(
-            bytes32(0x1234567890123456789012345678901234567890123456789012345678901234),
-            bytes32(0x1234567890123456789012345678901234567890123456789012345678901234),
-            bytes32(0x1234567890123456789012345678901234567890123456789012345678901234)
-        );
-
-        bytes memory amount = to_little_endian_64(uint64(depositAmount));
-        // Compute deposit data root (`DepositData` hash tree root)
-        bytes32 pubkeyRoot = sha256(abi.encodePacked(pubkey, bytes16(0)));
-        bytes32 signatureRoot =
-            sha256(abi.encodePacked(sha256(abi.encodePacked(signatureFirst64Bytes)), sha256(abi.encodePacked(signatureLast32Bytes, bytes32(0)))));
-        bytes32 depositDataRoot =
-            sha256(abi.encodePacked(sha256(abi.encodePacked(pubkeyRoot, withdrawalCredentials)), sha256(abi.encodePacked(amount, bytes24(0), signatureRoot))));
-
-        return IStakingModule.ValidatorData({
-            operator: operator,
-            pubkey: pubkey,
-            withdrawal_credentials: withdrawalCredentials,
-            signature: signature,
-            deposit_data_root: depositDataRoot
-        });
-    }
-
-    function to_little_endian_64(uint64 value) internal pure returns (bytes memory ret) {
-        ret = new bytes(8);
-        bytes8 bytesValue = bytes8(value);
-        // Byteswapping during copying to bytes.
-        ret[0] = bytesValue[7];
-        ret[1] = bytesValue[6];
-        ret[2] = bytesValue[5];
-        ret[3] = bytesValue[4];
-        ret[4] = bytesValue[3];
-        ret[5] = bytesValue[2];
-        ret[6] = bytesValue[1];
-        ret[7] = bytesValue[0];
-    }
-
     /**
      * Tests validator creation. Creates new mock validator data, deposits ETH into the mevEth contract, and creates the validator.
      */

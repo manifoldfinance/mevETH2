@@ -7,7 +7,6 @@ import { ERC20 } from "solmate/tokens/ERC20.sol";
 import { ITinyMevEth } from "./interfaces/ITinyMevEth.sol";
 import { IMevEthShareVault } from "./interfaces/IMevEthShareVault.sol";
 import { MevEthErrors } from "./interfaces/Errors.sol";
-import { ReentrancyGuard } from "lib/solmate/src/utils/ReentrancyGuard.sol";
 
 /// @title MevEthShareVault
 /// @notice This contract controls the ETH Rewards earned by mevEth
@@ -49,7 +48,7 @@ contract MevEthShareVault is Auth, ReentrancyGuard, IMevEthShareVault {
         beneficiary = _beneficiary;
     }
 
-    function payRewards() external onlyOperator nonReentrant {
+    function payRewards() external onlyOperator {
         uint256 _rewards = protocolBalance.rewards;
         protocolBalance.rewards = 0;
 
@@ -71,7 +70,7 @@ contract MevEthShareVault is Auth, ReentrancyGuard, IMevEthShareVault {
         return protocolBalance.rewards;
     }
 
-    function sendFees() external onlyAdmin nonReentrant {
+    function sendFees() external onlyAdmin {
         uint256 _fees = protocolBalance.fees;
         protocolBalance.fees = 0;
 
