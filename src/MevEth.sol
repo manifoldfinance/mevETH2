@@ -448,9 +448,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         if (_isZero(uint256(fraction.elastic)) || _isZero(uint256(fraction.base))) {
             shares = assets;
         } else {
-            unchecked {
-                shares = (assets * uint256(fraction.base)) / uint256(fraction.elastic);
-            }
+            shares = (assets * uint256(fraction.base)) / uint256(fraction.elastic);
         }
     }
 
@@ -463,9 +461,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         if (_isZero(uint256(fraction.elastic)) || _isZero(uint256(fraction.base))) {
             assets = shares;
         } else {
-            unchecked {
-                assets = (shares * uint256(fraction.elastic)) / uint256(fraction.base);
-            }
+            assets = (shares * uint256(fraction.elastic)) / uint256(fraction.base);
         }
     }
 
@@ -508,10 +504,9 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
 
         // Convert the assets to shares and update the fraction elastic and base
         shares = convertToShares(assets);
-        unchecked {
-            fraction.elastic += uint128(assets);
-            fraction.base += uint128(shares);
-        }
+
+        fraction.elastic += uint128(assets);
+        fraction.base += uint128(shares);
 
         // Deposit the assets
         _deposit(assets);
@@ -551,10 +546,9 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
 
         // Convert the shares to assets and update the fraction elastic and base
         assets = convertToAssets(shares);
-        unchecked {
-            fraction.elastic += uint128(assets);
-            fraction.base += uint128(shares);
-        }
+
+        fraction.elastic += uint128(assets);
+        fraction.base += uint128(shares);
 
         // Deposit the assets
         _deposit(assets);
@@ -620,10 +614,8 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         }
 
         // Update the elastic and base
-        unchecked {
-            fraction.elastic -= uint128(assets);
-            fraction.base -= uint128(shares);
-        }
+        fraction.elastic -= uint128(assets);
+        fraction.base -= uint128(shares);
 
         // If the base is less than the minimum deposit, revert
         if (fraction.base < MIN_DEPOSIT) {
@@ -668,10 +660,8 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         }
 
         // Update the elastic and base
-        unchecked {
-            fraction.elastic -= uint128(assets);
-            fraction.base -= uint128(shares);
-        }
+        fraction.elastic -= uint128(assets);
+        fraction.base -= uint128(shares);
 
         // If the base is less than the minimum deposit, revert
         if (fraction.base < MIN_DEPOSIT) {
