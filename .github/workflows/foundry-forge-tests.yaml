@@ -39,12 +39,12 @@ jobs:
       - name: Run Forge build
         run: |
           forge --version 
-          forge build --sizes --ignored-error-codes 5667 --deny-warnings
+          forge build --sizes --deny-warnings
         id: build
 
       - name: Run Forge tests
         run: |
-          forge test --ignored-error-codes 5667 --deny-warnings --etherscan-api-key $ETHERSCAN_API_KEY -vvv
+          forge test --deny-warnings --etherscan-api-key $ETHERSCAN_API_KEY -vvv
         id: test
 
       - name: Coverage

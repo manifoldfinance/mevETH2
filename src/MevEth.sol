@@ -470,9 +470,8 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     }
 
     /// @notice Function to indicate the maximum deposit possible.
-    /// @param receiver The address of the account that would receive the assets.
     /// @return maxAssets The maximum amount of assets that can be deposited.
-    function maxDeposit(address receiver) external view returns (uint256 maxAssets) {
+    function maxDeposit(address) external view returns (uint256 maxAssets) {
         // If staking is paused, then no deposits can be made
         if (stakingPaused) {
             return 0;
