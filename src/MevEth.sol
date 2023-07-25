@@ -598,6 +598,9 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @param owner The address of the owner of the mevEth
     /// @return shares The amount of shares burned
     function withdraw(uint256 assets, address receiver, address owner) external returns (uint256 shares) {
+        // If withdraw is less than the minimum deposit / withdraw amount, revert
+        if (assets < MIN_DEPOSIT) revert MevEthErrors.WithdrawTooSmall();
+
         // Convert the assets to shares and check if the owner has the allowance to withdraw the shares.
         shares = convertToShares(assets);
 
@@ -644,6 +647,9 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @param owner The address of the owner of the mevEth
     /// @return assets The amount of assets withdrawn
     function redeem(uint256 shares, address receiver, address owner) external returns (uint256 assets) {
+        // If withdraw is less than the minimum deposit / withdraw amount, revert
+        if (convertToAssets(shares) < MIN_DEPOSIT) revert MevEthErrors.WithdrawTooSmall();
+
         // Convert the shares to assets and check if the owner has the allowance to withdraw the shares.
         assets = convertToAssets(shares);
 
