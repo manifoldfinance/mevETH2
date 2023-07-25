@@ -13,7 +13,7 @@ contract ReentrancyAttackTest is MevEthTest {
 
     // Fallback is called when MevEth sends Ether to this contract.
     fallback() external payable {
-        mevEth.withdraw(msg.value, address(this), address(this));
+        mevEth.claim(0);
     }
 
     receive() external payable { }
@@ -25,6 +25,9 @@ contract ReentrancyAttackTest is MevEthTest {
         uint256 bal = address(this).balance;
         mevEth.deposit{ value: amount }(amount, address(this));
         mevEth.withdraw(amount, address(this), address(this));
+        vm.prank(Operator01);
+        mevEth.processWithdrawalQueue();
+        mevEth.claim(0);
         assertEq(weth.balanceOf(address(this)), amount);
         assertEq(address(this).balance, bal - amount);
     }

@@ -40,4 +40,6 @@ interface MevEthErrors {
     error WrongDepositAmount();
     error UnAuthorizedCaller();
     error WithdrawTooSmall();
+    error NotFinalised();
+    error AlreadyClaimed();
 }

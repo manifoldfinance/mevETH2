@@ -33,10 +33,10 @@ contract QueueTest is MevEthTest {
         mevEth.withdraw(63 ether, User01, User01);
         Vm.Log[] memory entries = vm.getRecordedLogs();
 
-        assertEq(entries[1].topics[0], keccak256("WithdrawalQueueOpened(address,uint256)"));
-        assertEq(uint256(entries[1].topics[2]), 31 ether);
+        assertEq(entries[1].topics[0], keccak256("WithdrawalQueueOpened(address,uint256,uint256)"));
+        assertEq(abi.decode(entries[1].data, (uint256)), 63 ether);
 
-        assertEq(weth.balanceOf(User01), 32 ether);
+        assertEq(weth.balanceOf(User01), 0);
 
         // Now that an unprocessed withdrawal has been created
         // time to ensure it can be properly processed back
@@ -46,11 +46,14 @@ contract QueueTest is MevEthTest {
         vm.deal(stakingModuleAddress, 32 ether);
         vm.prank(SamBacha);
         IStakingModule(stakingModuleAddress).payValidatorWithdraw(32 ether);
+        vm.prank(Operator01);
+        mevEth.processWithdrawalQueue();
 
+        mevEth.claim(0);
         Vm.Log[] memory entries2 = vm.getRecordedLogs();
 
-        assertEq(entries2[0].topics[0], keccak256("WithdrawalQueueClosed(address,uint256)"));
-        assertEq(uint256(entries2[0].topics[2]), 31 ether);
+        assertEq(entries2[2].topics[0], keccak256("WithdrawalQueueClosed(address,uint256,uint256)"));
+        assertEq(abi.decode(entries2[2].data, (uint256)), 63 ether);
 
         assertEq(weth.balanceOf(User01), 63 ether);
     }
@@ -83,10 +86,10 @@ contract QueueTest is MevEthTest {
         mevEth.redeem(mevEth.convertToShares(63 ether), User01, User01);
         Vm.Log[] memory entries = vm.getRecordedLogs();
 
-        assertEq(entries[1].topics[0], keccak256("WithdrawalQueueOpened(address,uint256)"));
-        assertEq(uint256(entries[1].topics[2]), 31 ether);
+        assertEq(entries[1].topics[0], keccak256("WithdrawalQueueOpened(address,uint256,uint256)"));
+        assertEq(abi.decode(entries[1].data, (uint256)), 63 ether);
 
-        assertEq(weth.balanceOf(User01), 32 ether);
+        assertEq(weth.balanceOf(User01), 0);
 
         // Now that an unprocessed withdrawal has been created
         // time to ensure it can be properly processed back
@@ -96,10 +99,14 @@ contract QueueTest is MevEthTest {
         vm.deal(stakingModuleAddress, 32 ether);
         vm.prank(SamBacha);
         IStakingModule(stakingModuleAddress).payValidatorWithdraw(32 ether);
+        vm.prank(Operator01);
+        mevEth.processWithdrawalQueue();
+
+        mevEth.claim(0);
         Vm.Log[] memory entries2 = vm.getRecordedLogs();
 
-        assertEq(entries2[0].topics[0], keccak256("WithdrawalQueueClosed(address,uint256)"));
-        assertEq(uint256(entries2[0].topics[2]), 31 ether);
+        assertEq(entries2[2].topics[0], keccak256("WithdrawalQueueClosed(address,uint256,uint256)"));
+        assertEq(abi.decode(entries2[2].data, (uint256)), 63 ether);
 
         assertEq(weth.balanceOf(User01), 63 ether);
     }
