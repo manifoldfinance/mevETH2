@@ -388,7 +388,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     mapping(uint256 ticketNumber => WithdrawalTicket ticket) public withdrawalQueue;
 
     /// @notice Processes the withdrawal queue, paying out any pending withdrawals with the contract's available balance.
-    function processWithdrawalQueue() public {
+    function processWithdrawalQueue() external onlyOperator {
         // Get the current length of the queue
         uint256 length = queueLength;
 
