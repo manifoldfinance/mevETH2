@@ -55,6 +55,8 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     uint64 public constant MODULE_UPDATE_TIME_DELAY = 7 days;
     /// @notice Max amount of ETH that can be deposited.
     uint128 public constant MAX_DEPOSIT = 2 ** 128 - 1;
+    /// @notice Minimum amount of ETH that can be withdrawn
+    uint128 public constant MIN_WITHDRAWAL = 0.01 ether;
     /// @notice Min amount of ETH that can be deposited.
     uint128 public constant MIN_DEPOSIT = 10_000_000_000_000_000; // 0.01 eth
     /// @notice The address of the MevEthShareVault.
@@ -584,7 +586,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
             emit Withdraw(msg.sender, owner, receiver, assets, shares);
             WETH.deposit{ value: assets }();
             ERC20(address(WETH)).safeTransfer(receiver, assets);
-        } else {
+        } else if (assets > MIN_WITHDRAWAL) {
             uint256 availableBalance = address(this).balance;
             uint256 amountOwed = assets - availableBalance;
             emit WithdrawalQueueOpened(receiver, amountOwed);
@@ -595,6 +597,8 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
                 WETH.deposit{ value: availableBalance }();
                 ERC20(address(WETH)).safeTransfer(receiver, availableBalance);
             }
+        } else {
+            revert MevEthErrors.BelowMinimum();
         }
     }
 
