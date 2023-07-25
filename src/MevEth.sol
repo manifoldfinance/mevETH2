@@ -45,8 +45,6 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     bool public stakingPaused;
     /// @notice Indicates if contract is initialized.
     bool public initialized;
-    /// @notice Amount of ETH to retain on contract for withdrawls as a percent numerator.
-    uint8 public bufferPercentNumerator;
     /// @notice Timestamp when pending staking module update can be finalized.
     uint64 public pendingStakingModuleCommittedTimestamp;
     /// @notice Timestamp when pending mevEthShareVault update can be finalized.
@@ -95,14 +93,13 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         OFTWithFee("Mev Liquid Staked Ether", "mevETH", 18, 8, authority, layerZeroEndpoint)
     {
         WETH = IWETH(weth);
-        bufferPercentNumerator = 2; // set at 2 %
     }
 
     /// @notice Calculate the needed Ether buffer required when creating a new validator.
     /// @return uint256 The required Ether buffer.
     function calculateNeededEtherBuffer() public view returns (uint256) {
         unchecked {
-            return max((uint256(fraction.elastic) * uint256(bufferPercentNumerator)) / 100, 31 ether);
+            return max(withdrawlAmountQueued, 31 ether);
         }
     }
 
@@ -137,11 +134,6 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         mevEthShareVault = initialShareVault;
         stakingModule = IStakingModule(initialStakingModule);
         emit MevEthInitialized(initialShareVault, initialStakingModule);
-    }
-
-    //TODO: FIXME: never used
-    function updateBufferPercentNumerator(uint8 newBufferPercentNumerator) external onlyAdmin {
-        bufferPercentNumerator = newBufferPercentNumerator;
     }
 
     /// @notice Emitted when staking is paused.
@@ -368,54 +360,74 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
                             WITHDRAWAL QUEUE
     //////////////////////////////////////////////////////////////*/
 
-    /// @notice Struct representing a withdrawal ticket which is added to the withdrawal queue if there is not enough ETH in the contract
-    ///         to pay out the withdrawal immediately.
+    /// @notice Struct representing a withdrawal ticket which is added to the withdrawal queue.
+    /// @custom:field claimed               True if this receiver has received ticket funds.
     /// @custom:field receiver              The receiever of the ETH specified in the WithdrawalTicket.
     /// @custom:field amount                The amount of ETH to send to the receiver when the ticket is processed.
     struct WithdrawalTicket {
+        bool claimed;
         address receiver;
         uint256 amount;
     }
 
     /// @notice Event emitted when a withdrawal ticket is added to the queue.
-    event WithdrawalQueueOpened(address indexed receipient, uint256 indexed assets);
-    event WithdrawalQueueClosed(address indexed receipient, uint256 indexed assets);
+    event WithdrawalQueueOpened(address indexed receipient, uint256 indexed withdrawlId, uint256 assets);
+    event WithdrawalQueueClosed(address indexed receipient, uint256 indexed withdrawlId, uint256 assets);
 
     /// @notice The length of the withdrawal queue.
     uint256 queueLength;
+
+    /// @notice  mark the latest withdrawal request that was finalised
+    uint256 requestsFinalisedUntil;
+
+    /// @notice Withdrawl amount queued
+    uint256 withdrawlAmountQueued;
+
     /// @notice The mapping representing the withdrawal queue.
     /// @dev The index in the queue is the key, and the value is the WithdrawalTicket.
     mapping(uint256 ticketNumber => WithdrawalTicket ticket) public withdrawalQueue;
 
-    /// @notice Processes the withdrawal queue, paying out any pending withdrawals with the contract's available balance.
+    /// @notice Claim Finalised Withdrawl Ticket
+    /// @param withdrawlId Unique ID of the withdrawl ticket
+    function claim(uint256 withdrawlId) external {
+        if (withdrawlId > requestsFinalisedUntil) revert MevEthErrors.NotFinalised();
+        WithdrawalTicket memory ticket = withdrawalQueue[withdrawlId];
+        if (ticket.claimed) revert MevEthErrors.AlreadyClaimed();
+        withdrawalQueue[withdrawlId].claimed = true;
+        withdrawlAmountQueued -= ticket.amount;
+        emit WithdrawalQueueClosed(ticket.receiver, withdrawlId, ticket.amount);
+        WETH.deposit{ value: ticket.amount }();
+        ERC20(address(WETH)).safeTransfer(ticket.receiver, ticket.amount);
+    }
+
+    /// @notice Processes the withdrawal queue, reserving any pending withdrawals with the contract's available balance.
     function processWithdrawalQueue() external onlyOperator {
+        uint256 balance = address(this).balance;
+        if (withdrawlAmountQueued >= balance) revert MevEthErrors.NotEnoughEth();
+
+        uint256 available = balance - withdrawlAmountQueued;
+
         // Get the current length of the queue
         uint256 length = queueLength;
 
-        // While the queue is not empty, process the next ticket in the queue
-        while (length != 0) {
-            // Get the next ticket in the queue
-            WithdrawalTicket memory currentTicket = withdrawalQueue[length - 1];
-            uint256 assetsOwed = currentTicket.amount;
-            address receipient = currentTicket.receiver;
+        uint256 finalised = requestsFinalisedUntil;
 
-            // If the balance of the contract has enough ETH to pay the ticket, pay the ticket and remove it from the queue.
-            if (address(this).balance >= assetsOwed) {
-                // While not strictly neccessary persay, important for
-                // added safety
-                delete withdrawalQueue[length-1];
-                length--;
-                emit WithdrawalQueueClosed(receipient, assetsOwed);
-                WETH.deposit{ value: assetsOwed }();
-                // SafeTransfer not needed because we know the impl
-                ERC20(address(WETH)).safeTransfer(receipient, assetsOwed);
+        // While the queue is not empty, process the next ticket in the queue
+        while (finalised < length) {
+            // Get the next ticket in the queue
+            WithdrawalTicket memory currentTicket = withdrawalQueue[finalised];
+            uint256 assetsOwed = currentTicket.amount;
+
+            // If the balance of the contract has enough ETH to pay the ticket, reserve amount for ticket.
+            if (available >= assetsOwed) {
+                finalised += 1;
+                available -= assetsOwed;
             } else {
-                // If the balance of the contract does not have enough ETH to pay the ticket, exit the loop.
-                queueLength = length;
-                return;
+                break;
             }
         }
-        queueLength = 0;
+        requestsFinalisedUntil = finalised;
+        withdrawlAmountQueued += balance - available;
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -571,26 +583,11 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
 
     ///@notice Function to withdraw assets from the mevEth contract
     /// @param receiver The address user whom should receive the mevEth out
-    /// @param owner The address of the owner of the mevEth
     /// @param assets The amount of assets that should be withdrawn
-    /// @param shares The amount of shares corresponding to assets withdrawn
-    function _withdraw(address receiver, address owner, uint256 assets, uint256 shares) internal {
-        if (address(this).balance >= assets) {
-            emit Withdraw(msg.sender, owner, receiver, assets, shares);
-            WETH.deposit{ value: assets }();
-            ERC20(address(WETH)).safeTransfer(receiver, assets);
-        } else {
-            uint256 availableBalance = address(this).balance;
-            uint256 amountOwed = assets - availableBalance;
-            emit WithdrawalQueueOpened(receiver, amountOwed);
-            withdrawalQueue[queueLength] = WithdrawalTicket({ receiver: receiver, amount: amountOwed });
-            queueLength++;
-            if (!_isZero(availableBalance)) {
-                emit Withdraw(msg.sender, owner, receiver, availableBalance, convertToShares(availableBalance));
-                WETH.deposit{ value: availableBalance }();
-                ERC20(address(WETH)).safeTransfer(receiver, availableBalance);
-            }
-        }
+    function _withdraw(address receiver, uint256 assets) internal {
+        withdrawalQueue[queueLength] = WithdrawalTicket({ claimed: false, receiver: receiver, amount: assets });
+        emit WithdrawalQueueOpened(receiver, queueLength, assets);
+        queueLength++;
     }
 
     /// @param assets The amount of assets that should be withdrawn
@@ -624,7 +621,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         _burn(owner, shares);
 
         // Withdraw the assets from the Mevth contract
-        _withdraw(receiver, owner, assets, shares);
+        _withdraw(receiver, assets);
     }
 
     ///@notice Function to simulate the maximum amount of shares that can be redeemed by the owner.
@@ -673,7 +670,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         _burn(owner, shares);
 
         // Withdraw the assets from the Mevth contract
-        _withdraw(receiver, owner, assets, shares);
+        _withdraw(receiver, assets);
     }
 
     /*//////////////////////////////////////////////////////////////
