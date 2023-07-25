@@ -321,8 +321,6 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @dev Before updating the fraction, the withdraw queue is processed, which pays out any pending withdrawals.
     /// @dev This function is only callable by the MevEthShareVault.
     function grantRewards() external payable {
-        // Process the withdrawal queue, paying out any pending withdrawal tickets before updating the fraction.
-        processWithdrawalQueue();
         if (!(msg.sender == address(stakingModule) || msg.sender == mevEthShareVault)) revert MevEthErrors.InvalidSender();
 
         /// @dev Note that while a small possiblity, it is possible for the MevEthShareVault rewards + fraction.elastic to overflow a uint128.
@@ -345,9 +343,6 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         if (msg.value == 0) {
             revert MevEthErrors.ZeroValue();
         }
-
-        // Process the withdrawal queue, paying out any pending withdrawal tickets before updating the fraction balance.
-        processWithdrawalQueue();
 
         // Emit an event to notify offchain listeners that a validator has withdrawn funds.
         emit ValidatorWithdraw(msg.sender, msg.value);
