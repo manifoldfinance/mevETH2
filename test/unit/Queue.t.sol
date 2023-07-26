@@ -34,9 +34,9 @@ contract QueueTest is MevEthTest {
         Vm.Log[] memory entries = vm.getRecordedLogs();
 
         assertEq(entries[1].topics[0], keccak256("WithdrawalQueueOpened(address,uint256,uint256)"));
-        assertEq(abi.decode(entries[1].data, (uint256)), 63 ether);
+        assertEq(abi.decode(entries[1].data, (uint256)), 31 ether);
 
-        assertEq(weth.balanceOf(User01), 0);
+        assertEq(weth.balanceOf(User01), 32 ether);
 
         // Now that an unprocessed withdrawal has been created
         // time to ensure it can be properly processed back
@@ -53,7 +53,7 @@ contract QueueTest is MevEthTest {
         Vm.Log[] memory entries2 = vm.getRecordedLogs();
 
         assertEq(entries2[2].topics[0], keccak256("WithdrawalQueueClosed(address,uint256,uint256)"));
-        assertEq(abi.decode(entries2[2].data, (uint256)), 63 ether);
+        assertEq(abi.decode(entries2[2].data, (uint256)), 31 ether);
 
         assertEq(weth.balanceOf(User01), 63 ether);
     }
@@ -87,9 +87,9 @@ contract QueueTest is MevEthTest {
         Vm.Log[] memory entries = vm.getRecordedLogs();
 
         assertEq(entries[1].topics[0], keccak256("WithdrawalQueueOpened(address,uint256,uint256)"));
-        assertEq(abi.decode(entries[1].data, (uint256)), 63 ether);
+        assertEq(abi.decode(entries[1].data, (uint256)), 31 ether);
 
-        assertEq(weth.balanceOf(User01), 0);
+        assertEq(weth.balanceOf(User01), 32 ether);
 
         // Now that an unprocessed withdrawal has been created
         // time to ensure it can be properly processed back
@@ -106,7 +106,7 @@ contract QueueTest is MevEthTest {
         Vm.Log[] memory entries2 = vm.getRecordedLogs();
 
         assertEq(entries2[2].topics[0], keccak256("WithdrawalQueueClosed(address,uint256,uint256)"));
-        assertEq(abi.decode(entries2[2].data, (uint256)), 63 ether);
+        assertEq(abi.decode(entries2[2].data, (uint256)), 31 ether);
 
         assertEq(weth.balanceOf(User01), 63 ether);
     }
