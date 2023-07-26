@@ -8,7 +8,6 @@ contract WithdrawlQueueAttackTest is MevEthTest {
         vm.deal(User01, 63 ether);
         vm.startPrank(User01);
 
-        address stakingModuleAddress = address(mevEth.stakingModule());
         IStakingModule.ValidatorData memory validatorData = mockValidatorData(User01, 32 ether / 1 gwei);
 
         // 1. Attacker deposits 63 Eth to MevEth
@@ -46,5 +45,9 @@ contract WithdrawlQueueAttackTest is MevEthTest {
 
         // Block gas limit
         mevEth.processWithdrawalQueue();
+        for (uint256 i = 0; i < 1000; i++) {
+            mevEth.claim(i);
+        }
+        assertEq(weth.balanceOf(User01), 42 ether);
     }
 }
