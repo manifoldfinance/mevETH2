@@ -184,11 +184,11 @@ contract ERC4626Test is MevEthTest {
 
         // Withdraw 1 mevETH
         mevEth.withdraw(0.75 ether, User01, User01);
-        vm.stopPrank();
-        vm.prank(Operator01);
-        mevEth.processWithdrawalQueue();
-        vm.prank(User01);
-        mevEth.claim(0);
+        // vm.stopPrank();
+        // vm.prank(Operator01);
+        // mevEth.processWithdrawalQueue();
+        // vm.prank(User01);
+        // mevEth.claim(0);
         assertEq(mevEth.balanceOf(User01), 0.25 ether);
         assertEq(weth.balanceOf(User01), 0.75 ether);
     }
@@ -227,11 +227,11 @@ contract ERC4626Test is MevEthTest {
 
         // Withdraw 1 mevETH
         mevEth.withdraw(0.75 ether, User02, User01);
-        vm.stopPrank();
-        vm.prank(Operator01);
-        mevEth.processWithdrawalQueue();
-        vm.prank(User01);
-        mevEth.claim(0);
+        // vm.stopPrank();
+        // vm.prank(Operator01);
+        // mevEth.processWithdrawalQueue();
+        // vm.prank(User01);
+        // mevEth.claim(0);
 
         assertEq(mevEth.balanceOf(User01), 0.25 ether);
         assertEq(weth.balanceOf(User02), 0.75 ether);
@@ -255,11 +255,11 @@ contract ERC4626Test is MevEthTest {
 
         // Withdraw 1 mevETH
         mevEth.withdraw(amount, User01, User01);
-        vm.stopPrank();
-        vm.prank(Operator01);
-        mevEth.processWithdrawalQueue();
-        vm.prank(User01);
-        mevEth.claim(0);
+        // vm.stopPrank();
+        // vm.prank(Operator01);
+        // mevEth.processWithdrawalQueue();
+        // vm.prank(User01);
+        // mevEth.claim(0);
         assertEq(mevEth.balanceOf(User01), 0 ether);
         assertEq(weth.balanceOf(User01), amount);
     }
@@ -359,11 +359,11 @@ contract ERC4626Test is MevEthTest {
 
         // Redeem 1 mevETH
         mevEth.redeem(0.75 ether, User01, User01);
-        vm.stopPrank();
-        vm.prank(Operator01);
-        mevEth.processWithdrawalQueue();
-        vm.prank(User01);
-        mevEth.claim(0);
+        // vm.stopPrank();
+        // vm.prank(Operator01);
+        // mevEth.processWithdrawalQueue();
+        // vm.prank(User01);
+        // mevEth.claim(0);
 
         assertEq(mevEth.balanceOf(User01), 0.25 ether);
         assertEq(weth.balanceOf(User01), 0.75 ether);
@@ -405,11 +405,11 @@ contract ERC4626Test is MevEthTest {
 
         // Withdraw 0.75 mevETH
         mevEth.redeem(0.75 ether, User02, User01);
-        vm.stopPrank();
-        vm.prank(Operator01);
-        mevEth.processWithdrawalQueue();
-        vm.prank(User01);
-        mevEth.claim(0);
+        // vm.stopPrank();
+        // vm.prank(Operator01);
+        // mevEth.processWithdrawalQueue();
+        // vm.prank(User01);
+        // mevEth.claim(0);
 
         assertEq(mevEth.balanceOf(User01), 0.25 ether);
         assertEq(weth.balanceOf(User02), 0.75 ether);
@@ -431,11 +431,11 @@ contract ERC4626Test is MevEthTest {
 
         // Redeem 1 mevETH
         mevEth.redeem(amountToRedeem, User01, User01);
-        vm.stopPrank();
-        vm.prank(Operator01);
-        mevEth.processWithdrawalQueue();
-        vm.prank(User01);
-        mevEth.claim(0);
+        // vm.stopPrank();
+        // vm.prank(Operator01);
+        // mevEth.processWithdrawalQueue();
+        // vm.prank(User01);
+        // mevEth.claim(0);
 
         assertEq(mevEth.balanceOf(User01), amountLeftOver);
         assertEq(weth.balanceOf(User01), amountToRedeem);

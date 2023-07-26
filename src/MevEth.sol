@@ -583,11 +583,32 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
 
     ///@notice Function to withdraw assets from the mevEth contract
     /// @param receiver The address user whom should receive the mevEth out
+    /// @param owner The address of the owner of the mevEth
     /// @param assets The amount of assets that should be withdrawn
-    function _withdraw(address receiver, uint256 assets) internal {
-        withdrawalQueue[queueLength] = WithdrawalTicket({ claimed: false, receiver: receiver, amount: assets });
-        emit WithdrawalQueueOpened(receiver, queueLength, assets);
-        queueLength++;
+    /// @param shares The amount of shares corresponding to assets withdrawn
+    function _withdraw(address receiver, address owner, uint256 assets, uint256 shares) internal {
+        uint256 availableBalance = address(this).balance; // available balance will be adjusted
+        if (availableBalance > withdrawlAmountQueued) {
+            availableBalance = availableBalance - withdrawlAmountQueued;
+        } else {
+            availableBalance = 0;
+        }
+
+        if (availableBalance >= assets) {
+            emit Withdraw(msg.sender, owner, receiver, assets, shares);
+            WETH.deposit{ value: assets }();
+            ERC20(address(WETH)).safeTransfer(receiver, assets);
+        } else {
+            uint256 amountOwed = assets - availableBalance;
+            withdrawalQueue[queueLength] = WithdrawalTicket({ claimed: false, receiver: receiver, amount: amountOwed });
+            emit WithdrawalQueueOpened(receiver, queueLength, amountOwed);
+            queueLength++;
+            if (!_isZero(availableBalance)) {
+                emit Withdraw(msg.sender, owner, receiver, availableBalance, convertToShares(availableBalance));
+                WETH.deposit{ value: availableBalance }();
+                ERC20(address(WETH)).safeTransfer(receiver, availableBalance);
+            }
+        }
     }
 
     /// @param assets The amount of assets that should be withdrawn
@@ -621,7 +642,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         _burn(owner, shares);
 
         // Withdraw the assets from the Mevth contract
-        _withdraw(receiver, assets);
+        _withdraw(receiver, owner, assets, shares);
     }
 
     ///@notice Function to simulate the maximum amount of shares that can be redeemed by the owner.
@@ -670,7 +691,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         _burn(owner, shares);
 
         // Withdraw the assets from the Mevth contract
-        _withdraw(receiver, assets);
+        _withdraw(receiver, owner, assets, shares);
     }
 
     /*//////////////////////////////////////////////////////////////
