@@ -420,14 +420,14 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
 
             // If the balance of the contract has enough ETH to pay the ticket, reserve amount for ticket.
             if (available >= assetsOwed) {
-                finalised += 1;
+                ++finalised;
                 available -= assetsOwed;
             } else {
                 break;
             }
         }
         requestsFinalisedUntil = finalised;
-        withdrawlAmountQueued += balance - available;
+        withdrawlAmountQueued = balance - available;
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -585,28 +585,31 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @param receiver The address user whom should receive the mevEth out
     /// @param owner The address of the owner of the mevEth
     /// @param assets The amount of assets that should be withdrawn
-    /// @param shares The amount of shares corresponding to assets withdrawn
-    function _withdraw(address receiver, address owner, uint256 assets, uint256 shares) internal {
-        uint256 availableBalance = address(this).balance; // available balance will be adjusted
-        if (availableBalance > withdrawlAmountQueued) {
-            availableBalance = availableBalance - withdrawlAmountQueued;
-        } else {
-            availableBalance = 0;
-        }
+    function _withdraw(address receiver, address owner, uint256 assets) internal {
+        uint256 availableBalance = address(this).balance - withdrawlAmountQueued; // available balance will be adjusted
 
-        if (availableBalance >= assets) {
-            emit Withdraw(msg.sender, owner, receiver, assets, shares);
-            WETH.deposit{ value: assets }();
-            ERC20(address(WETH)).safeTransfer(receiver, assets);
-        } else {
+        if (availableBalance < assets) {
             uint256 amountOwed = assets - availableBalance;
             withdrawalQueue[queueLength] = WithdrawalTicket({ claimed: false, receiver: receiver, amount: amountOwed });
             emit WithdrawalQueueOpened(receiver, queueLength, amountOwed);
-            queueLength++;
-            if (!_isZero(availableBalance)) {
-                emit Withdraw(msg.sender, owner, receiver, availableBalance, convertToShares(availableBalance));
-                WETH.deposit{ value: availableBalance }();
-                ERC20(address(WETH)).safeTransfer(receiver, availableBalance);
+            ++queueLength;
+            assets = availableBalance;
+        }
+        if (!_isZero(assets)) {
+            emit Withdraw(msg.sender, owner, receiver, assets, convertToShares(assets));
+            WETH.deposit{ value: assets }();
+            ERC20(address(WETH)).safeTransfer(receiver, assets);
+        }
+    }
+
+    /// @dev internal function to update allowance for withdraws if necessary
+    /// @param owner owner of tokens
+    /// @param shares amount of shares to update
+    function _updateAllowance(address owner, uint256 shares) internal {
+        if (owner != msg.sender) {
+            if (allowance[owner][msg.sender] < shares) revert MevEthErrors.TransferExceedsAllowance();
+            unchecked {
+                allowance[owner][msg.sender] -= shares;
             }
         }
     }
@@ -622,12 +625,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         // Convert the assets to shares and check if the owner has the allowance to withdraw the shares.
         shares = convertToShares(assets);
 
-        if (owner != msg.sender) {
-            if (allowance[owner][msg.sender] < shares) revert MevEthErrors.TransferExceedsAllowance();
-            unchecked {
-                allowance[owner][msg.sender] -= shares;
-            }
-        }
+        _updateAllowance(owner, shares);
 
         // Update the elastic and base
         fraction.elastic -= uint128(assets);
@@ -642,7 +640,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         _burn(owner, shares);
 
         // Withdraw the assets from the Mevth contract
-        _withdraw(receiver, owner, assets, shares);
+        _withdraw(receiver, owner, assets);
     }
 
     ///@notice Function to simulate the maximum amount of shares that can be redeemed by the owner.
@@ -671,12 +669,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         // Convert the shares to assets and check if the owner has the allowance to withdraw the shares.
         assets = convertToAssets(shares);
 
-        if (owner != msg.sender) {
-            if (allowance[owner][msg.sender] < shares) revert MevEthErrors.TransferExceedsAllowance();
-            unchecked {
-                allowance[owner][msg.sender] -= shares;
-            }
-        }
+        _updateAllowance(owner, shares);
 
         // Update the elastic and base
         fraction.elastic -= uint128(assets);
@@ -691,7 +684,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         _burn(owner, shares);
 
         // Withdraw the assets from the Mevth contract
-        _withdraw(receiver, owner, assets, shares);
+        _withdraw(receiver, owner, assets);
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -720,12 +713,6 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @dev Only Weth withdraw is defined for the behaviour. Deposits should be directed to deposit / mint. Rewards via grantRewards and validator withdraws
     /// via grantValidatorWithdraw.
     receive() external payable {
-        if (msg.sender != address(WETH)) revert MevEthErrors.InvalidSender();
-    }
-
-    /// @dev Only Weth withdraw is defined for the behaviour. Deposits should be directed to deposit / mint. Rewards via grantRewards and validator withdraws
-    /// via grantValidatorWithdraw.
-    fallback() external payable {
         if (msg.sender != address(WETH)) revert MevEthErrors.InvalidSender();
     }
 }
