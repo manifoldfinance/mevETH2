@@ -142,12 +142,9 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     event StakingUnpaused();
 
     /// @notice Ensures that staking is not paused when invoking a specific function.
-    /// @dev This modifier is used on the createValidator, deposit and mint functions.
-    modifier stakingUnpaused() {
-        if (stakingPaused) {
-            revert MevEthErrors.StakingPaused();
-        }
-        _;
+    /// @dev This check is used on the createValidator, deposit and mint functions.
+    function _stakingUnpaused() internal view {
+        if (stakingPaused) revert MevEthErrors.StakingPaused();
     }
 
     /// @notice Pauses staking on the MevEth contract.
@@ -290,7 +287,8 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @notice This function passes through the needed Ether to the Staking module, and the assosiated credentials with it
     /// @param newData The data needed to create a new validator
     /// @dev This function is only callable by addresses with the operator role and if staking is unpaused
-    function createValidator(IStakingModule.ValidatorData calldata newData) external onlyOperator stakingUnpaused {
+    function createValidator(IStakingModule.ValidatorData calldata newData) external onlyOperator {
+        _stakingUnpaused();
         IStakingModule _stakingModule = stakingModule;
         // Determine how big deposit is for the validator
         // *Note this will change if Rocketpool or similar modules are used
@@ -375,13 +373,13 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     event WithdrawalQueueClosed(address indexed receipient, uint256 indexed withdrawlId, uint256 assets);
 
     /// @notice The length of the withdrawal queue.
-    uint256 queueLength;
+    uint256 public queueLength;
 
     /// @notice  mark the latest withdrawal request that was finalised
-    uint256 requestsFinalisedUntil;
+    uint256 public requestsFinalisedUntil;
 
     /// @notice Withdrawl amount queued
-    uint256 withdrawlAmountQueued;
+    uint256 public withdrawlAmountQueued;
 
     /// @notice The mapping representing the withdrawal queue.
     /// @dev The index in the queue is the key, and the value is the WithdrawalTicket.
@@ -416,12 +414,11 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         while (finalised < length) {
             // Get the next ticket in the queue
             WithdrawalTicket memory currentTicket = withdrawalQueue[finalised];
-            uint256 assetsOwed = currentTicket.amount;
 
             // If the balance of the contract has enough ETH to pay the ticket, reserve amount for ticket.
-            if (available >= assetsOwed) {
+            if (available >= currentTicket.amount) {
                 ++finalised;
-                available -= assetsOwed;
+                available -= currentTicket.amount;
             } else {
                 break;
             }
@@ -505,7 +502,8 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @param assets The amount of WETH which should be deposited
     /// @param receiver The address user whom should receive the mevEth out
     /// @return shares The amount of shares minted
-    function deposit(uint256 assets, address receiver) external payable stakingUnpaused returns (uint256 shares) {
+    function deposit(uint256 assets, address receiver) external payable returns (uint256 shares) {
+        _stakingUnpaused();
         // If the deposit is less than the minimum deposit, revert
         if (assets < MIN_DEPOSIT) revert MevEthErrors.DepositTooSmall();
 
@@ -547,7 +545,8 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @param shares The amount of shares that should be minted
     /// @param receiver The address user whom should receive the mevEth out
     /// @return assets The amount of assets deposited
-    function mint(uint256 shares, address receiver) external payable stakingUnpaused returns (uint256 assets) {
+    function mint(uint256 shares, address receiver) external payable returns (uint256 assets) {
+        _stakingUnpaused();
         // If the deposit is less than the minimum deposit, revert
         if (shares < MIN_DEPOSIT) revert MevEthErrors.DepositTooSmall();
 
@@ -631,11 +630,6 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         fraction.elastic -= uint128(assets);
         fraction.base -= uint128(shares);
 
-        // If the base is less than the minimum deposit, revert
-        if (fraction.base < MIN_DEPOSIT) {
-            revert MevEthErrors.BelowMinimum();
-        }
-
         // Burn the shares and emit a withdraw event for offchain listeners to know that a withdraw has occured
         _burn(owner, shares);
 
@@ -674,11 +668,6 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         // Update the elastic and base
         fraction.elastic -= uint128(assets);
         fraction.base -= uint128(shares);
-
-        // If the base is less than the minimum deposit, revert
-        if (fraction.base < MIN_DEPOSIT) {
-            revert MevEthErrors.BelowMinimum();
-        }
 
         // Burn the shares and emit a withdraw event for offchain listeners to know that a withdraw has occured
         _burn(owner, shares);
