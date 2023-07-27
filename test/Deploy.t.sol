@@ -8,7 +8,7 @@ import "forge-std/Test.sol";
 import "script/Deploy.s.sol";
 
 contract DeployTest is Test {
-    string RPC_ETH_MAINNET = vm.envString("RPC_MAINNET");
+    string RPC_ETH_MAINNET = vm.envString("ETH_MAINNET_RPC_URL");
     uint256 FORK_ID;
     DeployScript deploy;
 

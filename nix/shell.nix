@@ -60,7 +60,7 @@
           command = ''
             forge script $PRJ_ROOT/script/Deploy.s.sol:DeployScript \
               --chain-id 1 \
-              --rpc-url $RPC_MAINNET \
+              --rpc-url $ETH_MAINNET_RPC_URL \
               --broadcast \
               --private-key $PRIVATE_KEY \
               --verify \
@@ -166,7 +166,7 @@
           command = ''
             forge script $PRJ_ROOT/script/Deploy.s.sol:DeployScript \
               --chain-id 1 \
-              --fork-url $RPC_MAINNET \
+              --fork-url $ETH_MAINNET_RPC_URL \
               -vvvvv
           '';
         }

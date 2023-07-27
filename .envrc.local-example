@@ -3,7 +3,7 @@ export FOUNDRY_PROFILE=default
 
 ## RPC Endpoints / Mainnet
 # Use a provider like Alchemy, Infura or use our custom one.
-export RPC_MAINNET=<TODO>
+export ETH_MAINNET_RPC_URL=<TODO>
 
 ## RPC Endpoints / Goerli
 # Use a provider like Alchemy, Infura or use our custom one.
@@ -18,9 +18,8 @@ export ETHERSCAN_API_KEY=<TODO>
 export PRIVATE_KEY=<TODO>
 
 ## Testing env vars for pigeon
-export ETH_MAINNET_RPC_URL=$RPC_MAINNET
-export POLYGON_MAINNET_RPC_URL=https://polygon-rpc.com
-export ARBITRUM_MAINNET_RPC_URL=https://arb1.arbitrum.io/rpc
+export POLYGON_MAINNET_RPC_URL="https://polygon-rpc.com"
+export ARBITRUM_MAINNET_RPC_URL="https://arb1.arbitrum.io/rpc"
 export BSC_MAINNET_RPC_URL="https://bsc-dataseed1.binance.org"
 export AVALANCHE_RPC_URL="https://api.avax.network/ext/bc/C/rpc"
 export OPTIMISM_RPC_URL="https://mainnet.optimism.io"
