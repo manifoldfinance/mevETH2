@@ -1,37 +1,42 @@
-# specify default foundry profile to use (by default local dev network)
+# specify default foundry profile to use (if not specified by default will use default)
 export FOUNDRY_PROFILE=default
 
-## RPC Endpoints / Mainnet
-# Use a provider like Alchemy, Infura or use our custom one.
-export ETH_MAINNET_RPC_URL=<TODO>
+### RPC Endpoints
+#### Note: All of these endpoints are encrypted inside secrets/rpc-endpoints.yaml.
+####       Below you'll find the following entries for reference purposes.
+####       Your age key needs to be added to secrets/rpc-endpoints.yaml to be able to decrypt the secrets.
 
-## RPC Endpoints / Goerli
-# Use a provider like Alchemy, Infura or use our custom one.
-export RPC_GOERLI=<TODO>
+### Mainnets
+export ETH_MAINNET_RPC_URL=<ENCRYPTED>
+export POLYGON_MAINNET_RPC_URL=<ENCRYPTED>
+export ARBITRUM_MAINNET_RPC_URL=<ENCRYPTED>
+export BSC_MAINNET_RPC_URL=<ENCRYPTED>
+export AVALANCHE_RPC_URL=<ENCRYPTED>
+export OPTIMISM_RPC_URL=<ENCRYPTED>
+
+### Testnets
+
+export ETH_GOERLI_RPC_URL=<ENCRYPTED>
+export POLYGON_TESTNET_RPC_URL=<ENCRYPTED>
+export ARBITRUM_TESTNET_RPC_URL=<ENCRYPTED>
+export BSC_TESTNET_RPC_URL=<ENCRYPTED>
+export AVALANCHE_TESTNET_RPC_URL=<ENCRYPTED>
+export OPTIMISM_TESTNET_RPC_URL=<ENCRYPTED>
+
+### API Keys:
+#### Note: All of these API Keys are encrypted inside secrets/api-keys.yaml. 
+####       Below you'll find the following entries for reference purposes.
+####       Your age key needs to be added to secrets/api-keys.yaml to be able to decrypt the secrets.
 
 ## Etherscan API / Mainnet
 # 1. Create an account on Etherscan
 # 2. Create an API
-export ETHERSCAN_API_KEY=<TODO>
+export ETHERSCAN_API_KEY=<ENCRYPTED>
 
-## Deployer account
+export ARBISCAN_API_KEY=<TODO>
+export BSCSCAN_API_KEY=<TODO>
+export POLYGONSCAN_API_KEY=<TODO>
+export SNOWSCAN_API_KEY=<TODO>
+
+### Deployer Accounts
 export PRIVATE_KEY=<TODO>
-
-## Testing env vars for pigeon
-export POLYGON_MAINNET_RPC_URL="https://polygon-rpc.com"
-export ARBITRUM_MAINNET_RPC_URL="https://arb1.arbitrum.io/rpc"
-export BSC_MAINNET_RPC_URL="https://bsc-dataseed1.binance.org"
-export AVALANCHE_RPC_URL="https://api.avax.network/ext/bc/C/rpc"
-export OPTIMISM_RPC_URL="https://mainnet.optimism.io"
-
-export GOERLI_RPC_URL="https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161"
-export BSC_TESTNET_RPC_URL="https://data-seed-prebsc-1-s1.binance.org:8545/"
-export AVALANCHE_TESTNET_RPC_URL="https://api.avax-test.network/ext/bc/C/rpc"
-export POLYGON_TESTNET_RPC_URL="https://rpc-mumbai.maticvigil.com/"
-export ARBITRUM_TESTNET_RPC_URL="https://goerli-rollup.arbitrum.io/rpc/"
-export OPTIMISM_TESTNET_RPC_URL="https://goerli.optimism.io/"
-
-export ARBISCAN_API_KEY=""
-export BSCSCAN_API_KEY=""
-export POLYGONSCAN_API_KEY=""
-export SNOWSCAN_API_KEY=""

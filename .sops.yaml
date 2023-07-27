@@ -1,0 +1,7 @@
+keys:
+  - &aldo age1hfkje76027ftakc5dakagm05yzxq5vva84sw2zhssrkydhl434gs4ca2ny
+creation_rules:
+  - path_regex: secrets/[^/]+\.yaml$
+    key_groups:
+      - age:
+          - *aldo

@@ -81,7 +81,7 @@
               -vvvvv \
               --optimize \
               --optimizer-runs 2000 \
-              --rpc-url $RPC_GOERLI $@
+              --rpc-url $ETH_GOERLI_RPC_URL $@
           '';
         }
         {
