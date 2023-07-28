@@ -44,8 +44,8 @@ contract WithdrawlQueueAttackTest is MevEthTest {
         vm.deal(address(mevEth), 100 ether);
 
         // Block gas limit
-        mevEth.processWithdrawalQueue();
-        for (uint256 i = 0; i < 1000; i++) {
+        mevEth.processWithdrawalQueue(mevEth.queueLength());
+        for (uint256 i = 1; i < 1001; i++) {
             mevEth.claim(i);
         }
         assertEq(weth.balanceOf(User01), 42 ether);

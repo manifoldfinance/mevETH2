@@ -25,4 +25,6 @@ interface MevEthErrors {
     error WithdrawTooSmall();
     error NotFinalised();
     error AlreadyClaimed();
+    error AlreadyFinalised();
+    error IndexExceedsQueueLength();
 }

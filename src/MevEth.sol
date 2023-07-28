@@ -362,10 +362,12 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @custom:field claimed               True if this receiver has received ticket funds.
     /// @custom:field receiver              The receiever of the ETH specified in the WithdrawalTicket.
     /// @custom:field amount                The amount of ETH to send to the receiver when the ticket is processed.
+    /// @custom:field accumulatedAmount     Keep a running sum of all requested ETH
     struct WithdrawalTicket {
         bool claimed;
         address receiver;
         uint256 amount;
+        uint256 accumulatedAmount;
     }
 
     /// @notice Event emitted when a withdrawal ticket is added to the queue.
@@ -399,32 +401,20 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     }
 
     /// @notice Processes the withdrawal queue, reserving any pending withdrawals with the contract's available balance.
-    function processWithdrawalQueue() external onlyOperator {
+    function processWithdrawalQueue(uint256 newRequestsFinalisedUntil) external onlyOperator {
+        if (newRequestsFinalisedUntil > queueLength) revert MevEthErrors.IndexExceedsQueueLength();
         uint256 balance = address(this).balance;
         if (withdrawlAmountQueued >= balance) revert MevEthErrors.NotEnoughEth();
-
         uint256 available = balance - withdrawlAmountQueued;
 
-        // Get the current length of the queue
-        uint256 length = queueLength;
-
         uint256 finalised = requestsFinalisedUntil;
+        if (newRequestsFinalisedUntil < finalised) revert MevEthErrors.AlreadyFinalised();
 
-        // While the queue is not empty, process the next ticket in the queue
-        while (finalised < length) {
-            // Get the next ticket in the queue
-            WithdrawalTicket memory currentTicket = withdrawalQueue[finalised];
+        uint256 delta = withdrawalQueue[newRequestsFinalisedUntil].accumulatedAmount - withdrawalQueue[finalised].accumulatedAmount;
+        if (available < delta) revert MevEthErrors.NotEnoughEth();
 
-            // If the balance of the contract has enough ETH to pay the ticket, reserve amount for ticket.
-            if (available >= currentTicket.amount) {
-                ++finalised;
-                available -= currentTicket.amount;
-            } else {
-                break;
-            }
-        }
-        requestsFinalisedUntil = finalised;
-        withdrawlAmountQueued = balance - available;
+        requestsFinalisedUntil = newRequestsFinalisedUntil;
+        withdrawlAmountQueued += delta;
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -589,9 +579,15 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
 
         if (availableBalance < assets) {
             uint256 amountOwed = assets - availableBalance;
-            withdrawalQueue[queueLength] = WithdrawalTicket({ claimed: false, receiver: receiver, amount: amountOwed });
-            emit WithdrawalQueueOpened(receiver, queueLength, amountOwed);
+            // uint256 accumulatedAmount = _isZero(queueLength) ? 0 : withdrawalQueue[queueLength - 1].accumulatedAmount;
             ++queueLength;
+            withdrawalQueue[queueLength] = WithdrawalTicket({
+                claimed: false,
+                receiver: receiver,
+                amount: amountOwed,
+                accumulatedAmount: withdrawalQueue[queueLength - 1].accumulatedAmount + amountOwed
+            });
+            emit WithdrawalQueueOpened(receiver, queueLength, amountOwed);
             assets = availableBalance;
         }
         if (!_isZero(assets)) {
