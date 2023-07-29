@@ -1,8 +1,9 @@
+// SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 
 import { CryticERC4626PropertyTests } from "properties/ERC4626/ERC4626PropertyTests.sol";
 // this token _must_ be the vault's underlying asset
-import { TestERC20Token } from "properties/ERC4626/util/TestERC20Token.sol";
+// import { TestERC20Token } from "properties/ERC4626/util/TestERC20Token.sol";
 
 import { MevEth } from "src/MevEth.sol";
 import "../mocks/WETH9.sol";
