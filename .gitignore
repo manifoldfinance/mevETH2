@@ -24,3 +24,5 @@ remappings.txt
 .envrc.local
 
 crytic-export/
+test/echidna/echidna-corpus/
+
