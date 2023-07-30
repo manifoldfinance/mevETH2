@@ -99,7 +99,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @return uint256 The required Ether buffer.
     function calculateNeededEtherBuffer() public view returns (uint256) {
         unchecked {
-            return max(withdrawlAmountQueued, 31 ether);
+            return max(withdrawalAmountQueued, 31 ether);
         }
     }
 
@@ -366,13 +366,13 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     struct WithdrawalTicket {
         bool claimed;
         address receiver;
-        uint256 amount;
-        uint256 accumulatedAmount;
+        uint128 amount;
+        uint128 accumulatedAmount;
     }
 
     /// @notice Event emitted when a withdrawal ticket is added to the queue.
-    event WithdrawalQueueOpened(address indexed receipient, uint256 indexed withdrawlId, uint256 assets);
-    event WithdrawalQueueClosed(address indexed receipient, uint256 indexed withdrawlId, uint256 assets);
+    event WithdrawalQueueOpened(address indexed recipient, uint256 indexed withdrawalId, uint256 assets);
+    event WithdrawalQueueClosed(address indexed recipient, uint256 indexed withdrawalId, uint256 assets);
 
     /// @notice The length of the withdrawal queue.
     uint256 public queueLength;
@@ -380,41 +380,41 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @notice  mark the latest withdrawal request that was finalised
     uint256 public requestsFinalisedUntil;
 
-    /// @notice Withdrawl amount queued
-    uint256 public withdrawlAmountQueued;
+    /// @notice Withdrawal amount queued
+    uint256 public withdrawalAmountQueued;
 
     /// @notice The mapping representing the withdrawal queue.
     /// @dev The index in the queue is the key, and the value is the WithdrawalTicket.
     mapping(uint256 ticketNumber => WithdrawalTicket ticket) public withdrawalQueue;
 
-    /// @notice Claim Finalised Withdrawl Ticket
-    /// @param withdrawlId Unique ID of the withdrawl ticket
-    function claim(uint256 withdrawlId) external {
-        if (withdrawlId > requestsFinalisedUntil) revert MevEthErrors.NotFinalised();
-        WithdrawalTicket memory ticket = withdrawalQueue[withdrawlId];
+    /// @notice Claim Finalised Withdrawal Ticket
+    /// @param withdrawalId Unique ID of the withdrawal ticket
+    function claim(uint256 withdrawalId) external {
+        if (withdrawalId > requestsFinalisedUntil) revert MevEthErrors.NotFinalised();
+        WithdrawalTicket storage ticket = withdrawalQueue[withdrawalId];
         if (ticket.claimed) revert MevEthErrors.AlreadyClaimed();
-        withdrawalQueue[withdrawlId].claimed = true;
-        withdrawlAmountQueued -= ticket.amount;
-        emit WithdrawalQueueClosed(ticket.receiver, withdrawlId, ticket.amount);
-        WETH.deposit{ value: ticket.amount }();
-        ERC20(address(WETH)).safeTransfer(ticket.receiver, ticket.amount);
+        withdrawalQueue[withdrawalId].claimed = true;
+        withdrawalAmountQueued -= uint256(ticket.amount);
+        emit WithdrawalQueueClosed(ticket.receiver, withdrawalId, uint256(ticket.amount));
+        WETH.deposit{ value: uint256(ticket.amount) }();
+        ERC20(address(WETH)).safeTransfer(ticket.receiver, uint256(ticket.amount));
     }
 
     /// @notice Processes the withdrawal queue, reserving any pending withdrawals with the contract's available balance.
     function processWithdrawalQueue(uint256 newRequestsFinalisedUntil) external onlyOperator {
         if (newRequestsFinalisedUntil > queueLength) revert MevEthErrors.IndexExceedsQueueLength();
         uint256 balance = address(this).balance;
-        if (withdrawlAmountQueued >= balance) revert MevEthErrors.NotEnoughEth();
-        uint256 available = balance - withdrawlAmountQueued;
+        if (withdrawalAmountQueued >= balance) revert MevEthErrors.NotEnoughEth();
+        uint256 available = balance - withdrawalAmountQueued;
 
         uint256 finalised = requestsFinalisedUntil;
         if (newRequestsFinalisedUntil < finalised) revert MevEthErrors.AlreadyFinalised();
 
-        uint256 delta = withdrawalQueue[newRequestsFinalisedUntil].accumulatedAmount - withdrawalQueue[finalised].accumulatedAmount;
+        uint256 delta = uint256(withdrawalQueue[newRequestsFinalisedUntil].accumulatedAmount - withdrawalQueue[finalised].accumulatedAmount);
         if (available < delta) revert MevEthErrors.NotEnoughEth();
 
         requestsFinalisedUntil = newRequestsFinalisedUntil;
-        withdrawlAmountQueued += delta;
+        withdrawalAmountQueued += delta;
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -575,11 +575,10 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @param owner The address of the owner of the mevEth
     /// @param assets The amount of assets that should be withdrawn
     function _withdraw(address receiver, address owner, uint256 assets) internal {
-        uint256 availableBalance = address(this).balance - withdrawlAmountQueued; // available balance will be adjusted
+        uint256 availableBalance = address(this).balance - withdrawalAmountQueued; // available balance will be adjusted
 
         if (availableBalance < assets) {
-            uint256 amountOwed = assets - availableBalance;
-            // uint256 accumulatedAmount = _isZero(queueLength) ? 0 : withdrawalQueue[queueLength - 1].accumulatedAmount;
+            uint128 amountOwed = uint128(assets - availableBalance);
             ++queueLength;
             withdrawalQueue[queueLength] = WithdrawalTicket({
                 claimed: false,
@@ -587,7 +586,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
                 amount: amountOwed,
                 accumulatedAmount: withdrawalQueue[queueLength - 1].accumulatedAmount + amountOwed
             });
-            emit WithdrawalQueueOpened(receiver, queueLength, amountOwed);
+            emit WithdrawalQueueOpened(receiver, queueLength, uint256(amountOwed));
             assets = availableBalance;
         }
         if (!_isZero(assets)) {
