@@ -3,7 +3,7 @@ pragma solidity 0.8.19;
 
 import "../MevEthTest.sol";
 
-contract WithdrawlQueueAttackTest is MevEthTest {
+contract WithdrawalQueueAttackTest is MevEthTest {
     function testDosAttackQueueLength() public {
         vm.deal(User01, 63 ether);
         vm.startPrank(User01);
@@ -51,6 +51,6 @@ contract WithdrawlQueueAttackTest is MevEthTest {
         assertEq(weth.balanceOf(User01), 42 ether);
         assertEq(mevEth.queueLength(), 1000);
         assertEq(mevEth.requestsFinalisedUntil(), 1000);
-        assertEq(mevEth.withdrawlAmountQueued(), 0);
+        assertEq(mevEth.withdrawalAmountQueued(), 0);
     }
 }
