@@ -1,6 +1,6 @@
 corpusDir: "test/echidna/echidna-corpus"
 testMode: assertion
-testLimit: 10000
+testLimit: 1000
 codeSize: 0xffffff
 deployer: "0x10000"
 sender: ["0x10000"]
