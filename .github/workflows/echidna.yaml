@@ -4,7 +4,7 @@ on:
   push:
     paths:
       - "**.sol"
-      - ".github/workflows/foundry-forge-tests.yaml"
+      - ".github/workflows/echidna.yaml"
 
 env:
   FOUNDRY_PROFILE: ci
@@ -33,3 +33,4 @@ jobs:
           files: test/echidna/ERC4626-echidna.t.sol
           contract: CryticERC4626Harness
           config: test/echidna/echidna.config.yaml
+          crytic-args: --ignore-compile
