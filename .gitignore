@@ -22,3 +22,5 @@ remappings.txt
 # direnv
 **/.direnv
 .envrc.local
+
+crytic-export/
