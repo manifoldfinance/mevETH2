@@ -12,7 +12,6 @@ env:
 jobs:
   test:
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -24,4 +23,5 @@ jobs:
         with:
           files: test/echidna/ERC4626-echidna.t.sol
           contract: CryticERC4626Harness
+          solc-version: 0.8.19
           config: test/echidna/echidna.config.yaml

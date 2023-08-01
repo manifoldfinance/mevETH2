@@ -44,15 +44,10 @@ jobs:
 
       - name: Run Forge tests
         run: |
-          forge test --deny-warnings --etherscan-api-key $ETHERSCAN_API_KEY -vvv
+          forge test --deny-warnings -vvv
         id: test
 
       - name: Coverage
         run: |
           forge coverage
         id: coverage
-
-      - name: Gas snapshot
-        run: |
-          forge snapshot --gas-report --diff
-        id: snapshot
