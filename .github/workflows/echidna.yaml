@@ -19,18 +19,9 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Install Foundry
-        uses: foundry-rs/foundry-toolchain@v1
-        with:
-          version: nightly
-
-      - name: Compile contracts
-        run: |
-          forge build --build-info
-      
       - name: Run Echidna
         uses: crytic/echidna-action@v2
         with:
-          files: .
+          files: test/echidna/ERC4626-echidna.t.sol
           contract: CryticERC4626Harness
           config: test/echidna/echidna.config.yaml
