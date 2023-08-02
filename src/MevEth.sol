@@ -533,7 +533,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @param shares The amount of shares that would be minted
     /// @return assets The amount of assets that would be required, *under ideal conditions* only
     function previewMint(uint256 shares) external view returns (uint256 assets) {
-        return convertToAssets(shares);
+        return convertToAssets(shares) + 1; // round up
     }
 
     /// @notice Function to mint shares of the mevEth contract
@@ -571,7 +571,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @param assets The amount of assets that would be withdrawn
     /// @return shares The amount of shares that would be burned, *under ideal conditions* only
     function previewWithdraw(uint256 assets) external view returns (uint256 shares) {
-        shares = convertToShares(assets);
+        shares = convertToShares(assets) + 1; // round up
     }
 
     ///@notice Function to withdraw assets from the mevEth contract
