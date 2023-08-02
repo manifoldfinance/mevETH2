@@ -491,6 +491,11 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
             WETH.withdraw(assets);
         } else {
             if (msg.value < assets) revert MevEthErrors.DepositTooSmall();
+            if (msg.value > assets) {
+                // refund user excess payment, but in weth to avoid re-entrancy
+                WETH.deposit{ value: msg.value - assets }();
+                ERC20(address(WETH)).safeTransfer(msg.sender, msg.value - assets);
+            }
         }
     }
 
