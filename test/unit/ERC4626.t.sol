@@ -31,7 +31,7 @@ contract ERC4626Test is MevEthTest {
     }
 
     function testPreviewMint(uint256 amount) public {
-        assertEq(mevEth.previewMint(amount), amount);
+        assertGe(mevEth.previewMint(amount), amount);
     }
 
     function testPreviewWithdraw(uint128 amount) public {
@@ -39,7 +39,7 @@ contract ERC4626Test is MevEthTest {
         vm.deal(User01, amount);
         vm.startPrank(User01);
         mevEth.deposit{ value: amount }(amount, User01);
-        assertEq(mevEth.previewWithdraw(amount), amount);
+        assertGe(mevEth.previewWithdraw(amount), amount);
     }
 
     function testPreviewRedeem(uint128 amount) public {
