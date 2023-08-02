@@ -67,6 +67,7 @@ contract MevAdminTest is MevEthTest {
     function testNegativeDeleteAdmin(address newAdmin) public {
         vm.assume(newAdmin != 0x7109709ECfa91a80626fF3989D68f67F5b1DD12D);
         vm.assume(newAdmin != 0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf);
+        vm.assume(newAdmin != 0x34A1D3fff3958843C43aD80F30b94c510645C316);
         vm.assume(newAdmin != address(0));
         vm.prank(SamBacha);
         mevEth.addAdmin(newAdmin);
