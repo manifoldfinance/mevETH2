@@ -4,27 +4,10 @@ pragma solidity 0.8.19;
 
 interface MevEthErrors {
     /// Errors
-    error BelowMinimum();
-    error DepositFailed();
-    error InsufficientBufferedEth();
-    error TooManyValidatorRegistrations();
-    error ExceedsStakingAllowance();
     error StakingPaused();
     error NotEnoughEth();
-    error DepositTooLow();
-    error ZeroShares();
     error ZeroValue();
-    error ReportedBeaconValidatorsGreaterThanTotalValidators();
-    error ReportedBeaconValidatorsDecreased();
-    error BeaconDepositFailed();
-    error InvalidWithdrawalCredentials();
-    error OperatorsNotCommitted();
-    error OperatorMaxValidatorsReached();
-    error OperatorNotCommitted();
-    error MaxValidatorError();
     error InvalidOperator();
-    error ValidatorPreviouslyRegistered();
-    error NotAuthorized();
     error DepositTooSmall();
     error InvalidSender();
     error PrematureStakingModuleUpdateFinalization();
@@ -39,4 +22,9 @@ interface MevEthErrors {
     error FeesTooHigh();
     error WrongDepositAmount();
     error UnAuthorizedCaller();
+    error WithdrawTooSmall();
+    error NotFinalised();
+    error AlreadyClaimed();
+    error AlreadyFinalised();
+    error IndexExceedsQueueLength();
 }
