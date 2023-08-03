@@ -245,6 +245,7 @@ contract ERC4626Test is MevEthTest {
 
         // Withdraw 1 mevETH
         mevEth.withdraw(amount, User01, User01);
+
         assertEq(mevEth.balanceOf(User01), 0 ether);
         assertEq(weth.balanceOf(User01), amount);
     }

@@ -4,6 +4,8 @@ pragma solidity 0.8.19;
 import "../MevEthTest.sol";
 
 contract ReentrancyAttackTest is MevEthTest {
+    uint128 MAX_DEPOSIT = type(uint128).max;
+
     function setUp() public override {
         super.setUp();
         vm.deal(User02, 0.1 ether);
@@ -20,7 +22,7 @@ contract ReentrancyAttackTest is MevEthTest {
 
     function testAttack(uint128 amount) external payable {
         vm.assume(amount > mevEth.MIN_DEPOSIT());
-        vm.assume(amount < mevEth.MAX_DEPOSIT() - 0.1 ether);
+        vm.assume(amount < MAX_DEPOSIT - 0.1 ether);
         vm.deal(address(this), amount);
         uint256 bal = address(this).balance;
         mevEth.deposit{ value: amount }(amount, address(this));

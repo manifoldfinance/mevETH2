@@ -114,7 +114,7 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
     ///      Validators associated with the MevETH protocol set the block builder's address as the feeRecepient for the block.
     ///      The block builder attaches a transaction to the end of the block sending the MEV rewards to the MevEthShareVault.
     ///      This then emits the RewardPayment event, allowing the offchain operators to track the protocolFeesOwed.
-    ///      This approach trusts that the operators are acting honestly and the protocolFeesOwed is accurately caculated.
+    ///      This approach trusts that the operators are acting honestly and the protocolFeesOwed is accurately calculated.
 
     function logRewards(uint128 protocolFeesOwed) external onlyOperator {
         // Cahce the protocol balance
