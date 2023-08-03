@@ -104,25 +104,9 @@ contract ERC4626Test is MevEthTest {
         vm.deal(User01, 1.1 ether);
         vm.startPrank(User01);
 
+        vm.expectRevert(MevEthErrors.WrongDepositAmount.selector);
         // Deposit 1 ETH into the mevETH contract with an excess payment
         mevEth.deposit{ value: 1.1 ether }(1 ether, User01);
-
-        // Check that the mevETH contract has 1 ETH
-        assertEq(address(mevEth).balance, 1 ether);
-
-        // Check the user has 1 mevETH
-        assertEq(mevEth.balanceOf(User01), 1 ether);
-
-        // Check the user has 0 ETH
-        assertEq(address(User01).balance, 0 ether);
-
-        // Check the user has 0.1 WETH
-        assertEq(weth.balanceOf(User01), 0.1 ether);
-
-        // Check the fraction has updated correctly
-        (uint256 elastic, uint256 base) = mevEth.fraction();
-        assertEq(elastic, 1 ether);
-        assertEq(base, 1 ether);
     }
 
     function testFuzzSimpleDeposit(uint256 amount) public {
