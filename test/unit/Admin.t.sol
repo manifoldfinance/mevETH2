@@ -252,7 +252,7 @@ contract MevAdminTest is MevEthTest {
 
         // Commit an update to the staking module and check the effects
         vm.expectEmit(true, true, true, false, address(mevEth));
-        uint64 finalizationTimestamp = uint64(block.timestamp + mevEth.MODULE_UPDATE_TIME_DELAY());
+        uint64 finalizationTimestamp = uint64(block.timestamp + MODULE_UPDATE_TIME_DELAY);
         emit StakingModuleUpdateCommitted(existingStakingModule, address(newModule), finalizationTimestamp);
 
         vm.prank(SamBacha);
@@ -293,7 +293,7 @@ contract MevAdminTest is MevEthTest {
         address existingStakingModule = address(mevEth.stakingModule());
 
         // Commit an update to the staking module
-        uint64 finalizationTimestamp = uint64(block.timestamp + mevEth.MODULE_UPDATE_TIME_DELAY());
+        uint64 finalizationTimestamp = uint64(block.timestamp + MODULE_UPDATE_TIME_DELAY);
 
         vm.prank(SamBacha);
         mevEth.commitUpdateStakingModule(IStakingModule(address(newModule)));
@@ -329,7 +329,7 @@ contract MevAdminTest is MevEthTest {
         // Commit a new staking module
         DepositContract newModule = new DepositContract();
         address existingStakingModule = address(mevEth.stakingModule());
-        uint64 finalizationTimestamp = uint64(block.timestamp + mevEth.MODULE_UPDATE_TIME_DELAY());
+        uint64 finalizationTimestamp = uint64(block.timestamp + MODULE_UPDATE_TIME_DELAY);
         vm.prank(SamBacha);
         mevEth.commitUpdateStakingModule(IStakingModule(address(newModule)));
 
@@ -417,7 +417,7 @@ contract MevAdminTest is MevEthTest {
 
         // Commit an update to the staking module and check the effects
         vm.expectEmit(true, true, true, false, address(mevEth));
-        uint64 finalizationTimestamp = uint64(block.timestamp + mevEth.MODULE_UPDATE_TIME_DELAY());
+        uint64 finalizationTimestamp = uint64(block.timestamp + MODULE_UPDATE_TIME_DELAY);
         emit MevEthShareVaultUpdateCommitted(existingVault, newVault, finalizationTimestamp);
 
         vm.prank(SamBacha);
@@ -458,7 +458,7 @@ contract MevAdminTest is MevEthTest {
         address existingVault = address(mevEth.mevEthShareVault());
 
         // Commit an update to the mev share vault
-        uint64 finalizationTimestamp = uint64(block.timestamp + mevEth.MODULE_UPDATE_TIME_DELAY());
+        uint64 finalizationTimestamp = uint64(block.timestamp + MODULE_UPDATE_TIME_DELAY);
 
         vm.prank(SamBacha);
         mevEth.commitUpdateMevEthShareVault(newVault);
@@ -495,7 +495,7 @@ contract MevAdminTest is MevEthTest {
         address existingVault = address(mevEth.mevEthShareVault());
 
         // Commit an update to the mev share vault
-        uint64 finalizationTimestamp = uint64(block.timestamp + mevEth.MODULE_UPDATE_TIME_DELAY());
+        uint64 finalizationTimestamp = uint64(block.timestamp + MODULE_UPDATE_TIME_DELAY);
         vm.prank(SamBacha);
         mevEth.commitUpdateMevEthShareVault(newVault);
 

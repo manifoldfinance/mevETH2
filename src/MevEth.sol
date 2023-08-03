@@ -50,11 +50,11 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @notice Timestamp when pending mevEthShareVault update can be finalized.
     uint64 public pendingMevEthShareVaultCommittedTimestamp;
     /// @notice Time delay before staking module or share vault can be finalized.
-    uint64 public constant MODULE_UPDATE_TIME_DELAY = 7 days;
+    uint64 internal constant MODULE_UPDATE_TIME_DELAY = 7 days;
     /// @notice Max amount of ETH that can be deposited.
-    uint128 public constant MAX_DEPOSIT = 2 ** 128 - 1;
+    uint128 internal constant MAX_DEPOSIT = type(uint128).max;
     /// @notice Min amount of ETH that can be deposited.
-    uint128 public constant MIN_DEPOSIT = 10_000_000_000_000_000; // 0.01 eth
+    uint128 public constant MIN_DEPOSIT = 0.01 ether; // 0.01 eth
     /// @notice The address of the MevEthShareVault.
     address public mevEthShareVault;
     /// @notice The address of the pending MevEthShareVault when a new vault has been comitted but not finalized.
@@ -537,11 +537,12 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @return assets The amount of assets deposited
     function mint(uint256 shares, address receiver) external payable returns (uint256 assets) {
         _stakingUnpaused();
-        // If the deposit is less than the minimum deposit, revert
-        if (shares < MIN_DEPOSIT) revert MevEthErrors.DepositTooSmall();
 
         // Convert the shares to assets and update the fraction elastic and base
         assets = convertToAssets(shares);
+
+        // If the deposit is less than the minimum deposit, revert
+        if (assets < MIN_DEPOSIT) revert MevEthErrors.DepositTooSmall();
 
         fraction.elastic += uint128(assets);
         fraction.base += uint128(shares);

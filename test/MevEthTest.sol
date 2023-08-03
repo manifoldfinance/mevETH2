@@ -20,6 +20,8 @@ contract MevEthTest is Test {
     uint16 constant POLYGON_ID = 109;
     uint16 constant ARBITRUM_ID = 110;
 
+    uint64 MODULE_UPDATE_TIME_DELAY = 7 days;
+
     // Admin account
 
     uint256 constant SAM_BACHA_PRIVATE_KEY = 0x01;
@@ -141,7 +143,7 @@ contract MevEthTest is Test {
     // Helper function to update the staking module for testing
     function _updateStakingModule(IStakingModule newStakingModule) internal {
         // Commit update to the staking module
-        uint64 finalizationTimestamp = uint64(block.timestamp + mevEth.MODULE_UPDATE_TIME_DELAY());
+        uint64 finalizationTimestamp = uint64(block.timestamp + MODULE_UPDATE_TIME_DELAY);
 
         vm.prank(SamBacha);
         mevEth.commitUpdateStakingModule(newStakingModule);
@@ -159,7 +161,7 @@ contract MevEthTest is Test {
     // Helper function to update the share vault for testing
     function _updateShareVault(address newShareVault) internal {
         // Commit update to the staking module
-        uint64 finalizationTimestamp = uint64(block.timestamp + mevEth.MODULE_UPDATE_TIME_DELAY());
+        uint64 finalizationTimestamp = uint64(block.timestamp + MODULE_UPDATE_TIME_DELAY);
 
         vm.prank(SamBacha);
         mevEth.commitUpdateMevEthShareVault(newShareVault);
