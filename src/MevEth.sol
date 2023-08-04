@@ -45,18 +45,16 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     bool public stakingPaused;
     /// @notice Indicates if contract is initialized.
     bool public initialized;
-    /// @notice Amount of ETH to retain on contract for withdrawls as a percent numerator.
-    uint8 public bufferPercentNumerator;
     /// @notice Timestamp when pending staking module update can be finalized.
     uint64 public pendingStakingModuleCommittedTimestamp;
     /// @notice Timestamp when pending mevEthShareVault update can be finalized.
     uint64 public pendingMevEthShareVaultCommittedTimestamp;
     /// @notice Time delay before staking module or share vault can be finalized.
-    uint64 public constant MODULE_UPDATE_TIME_DELAY = 7 days;
+    uint64 internal constant MODULE_UPDATE_TIME_DELAY = 7 days;
     /// @notice Max amount of ETH that can be deposited.
-    uint128 public constant MAX_DEPOSIT = 2 ** 128 - 1;
+    uint128 internal constant MAX_DEPOSIT = type(uint128).max;
     /// @notice Min amount of ETH that can be deposited.
-    uint128 public constant MIN_DEPOSIT = 10_000_000_000_000_000; // 0.01 eth
+    uint128 public constant MIN_DEPOSIT = 0.01 ether; // 0.01 eth
     /// @notice The address of the MevEthShareVault.
     address public mevEthShareVault;
     /// @notice The address of the pending MevEthShareVault when a new vault has been comitted but not finalized.
@@ -95,14 +93,13 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         OFTWithFee("Mev Liquid Staked Ether", "mevETH", 18, 8, authority, layerZeroEndpoint)
     {
         WETH = IWETH(weth);
-        bufferPercentNumerator = 2; // set at 2 %
     }
 
     /// @notice Calculate the needed Ether buffer required when creating a new validator.
     /// @return uint256 The required Ether buffer.
     function calculateNeededEtherBuffer() public view returns (uint256) {
         unchecked {
-            return max((uint256(fraction.elastic) * uint256(bufferPercentNumerator)) / 100, 31 ether);
+            return max(withdrawalAmountQueued, 31 ether);
         }
     }
 
@@ -139,23 +136,15 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         emit MevEthInitialized(initialShareVault, initialStakingModule);
     }
 
-    //TODO: FIXME: never used
-    function updateBufferPercentNumerator(uint8 newBufferPercentNumerator) external onlyAdmin {
-        bufferPercentNumerator = newBufferPercentNumerator;
-    }
-
     /// @notice Emitted when staking is paused.
     event StakingPaused();
     /// @notice Emitted when staking is unpaused.
     event StakingUnpaused();
 
     /// @notice Ensures that staking is not paused when invoking a specific function.
-    /// @dev This modifier is used on the createValidator, deposit and mint functions.
-    modifier stakingUnpaused() {
-        if (stakingPaused) {
-            revert MevEthErrors.StakingPaused();
-        }
-        _;
+    /// @dev This check is used on the createValidator, deposit and mint functions.
+    function _stakingUnpaused() internal view {
+        if (stakingPaused) revert MevEthErrors.StakingPaused();
     }
 
     /// @notice Pauses staking on the MevEth contract.
@@ -298,7 +287,8 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @notice This function passes through the needed Ether to the Staking module, and the assosiated credentials with it
     /// @param newData The data needed to create a new validator
     /// @dev This function is only callable by addresses with the operator role and if staking is unpaused
-    function createValidator(IStakingModule.ValidatorData calldata newData) external onlyOperator stakingUnpaused {
+    function createValidator(IStakingModule.ValidatorData calldata newData) external onlyOperator {
+        _stakingUnpaused();
         IStakingModule _stakingModule = stakingModule;
         // Determine how big deposit is for the validator
         // *Note this will change if Rocketpool or similar modules are used
@@ -321,8 +311,6 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @dev Before updating the fraction, the withdraw queue is processed, which pays out any pending withdrawals.
     /// @dev This function is only callable by the MevEthShareVault.
     function grantRewards() external payable {
-        // Process the withdrawal queue, paying out any pending withdrawal tickets before updating the fraction.
-        processWithdrawalQueue();
         if (!(msg.sender == address(stakingModule) || msg.sender == mevEthShareVault)) revert MevEthErrors.InvalidSender();
 
         /// @dev Note that while a small possiblity, it is possible for the MevEthShareVault rewards + fraction.elastic to overflow a uint128.
@@ -345,9 +333,6 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         if (msg.value == 0) {
             revert MevEthErrors.ZeroValue();
         }
-
-        // Process the withdrawal queue, paying out any pending withdrawal tickets before updating the fraction balance.
-        processWithdrawalQueue();
 
         // Emit an event to notify offchain listeners that a validator has withdrawn funds.
         emit ValidatorWithdraw(msg.sender, msg.value);
@@ -373,54 +358,63 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
                             WITHDRAWAL QUEUE
     //////////////////////////////////////////////////////////////*/
 
-    /// @notice Struct representing a withdrawal ticket which is added to the withdrawal queue if there is not enough ETH in the contract
-    ///         to pay out the withdrawal immediately.
+    /// @notice Struct representing a withdrawal ticket which is added to the withdrawal queue.
+    /// @custom:field claimed               True if this receiver has received ticket funds.
     /// @custom:field receiver              The receiever of the ETH specified in the WithdrawalTicket.
     /// @custom:field amount                The amount of ETH to send to the receiver when the ticket is processed.
+    /// @custom:field accumulatedAmount     Keep a running sum of all requested ETH
     struct WithdrawalTicket {
+        bool claimed;
         address receiver;
-        uint256 amount;
+        uint128 amount;
+        uint128 accumulatedAmount;
     }
 
     /// @notice Event emitted when a withdrawal ticket is added to the queue.
-    event WithdrawalQueueOpened(address indexed receipient, uint256 indexed assets);
-    event WithdrawalQueueClosed(address indexed receipient, uint256 indexed assets);
+    event WithdrawalQueueOpened(address indexed recipient, uint256 indexed withdrawalId, uint256 assets);
+    event WithdrawalQueueClosed(address indexed recipient, uint256 indexed withdrawalId, uint256 assets);
 
     /// @notice The length of the withdrawal queue.
-    uint256 queueLength;
+    uint256 public queueLength;
+
+    /// @notice  mark the latest withdrawal request that was finalised
+    uint256 public requestsFinalisedUntil;
+
+    /// @notice Withdrawal amount queued
+    uint256 public withdrawalAmountQueued;
+
     /// @notice The mapping representing the withdrawal queue.
     /// @dev The index in the queue is the key, and the value is the WithdrawalTicket.
     mapping(uint256 ticketNumber => WithdrawalTicket ticket) public withdrawalQueue;
 
-    /// @notice Processes the withdrawal queue, paying out any pending withdrawals with the contract's available balance.
-    function processWithdrawalQueue() public {
-        // Get the current length of the queue
-        uint256 length = queueLength;
+    /// @notice Claim Finalised Withdrawal Ticket
+    /// @param withdrawalId Unique ID of the withdrawal ticket
+    function claim(uint256 withdrawalId) external {
+        if (withdrawalId > requestsFinalisedUntil) revert MevEthErrors.NotFinalised();
+        WithdrawalTicket storage ticket = withdrawalQueue[withdrawalId];
+        if (ticket.claimed) revert MevEthErrors.AlreadyClaimed();
+        withdrawalQueue[withdrawalId].claimed = true;
+        withdrawalAmountQueued -= uint256(ticket.amount);
+        emit WithdrawalQueueClosed(ticket.receiver, withdrawalId, uint256(ticket.amount));
+        WETH.deposit{ value: uint256(ticket.amount) }();
+        ERC20(address(WETH)).safeTransfer(ticket.receiver, uint256(ticket.amount));
+    }
 
-        // While the queue is not empty, process the next ticket in the queue
-        while (length != 0) {
-            // Get the next ticket in the queue
-            WithdrawalTicket memory currentTicket = withdrawalQueue[length - 1];
-            uint256 assetsOwed = currentTicket.amount;
-            address receipient = currentTicket.receiver;
+    /// @notice Processes the withdrawal queue, reserving any pending withdrawals with the contract's available balance.
+    function processWithdrawalQueue(uint256 newRequestsFinalisedUntil) external onlyOperator {
+        if (newRequestsFinalisedUntil > queueLength) revert MevEthErrors.IndexExceedsQueueLength();
+        uint256 balance = address(this).balance;
+        if (withdrawalAmountQueued >= balance) revert MevEthErrors.NotEnoughEth();
+        uint256 available = balance - withdrawalAmountQueued;
 
-            // If the balance of the contract has enough ETH to pay the ticket, pay the ticket and remove it from the queue.
-            if (address(this).balance >= assetsOwed) {
-                // While not strictly neccessary persay, important for
-                // added safety
-                delete withdrawalQueue[length-1];
-                length--;
-                emit WithdrawalQueueClosed(receipient, assetsOwed);
-                WETH.deposit{ value: assetsOwed }();
-                // SafeTransfer not needed because we know the impl
-                ERC20(address(WETH)).safeTransfer(receipient, assetsOwed);
-            } else {
-                // If the balance of the contract does not have enough ETH to pay the ticket, exit the loop.
-                queueLength = length;
-                return;
-            }
-        }
-        queueLength = 0;
+        uint256 finalised = requestsFinalisedUntil;
+        if (newRequestsFinalisedUntil < finalised) revert MevEthErrors.AlreadyFinalised();
+
+        uint256 delta = uint256(withdrawalQueue[newRequestsFinalisedUntil].accumulatedAmount - withdrawalQueue[finalised].accumulatedAmount);
+        if (available < delta) revert MevEthErrors.NotEnoughEth();
+
+        requestsFinalisedUntil = newRequestsFinalisedUntil;
+        withdrawalAmountQueued += delta;
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -490,7 +484,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
             ERC20(address(WETH)).safeTransferFrom(msg.sender, address(this), assets);
             WETH.withdraw(assets);
         } else {
-            if (msg.value < assets) revert MevEthErrors.DepositTooSmall();
+            if (msg.value != assets) revert MevEthErrors.WrongDepositAmount();
         }
     }
 
@@ -498,7 +492,8 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @param assets The amount of WETH which should be deposited
     /// @param receiver The address user whom should receive the mevEth out
     /// @return shares The amount of shares minted
-    function deposit(uint256 assets, address receiver) external payable stakingUnpaused returns (uint256 shares) {
+    function deposit(uint256 assets, address receiver) external payable returns (uint256 shares) {
+        _stakingUnpaused();
         // If the deposit is less than the minimum deposit, revert
         if (assets < MIN_DEPOSIT) revert MevEthErrors.DepositTooSmall();
 
@@ -540,12 +535,14 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @param shares The amount of shares that should be minted
     /// @param receiver The address user whom should receive the mevEth out
     /// @return assets The amount of assets deposited
-    function mint(uint256 shares, address receiver) external payable stakingUnpaused returns (uint256 assets) {
-        // If the deposit is less than the minimum deposit, revert
-        if (shares < MIN_DEPOSIT) revert MevEthErrors.DepositTooSmall();
+    function mint(uint256 shares, address receiver) external payable returns (uint256 assets) {
+        _stakingUnpaused();
 
         // Convert the shares to assets and update the fraction elastic and base
         assets = convertToAssets(shares);
+
+        // If the deposit is less than the minimum deposit, revert
+        if (assets < MIN_DEPOSIT) revert MevEthErrors.DepositTooSmall();
 
         fraction.elastic += uint128(assets);
         fraction.base += uint128(shares);
@@ -578,22 +575,36 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @param receiver The address user whom should receive the mevEth out
     /// @param owner The address of the owner of the mevEth
     /// @param assets The amount of assets that should be withdrawn
-    /// @param shares The amount of shares corresponding to assets withdrawn
-    function _withdraw(address receiver, address owner, uint256 assets, uint256 shares) internal {
-        if (address(this).balance >= assets) {
-            emit Withdraw(msg.sender, owner, receiver, assets, shares);
+    function _withdraw(address receiver, address owner, uint256 assets) internal {
+        uint256 availableBalance = address(this).balance - withdrawalAmountQueued; // available balance will be adjusted
+
+        if (availableBalance < assets) {
+            uint128 amountOwed = uint128(assets - availableBalance);
+            ++queueLength;
+            withdrawalQueue[queueLength] = WithdrawalTicket({
+                claimed: false,
+                receiver: receiver,
+                amount: amountOwed,
+                accumulatedAmount: withdrawalQueue[queueLength - 1].accumulatedAmount + amountOwed
+            });
+            emit WithdrawalQueueOpened(receiver, queueLength, uint256(amountOwed));
+            assets = availableBalance;
+        }
+        if (!_isZero(assets)) {
+            emit Withdraw(msg.sender, owner, receiver, assets, convertToShares(assets));
             WETH.deposit{ value: assets }();
             ERC20(address(WETH)).safeTransfer(receiver, assets);
-        } else {
-            uint256 availableBalance = address(this).balance;
-            uint256 amountOwed = assets - availableBalance;
-            emit WithdrawalQueueOpened(receiver, amountOwed);
-            withdrawalQueue[queueLength] = WithdrawalTicket({ receiver: receiver, amount: amountOwed });
-            queueLength++;
-            if (!_isZero(availableBalance)) {
-                emit Withdraw(msg.sender, owner, receiver, availableBalance, convertToShares(availableBalance));
-                WETH.deposit{ value: availableBalance }();
-                ERC20(address(WETH)).safeTransfer(receiver, availableBalance);
+        }
+    }
+
+    /// @dev internal function to update allowance for withdraws if necessary
+    /// @param owner owner of tokens
+    /// @param shares amount of shares to update
+    function _updateAllowance(address owner, uint256 shares) internal {
+        if (owner != msg.sender) {
+            if (allowance[owner][msg.sender] < shares) revert MevEthErrors.TransferExceedsAllowance();
+            unchecked {
+                allowance[owner][msg.sender] -= shares;
             }
         }
     }
@@ -603,30 +614,23 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @param owner The address of the owner of the mevEth
     /// @return shares The amount of shares burned
     function withdraw(uint256 assets, address receiver, address owner) external returns (uint256 shares) {
+        // If withdraw is less than the minimum deposit / withdraw amount, revert
+        if (assets < MIN_DEPOSIT) revert MevEthErrors.WithdrawTooSmall();
+
         // Convert the assets to shares and check if the owner has the allowance to withdraw the shares.
         shares = convertToShares(assets);
 
-        if (owner != msg.sender) {
-            if (allowance[owner][msg.sender] < shares) revert MevEthErrors.TransferExceedsAllowance();
-            unchecked {
-                allowance[owner][msg.sender] -= shares;
-            }
-        }
+        _updateAllowance(owner, shares);
 
         // Update the elastic and base
         fraction.elastic -= uint128(assets);
         fraction.base -= uint128(shares);
 
-        // If the base is less than the minimum deposit, revert
-        if (fraction.base < MIN_DEPOSIT) {
-            revert MevEthErrors.BelowMinimum();
-        }
-
         // Burn the shares and emit a withdraw event for offchain listeners to know that a withdraw has occured
         _burn(owner, shares);
 
         // Withdraw the assets from the Mevth contract
-        _withdraw(receiver, owner, assets, shares);
+        _withdraw(receiver, owner, assets);
     }
 
     ///@notice Function to simulate the maximum amount of shares that can be redeemed by the owner.
@@ -649,30 +653,23 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @param owner The address of the owner of the mevEth
     /// @return assets The amount of assets withdrawn
     function redeem(uint256 shares, address receiver, address owner) external returns (uint256 assets) {
+        // If withdraw is less than the minimum deposit / withdraw amount, revert
+        if (convertToAssets(shares) < MIN_DEPOSIT) revert MevEthErrors.WithdrawTooSmall();
+
         // Convert the shares to assets and check if the owner has the allowance to withdraw the shares.
         assets = convertToAssets(shares);
 
-        if (owner != msg.sender) {
-            if (allowance[owner][msg.sender] < shares) revert MevEthErrors.TransferExceedsAllowance();
-            unchecked {
-                allowance[owner][msg.sender] -= shares;
-            }
-        }
+        _updateAllowance(owner, shares);
 
         // Update the elastic and base
         fraction.elastic -= uint128(assets);
         fraction.base -= uint128(shares);
 
-        // If the base is less than the minimum deposit, revert
-        if (fraction.base < MIN_DEPOSIT) {
-            revert MevEthErrors.BelowMinimum();
-        }
-
         // Burn the shares and emit a withdraw event for offchain listeners to know that a withdraw has occured
         _burn(owner, shares);
 
         // Withdraw the assets from the Mevth contract
-        _withdraw(receiver, owner, assets, shares);
+        _withdraw(receiver, owner, assets);
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -701,12 +698,6 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @dev Only Weth withdraw is defined for the behaviour. Deposits should be directed to deposit / mint. Rewards via grantRewards and validator withdraws
     /// via grantValidatorWithdraw.
     receive() external payable {
-        if (msg.sender != address(WETH)) revert MevEthErrors.InvalidSender();
-    }
-
-    /// @dev Only Weth withdraw is defined for the behaviour. Deposits should be directed to deposit / mint. Rewards via grantRewards and validator withdraws
-    /// via grantValidatorWithdraw.
-    fallback() external payable {
         if (msg.sender != address(WETH)) revert MevEthErrors.InvalidSender();
     }
 }

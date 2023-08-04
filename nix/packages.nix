@@ -28,7 +28,7 @@
       configurePhase = ''
         cp -r ${inputs.forge-std} lib/forge-std
         cp -r ${inputs.openzeppelin-contracts} lib/openzeppelin-contracts
-        cp -r ${inputs.solady} lib/solady
+        cp -r ${inputs.pigeon} lib/pigeon
         cp -r ${inputs.solmate} lib/solmate
       '';
 
