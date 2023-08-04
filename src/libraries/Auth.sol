@@ -3,17 +3,15 @@ pragma solidity 0.8.19;
 
 contract Auth {
     error Unauthorized();
-    error WrongRole();
-
-    enum Roles {
-        OPERATOR,
-        ADMIN
-    }
+    error NoAdmin();
 
     event AdminAdded(address indexed newAdmin);
     event AdminDeleted(address indexed oldAdmin);
     event OperatorAdded(address indexed newOperator);
     event OperatorDeleted(address indexed oldOperator);
+
+    // admin counter (assuming 255 admins to be max)
+    uint8 adminsCounter;
 
     // Keeps track of all operators
     mapping(address => bool) public operators;
@@ -23,6 +21,9 @@ contract Auth {
 
     constructor(address initialAdmin) {
         admins[initialAdmin] = true;
+        unchecked {
+            ++adminsCounter;
+        }
         operators[initialAdmin] = true;
     }
 
@@ -48,11 +49,14 @@ contract Auth {
                            Maintenance Functions
     //////////////////////////////////////////////////////////////*/
     function addAdmin(address newAdmin) external onlyAdmin {
+        ++adminsCounter;
         admins[newAdmin] = true;
         emit AdminAdded(newAdmin);
     }
 
     function deleteAdmin(address oldAdmin) external onlyAdmin {
+        --adminsCounter;
+        if (adminsCounter == 0) revert NoAdmin();
         admins[oldAdmin] = false;
         emit AdminDeleted(oldAdmin);
     }
