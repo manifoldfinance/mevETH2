@@ -11,4 +11,8 @@ interface IBeaconDepositContract {
 
     /// Used as a protection against malformed input.
     function deposit(bytes calldata pubkey, bytes calldata withdrawal_credentials, bytes calldata signature, bytes32 deposit_data_root) external payable;
+
+    /// @notice Query the current deposit root hash.
+    /// @return The deposit root hash.
+    function get_deposit_root() external view returns (bytes32);
 }

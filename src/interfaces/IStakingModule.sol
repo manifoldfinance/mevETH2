@@ -19,7 +19,7 @@ interface IStakingModule {
         bytes32 deposit_data_root; // more efficient to be calculated off-chain
     }
 
-    function deposit(ValidatorData calldata data) external payable;
+    function deposit(ValidatorData calldata data, bytes32 latestDepositRoot) external payable;
 
     function oracleUpdate(uint256 newBalance, uint256 newValidators) external;
 

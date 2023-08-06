@@ -2,6 +2,7 @@
 pragma solidity 0.8.19;
 
 import "../MevEthTest.sol";
+import "forge-std/console.sol";
 
 contract WithdrawalQueueAttackTest is MevEthTest {
     function testDosAttackQueueLength() public {
@@ -19,7 +20,7 @@ contract WithdrawalQueueAttackTest is MevEthTest {
         // 2. `createValidator()` is called -> MevEth balance 31 Ether
         vm.stopPrank();
         vm.startPrank(Operator01);
-        mevEth.createValidator(validatorData);
+        mevEth.createValidator(validatorData, latestDepositRoot());
         assertEq(address(mevEth).balance, 31 ether);
 
         vm.stopPrank();

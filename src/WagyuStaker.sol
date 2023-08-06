@@ -8,6 +8,7 @@ import { SafeTransferLib } from "solmate/utils/SafeTransferLib.sol";
 import { Auth } from "./libraries/Auth.sol";
 import { ERC20 } from "solmate/tokens/ERC20.sol";
 import { MevEthErrors } from "./interfaces/Errors.sol";
+import "forge-std/console.sol";
 
 /// @title 🥩 Wagyu Staker 🥩
 /// @dev This contract stakes Ether inside of the BeaconChainDepositContract directly
@@ -49,7 +50,7 @@ contract WagyuStaker is Auth, IStakingModule {
     }
 
     /// @notice Function to deposit funds into the BEACON_CHAIN_DEPOSIT_CONTRACT, and register a validator
-    function deposit(IStakingModule.ValidatorData calldata data) external payable {
+    function deposit(IStakingModule.ValidatorData calldata data, bytes32 latestDepositRoot) external payable {
         // Only the MevEth contract can call this function
         if (msg.sender != MEV_ETH) {
             revert MevEthErrors.UnAuthorizedCaller();
@@ -58,6 +59,12 @@ contract WagyuStaker is Auth, IStakingModule {
         if (msg.value != VALIDATOR_DEPOSIT_SIZE) {
             revert MevEthErrors.WrongDepositAmount();
         }
+        if (BEACON_CHAIN_DEPOSIT_CONTRACT.get_deposit_root() != latestDepositRoot) {
+            console.logBytes32(latestDepositRoot);
+            console.logBytes32(BEACON_CHAIN_DEPOSIT_CONTRACT.get_deposit_root());
+            revert MevEthErrors.DepositWasFrontrun();
+        }
+
         // Update the contract balance and validator count
         unchecked {
             balance += VALIDATOR_DEPOSIT_SIZE;

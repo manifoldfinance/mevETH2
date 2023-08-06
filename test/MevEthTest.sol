@@ -176,6 +176,10 @@ contract MevEthTest is Test {
         assertEq(address(mevEth.mevEthShareVault()), address(newShareVault));
     }
 
+    function latestDepositRoot() internal view returns (bytes32) {
+        return depositContract.get_deposit_root();
+    }
+
     function mockValidatorData(address operator, uint256 depositAmount) internal pure returns (IStakingModule.ValidatorData memory) {
         bytes memory pubkey =
             abi.encodePacked(bytes32(0x1234567890123456789012345678901234567890123456789012345678901234), bytes16(0x12345678901234567890123456789012));
