@@ -34,25 +34,26 @@ contract ValidatorTest is MevEthTest {
     }
 
     /**
-     * Tests validator creation failure cases. This function should revert when the caller is unauthorized or when the contract does not have enough eth.
+     * Ensures that the Operator cannot front-run a validator creation to register an existing validato
      */
-    function testNegativeCreateValidator() public {
+    function testValidatorIsNotFrontrun() public {
         IStakingModule.ValidatorData memory data = mockValidatorData(User01, 32 ether / 1 gwei);
         bytes32 depositRoot = latestDepositRoot();
-        vm.deal(address(this), 32 ether);
+        uint256 stakingModuleDepositSize = mevEth.stakingModule().VALIDATOR_DEPOSIT_SIZE();
+        vm.startPrank(Operator01);
+        vm.deal(Operator01, 96 ether);
 
-        depositContract.deposit{ value: 32 ether }(
-            data.pubkey, abi.encodePacked(data.withdrawal_credentials), data.signature, data.deposit_data_root
-        );
+        depositContract.deposit{ value: 32 ether }(data.pubkey, abi.encodePacked(data.withdrawal_credentials), data.signature, data.deposit_data_root);
+        mevEth.deposit{ value: stakingModuleDepositSize * 2 }(stakingModuleDepositSize * 2, User01);
 
-        //vm.expectRevert(MevEthErrors.);
+        vm.expectRevert(MevEthErrors.DepositWasFrontrun.selector);
         mevEth.createValidator(data, depositRoot);
     }
 
     /**
-     * Tests validator creation failure cases. This function should revert when the caller does not supply the correct latest deposit root.
+     * Tests validator creation failure cases. This function should revert when the caller is unauthorized or when the contract does not have enough eth.
      */
-    function testCreateValidatorIsNotFrontRun() public {
+    function testNegativeCreateValidator() public {
         IStakingModule.ValidatorData memory validatorData = mockValidatorData(User01, 32 ether / 1 gwei);
 
         bytes32 depositRoot = latestDepositRoot();
@@ -85,7 +86,7 @@ contract ValidatorTest is MevEthTest {
         mevEth.deposit{ value: depositSize * 2 }(depositSize * 2, User01);
 
         bytes32 depositRoot = latestDepositRoot();
-        
+
         vm.prank(Operator01);
         vm.expectEmit(true, true, true, true, address(wagyuStakingModule));
         emit NewValidator(
