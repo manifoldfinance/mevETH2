@@ -36,8 +36,23 @@ contract ValidatorTest is MevEthTest {
     /**
      * Tests validator creation failure cases. This function should revert when the caller is unauthorized or when the contract does not have enough eth.
      */
-
     function testNegativeCreateValidator() public {
+        IStakingModule.ValidatorData memory data = mockValidatorData(User01, 32 ether / 1 gwei);
+        bytes32 depositRoot = latestDepositRoot();
+        vm.deal(address(this), 32 ether);
+
+        depositContract.deposit{ value: 32 ether }(
+            data.pubkey, abi.encodePacked(data.withdrawal_credentials), data.signature, data.deposit_data_root
+        );
+
+        //vm.expectRevert(MevEthErrors.);
+        mevEth.createValidator(data, depositRoot);
+    }
+
+    /**
+     * Tests validator creation failure cases. This function should revert when the caller does not supply the correct latest deposit root.
+     */
+    function testCreateValidatorIsNotFrontRun() public {
         IStakingModule.ValidatorData memory validatorData = mockValidatorData(User01, 32 ether / 1 gwei);
 
         bytes32 depositRoot = latestDepositRoot();
