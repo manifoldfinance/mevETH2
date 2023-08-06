@@ -99,7 +99,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @return uint256 The required Ether buffer.
     function calculateNeededEtherBuffer() public view returns (uint256) {
         unchecked {
-            return max(withdrawalAmountQueued, 31 ether);
+            return max(withdrawalAmountQueued, (stakingModule.VALIDATOR_DEPOSIT_SIZE() / 100) * 90);
         }
     }
 
