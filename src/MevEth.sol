@@ -633,6 +633,35 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         _withdraw(receiver, owner, assets);
     }
 
+    /// @param assets The amount of assets that should be withdrawn
+    /// @param receiver The address user whom should receive the mevEth out
+    /// @param owner The address of the owner of the mevEth
+    /// @return shares The amount of shares burned
+    function leave(uint256 assets, address receiver, address owner) external returns (uint256 shares) {
+        // If withdraw is less than the minimum deposit / withdraw amount, revert
+        if (assets < MIN_DEPOSIT) revert MevEthErrors.WithdrawTooSmall();
+
+        // Convert the assets to shares and check if the owner has the allowance to withdraw the shares.
+        shares = convertToShares(assets);
+
+        _updateAllowance(owner, shares);
+
+        // Update the elastic and base
+        fraction.elastic -= uint128(assets);
+        fraction.base -= uint128(shares);
+
+        // Burn the shares and emit a withdraw event for offchain listeners to know that a withdraw has occured
+        _burn(owner, shares);
+
+        uint256 availableBalance = address(this).balance - withdrawalAmountQueued; // available balance will be adjusted
+
+        require(availableBalance >= assets);
+
+        emit Withdraw(msg.sender, owner, receiver, assets, convertToShares(assets));
+        WETH.deposit{ value: assets }();
+        ERC20(address(WETH)).safeTransfer(receiver, assets);
+    }
+
     ///@notice Function to simulate the maximum amount of shares that can be redeemed by the owner.
     /// @param owner The address in question of who would be redeeming their shares
     /// @return maxShares The maximum amount of shares they could redeem
