@@ -29,17 +29,4 @@ interface IOFTWithFee is ICommonOFT {
     )
         external
         payable;
-
-    function sendAndCall(
-        address _from,
-        uint16 _dstChainId,
-        bytes32 _toAddress,
-        uint256 _amount,
-        uint256 _minAmount,
-        bytes calldata _payload,
-        uint64 _dstGasForCall,
-        LzCallParams calldata _callParams
-    )
-        external
-        payable;
 }
