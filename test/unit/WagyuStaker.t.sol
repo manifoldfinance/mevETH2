@@ -36,6 +36,8 @@ contract WagyuStakerTest is MevEthTest {
     }
 
     function testSetNewBeneficiary(address newBeneficiary) public {
+        vm.assume(newBeneficiary != address(0));
+
         vm.prank(SamBacha);
         vm.expectEmit(true, false, false, false, address(wagyuStaker));
         emit BeneficiaryUpdated(newBeneficiary);
@@ -49,7 +51,11 @@ contract WagyuStakerTest is MevEthTest {
 
         vm.expectRevert(Auth.Unauthorized.selector);
         wagyuStaker.setNewBeneficiary(newBeneficiary);
+        assertEq(wagyuStaker.beneficiary(), currentBeneficiary);
 
+        vm.expectRevert(MevEthErrors.ZeroAddress.selector);
+        vm.prank(SamBacha);
+        wagyuStaker.setNewBeneficiary(address(0));
         assertEq(wagyuStaker.beneficiary(), currentBeneficiary);
     }
 

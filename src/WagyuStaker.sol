@@ -126,6 +126,8 @@ contract WagyuStaker is Auth, IStakingModule {
     /// @notice Function to set a new beneficiary address.
     /// @dev The beneficiary is used to recover funds if needed.
     function setNewBeneficiary(address newBeneficiary) external onlyAdmin {
+        if (newBeneficiary == address(0)) revert MevEthErrors.ZeroAddress();
+
         beneficiary = newBeneficiary;
         emit BeneficiaryUpdated(newBeneficiary);
     }
