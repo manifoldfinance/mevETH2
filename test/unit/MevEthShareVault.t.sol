@@ -193,6 +193,8 @@ contract MevEthShareVaultTest is MevEthTest {
     }
 
     function testSetNewBeneficiary(address newBeneficiary) public {
+        vm.assume(condition: newBeneficiary != address(0));
+
         vm.prank(SamBacha);
         vm.expectEmit(true, false, false, false, address(mevEthShareVault));
         emit BeneficiaryUpdated(newBeneficiary);
