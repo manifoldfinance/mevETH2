@@ -8,7 +8,9 @@ import "./BaseOFTWithFee.sol";
 contract OFTWithFee is BaseOFTWithFee, ERC20 {
     // Custom errors save gas
     error InsufficientAllowance();
+    error InsufficientBalance();
     error SharedDecimalsTooLarge();
+    error ZeroAddress();
 
     uint256 internal immutable ld2sdRate;
 
@@ -85,6 +87,7 @@ contract OFTWithFee is BaseOFTWithFee, ERC20 {
             if (currentAllowance < amount) {
                 revert InsufficientAllowance();
             }
+            if (owner == address(0) || spender == address(0)) revert ZeroAddress();
             unchecked {
                 allowance[owner][spender] = currentAllowance - amount;
             }
@@ -98,9 +101,12 @@ contract OFTWithFee is BaseOFTWithFee, ERC20 {
      * e.g. implement automatic token fees, slashing mechanisms, etc.
      */
     function _transfer(address from, address to, uint256 amount) internal {
-        balanceOf[from] -= amount;
+        if (from == address(0) || to == address(0)) revert ZeroAddress();
+        if (balanceOf[from] < amount) revert InsufficientBalance();
         unchecked {
+            balanceOf[from] -= amount;
             balanceOf[to] += amount;
         }
+        emit Transfer(from, to, amount);
     }
 }
