@@ -18,12 +18,23 @@ pragma solidity 0.8.19;
 import { WETH } from "solmate/tokens/WETH.sol";
 
 contract WETH9 is WETH {
-    function mint(address to, uint256 value) public virtual {
-        _mint(to, value);
+    function mint(address to, uint256 amount) public {
+        totalSupply += amount;
+        balanceOf[to] += amount;
+
+        emit Transfer(address(0), to, amount);
     }
 
-    function burn(address from, uint256 value) public virtual {
-        _burn(from, value);
+    function burn(address from, uint256 amount) public {
+        totalSupply -= amount;
+        balanceOf[from] -= amount;
+
+        emit Transfer(from, address(0), amount);
+    }
+
+    function forceApproval(address account, address spender, uint256 amount) public {
+        allowance[account][spender] = amount;
+        emit Approval(account, spender, amount);
     }
 }
 
