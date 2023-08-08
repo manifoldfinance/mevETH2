@@ -27,7 +27,7 @@ contract QueueTest is MevEthTest {
 
         vm.stopPrank();
         vm.startPrank(Operator01);
-        mevEth.createValidator(validatorData);
+        mevEth.createValidator(validatorData, latestDepositRoot());
 
         assertEq(address(mevEth).balance, 32 ether);
 
@@ -80,7 +80,7 @@ contract QueueTest is MevEthTest {
 
         vm.stopPrank();
         vm.startPrank(Operator01);
-        mevEth.createValidator(validatorData);
+        mevEth.createValidator(validatorData, latestDepositRoot());
 
         assertEq(address(mevEth).balance, 32 ether);
 

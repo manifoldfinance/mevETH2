@@ -99,7 +99,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @return uint256 The required Ether buffer.
     function calculateNeededEtherBuffer() public view returns (uint256) {
         unchecked {
-            return max(withdrawalAmountQueued, 31 ether);
+            return max(withdrawalAmountQueued, (stakingModule.VALIDATOR_DEPOSIT_SIZE() / 100) * 90);
         }
     }
 
@@ -287,7 +287,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @notice This function passes through the needed Ether to the Staking module, and the assosiated credentials with it
     /// @param newData The data needed to create a new validator
     /// @dev This function is only callable by addresses with the operator role and if staking is unpaused
-    function createValidator(IStakingModule.ValidatorData calldata newData) external onlyOperator {
+    function createValidator(IStakingModule.ValidatorData calldata newData, bytes32 latestDepositRoot) external onlyOperator {
         _stakingUnpaused();
         IStakingModule _stakingModule = stakingModule;
         // Determine how big deposit is for the validator
@@ -299,7 +299,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         }
 
         // Deposit the Ether into the staking contract
-        _stakingModule.deposit{ value: depositSize }(newData);
+        _stakingModule.deposit{ value: depositSize }(newData, latestDepositRoot);
 
         emit ValidatorCreated(address(_stakingModule), newData);
     }

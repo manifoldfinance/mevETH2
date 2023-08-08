@@ -55,6 +55,10 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
     /// @param _protocolFeeTo The address that protocol fees are sent to.
     /// @param _beneficiary  The address that protocol rewards are secured to in the case of failure while paying rewards.
     constructor(address authority, address _mevEth, address _protocolFeeTo, address _beneficiary) Auth(authority) {
+        if (_protocolFeeTo == address(0) || _beneficiary == address(0)) {
+            revert MevEthErrors.ZeroAddress();
+        }
+
         mevEth = _mevEth;
         protocolFeeTo = _protocolFeeTo;
         beneficiary = _beneficiary;
@@ -104,6 +108,9 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
     }
 
     function setProtocolFeeTo(address newProtocolFeeTo) external onlyAdmin {
+        if (newProtocolFeeTo == address(0)) {
+            revert MevEthErrors.ZeroAddress();
+        }
         protocolFeeTo = newProtocolFeeTo;
         emit ProtocolFeeToUpdated(newProtocolFeeTo);
     }
@@ -147,6 +154,9 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
     /// @notice Function to set a new beneficiary address.
     /// @dev The beneficiary is used to recover funds if needed.
     function setNewBeneficiary(address newBeneficiary) external onlyAdmin {
+        if (newBeneficiary == address(0)) {
+            revert MevEthErrors.ZeroAddress();
+        }
         beneficiary = newBeneficiary;
         emit BeneficiaryUpdated(newBeneficiary);
     }

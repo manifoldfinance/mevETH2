@@ -27,4 +27,5 @@ interface MevEthErrors {
     error AlreadyClaimed();
     error AlreadyFinalised();
     error IndexExceedsQueueLength();
+    error DepositWasFrontrun();
 }

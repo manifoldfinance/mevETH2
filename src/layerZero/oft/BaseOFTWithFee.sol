@@ -36,36 +36,6 @@ abstract contract BaseOFTWithFee is OFTCoreV2, Fee, ERC165, IOFTWithFee {
         if (_amount < _minAmount) revert AmountLessThanMinAmount();
     }
 
-    function sendAndCall(
-        address _from,
-        uint16 _dstChainId,
-        bytes32 _toAddress,
-        uint256 _amount,
-        uint256 _minAmount,
-        bytes calldata _payload,
-        uint64 _dstGasForCall,
-        LzCallParams calldata _callParams
-    )
-        public
-        payable
-        virtual
-        override
-    {
-        (_amount,) = _payOFTFee(_from, _dstChainId, _amount);
-        _amount = _sendAndCall(
-            _from,
-            _dstChainId,
-            _toAddress,
-            _amount,
-            _payload,
-            _dstGasForCall,
-            _callParams.refundAddress,
-            _callParams.zroPaymentAddress,
-            _callParams.adapterParams
-        );
-        if (_amount < _minAmount) revert AmountLessThanMinAmount();
-    }
-
     /**
      *
      * public view functions
@@ -89,24 +59,6 @@ abstract contract BaseOFTWithFee is OFTCoreV2, Fee, ERC165, IOFTWithFee {
         returns (uint256 nativeFee, uint256 zroFee)
     {
         return _estimateSendFee(_dstChainId, _toAddress, _amount, _useZro, _adapterParams);
-    }
-
-    function estimateSendAndCallFee(
-        uint16 _dstChainId,
-        bytes32 _toAddress,
-        uint256 _amount,
-        bytes calldata _payload,
-        uint64 _dstGasForCall,
-        bool _useZro,
-        bytes calldata _adapterParams
-    )
-        public
-        view
-        virtual
-        override
-        returns (uint256 nativeFee, uint256 zroFee)
-    {
-        return _estimateSendAndCallFee(_dstChainId, _toAddress, _amount, _payload, _dstGasForCall, _useZro, _adapterParams);
     }
 
     function circulatingSupply() public view virtual override returns (uint256);
