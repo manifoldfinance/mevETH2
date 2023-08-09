@@ -84,6 +84,7 @@ contract MevEthShareVaultTest is MevEthTest {
     }
 
     function testSetProtocolFeeTo(address newProtocolFeeTo) public {
+        vm.assume(newProtocolFeeTo != address(0));
         vm.prank(SamBacha);
         vm.expectEmit(true, false, false, false, address(mevEthShareVault));
         emit ProtocolFeeToUpdated(newProtocolFeeTo);

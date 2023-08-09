@@ -339,6 +339,8 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
 
         // If the msg.value is 32 ether, the elastic should not be updated.
         if (msg.value == 32 ether) {
+            // Register our exit with the staking module
+            stakingModule.registerExit();
             return;
         }
 
@@ -352,6 +354,9 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
             // account for any unclaimed rewards
             fraction.elastic += uint128(msg.value - 32 ether);
         }
+
+        // Register our exit with the staking module
+        stakingModule.registerExit();
     }
 
     /*//////////////////////////////////////////////////////////////

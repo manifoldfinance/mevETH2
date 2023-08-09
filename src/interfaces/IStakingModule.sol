@@ -21,8 +21,6 @@ interface IStakingModule {
 
     function deposit(ValidatorData calldata data, bytes32 latestDepositRoot) external payable;
 
-    function oracleUpdate(uint256 newBalance, uint256 newValidators) external;
-
     function validators() external view returns (uint256);
 
     function balance() external view returns (uint256);
@@ -35,4 +33,6 @@ interface IStakingModule {
     function payRewards() external;
     function payValidatorWithdraw(uint256 amount) external;
     function recoverToken(address token, address recipient, uint256 amount) external;
+
+    function registerExit() external;
 }

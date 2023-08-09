@@ -60,8 +60,6 @@ contract WagyuStaker is Auth, IStakingModule {
             revert MevEthErrors.WrongDepositAmount();
         }
         if (BEACON_CHAIN_DEPOSIT_CONTRACT.get_deposit_root() != latestDepositRoot) {
-            console.logBytes32(latestDepositRoot);
-            console.logBytes32(BEACON_CHAIN_DEPOSIT_CONTRACT.get_deposit_root());
             revert MevEthErrors.DepositWasFrontrun();
         }
 
@@ -80,14 +78,14 @@ contract WagyuStaker is Auth, IStakingModule {
         emit NewValidator(data.operator, data.pubkey, data.withdrawal_credentials, data.signature, data.deposit_data_root);
     }
 
-    /// @notice Function to update the balance and validator count
-    function oracleUpdate(uint256 newBalance, uint256 newValidators) external {
+    function registerExit() external {
+        // Only the MevEth contract can call this function
         if (msg.sender != MEV_ETH) {
             revert MevEthErrors.UnAuthorizedCaller();
         }
 
-        balance = newBalance;
-        validators = newValidators;
+        balance -= VALIDATOR_DEPOSIT_SIZE;
+        validators -= 1;
     }
 
     /// @notice Function to pay rewards to the MevEth contract
@@ -95,7 +93,12 @@ contract WagyuStaker is Auth, IStakingModule {
     ///      beneficiary address for manual allocation to the MevEth contract.
     function payRewards() external onlyOperator {
         // Cache the rewards balance.
-        uint256 _rewards = address(this).balance - balance;
+        uint256 _rewards;
+        if (balance > address(this).balance) {
+            _rewards = 0;
+        } else {
+            _rewards = address(this).balance - balance;
+        }
 
         // Send the rewards to the MevEth contract
         try ITinyMevEth(MEV_ETH).grantRewards{ value: _rewards }() { }
