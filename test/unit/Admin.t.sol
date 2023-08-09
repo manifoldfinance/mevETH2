@@ -413,7 +413,7 @@ contract MevAdminTest is MevEthTest {
 
     function testCommitUpdateMevEthShareVault() public {
         // Create a new vault and cache the current vault
-        address newVault = address(new MevEthShareVault(SamBacha, address(mevEth), SamBacha, SamBacha));
+        address newVault = address(new MevEthShareVault(SamBacha, address(mevEth), SamBacha));
         address existingVault = address(mevEth.mevEthShareVault());
 
         // Commit an update to the staking module and check the effects
@@ -435,7 +435,7 @@ contract MevAdminTest is MevEthTest {
 
     function testNegativeCommitUpdateMevEthShareVault() public {
         // Create a new vault and cache the current vault
-        address newVault = address(new MevEthShareVault(SamBacha, address(mevEth), SamBacha, SamBacha));
+        address newVault = address(new MevEthShareVault(SamBacha, address(mevEth), SamBacha));
         address existingVault = address(mevEth.mevEthShareVault());
 
         // Expect a reversion if unauthorized and check that no effects have occured
@@ -455,7 +455,7 @@ contract MevAdminTest is MevEthTest {
 
     function testFinalizeUpdateMevEthShareVault() public {
         // Create a new vault and cache the current vault
-        address newVault = address(new MevEthShareVault(SamBacha, address(mevEth), SamBacha, SamBacha));
+        address newVault = address(new MevEthShareVault(SamBacha, address(mevEth), SamBacha));
         address existingVault = address(mevEth.mevEthShareVault());
 
         // Commit an update to the mev share vault
@@ -492,7 +492,7 @@ contract MevAdminTest is MevEthTest {
         mevEth.finalizeUpdateMevEthShareVault();
 
         // Create a new vault and cache the current vault
-        address newVault = address(new MevEthShareVault(SamBacha, address(mevEth), SamBacha, SamBacha));
+        address newVault = address(new MevEthShareVault(SamBacha, address(mevEth), SamBacha));
         address existingVault = address(mevEth.mevEthShareVault());
 
         // Commit an update to the mev share vault
@@ -523,7 +523,7 @@ contract MevAdminTest is MevEthTest {
      */
     function testCancelUpdateMevEthShareVault() public {
         // Create a new vault and cache the current vault
-        address newVault = address(new MevEthShareVault(SamBacha, address(mevEth), SamBacha, SamBacha));
+        address newVault = address(new MevEthShareVault(SamBacha, address(mevEth), SamBacha));
         address existingVault = address(mevEth.mevEthShareVault());
 
         // Commit an update to the mev share vault
@@ -555,7 +555,7 @@ contract MevAdminTest is MevEthTest {
         mevEth.cancelUpdateMevEthShareVault();
 
         // Create a new vault and cache the current vault
-        address newVault = address(new MevEthShareVault(SamBacha, address(mevEth), SamBacha, SamBacha));
+        address newVault = address(new MevEthShareVault(SamBacha, address(mevEth), SamBacha));
         address existingVault = address(mevEth.mevEthShareVault());
         vm.prank(SamBacha);
         uint256 committedTimestamp = block.timestamp;
@@ -581,7 +581,7 @@ contract MevAdminTest is MevEthTest {
         MevEth mevEth = new MevEth(SamBacha, address(weth), address(0));
 
         // Create new share vault and staking module
-        address initialShareVault = address(new MevEthShareVault(SamBacha, address(mevEth), SamBacha, SamBacha));
+        address initialShareVault = address(new MevEthShareVault(SamBacha, address(mevEth), SamBacha));
         address initialStakingModule = address(IStakingModule(address(new WagyuStaker(SamBacha, address(depositContract), address(mevEth)))));
         assert(!mevEth.initialized());
 
@@ -607,7 +607,7 @@ contract MevAdminTest is MevEthTest {
         MevEth mevEth = new MevEth(SamBacha, address(weth), address(0));
 
         // Create new share vault and staking module
-        address initialShareVault = address(new MevEthShareVault(SamBacha, address(mevEth), SamBacha, SamBacha));
+        address initialShareVault = address(new MevEthShareVault(SamBacha, address(mevEth), SamBacha));
         address initialStakingModule = address(IStakingModule(address(new WagyuStaker(SamBacha, address(depositContract), address(mevEth)))));
 
         // Expect an unauthorized revert
@@ -643,7 +643,7 @@ contract MevAdminTest is MevEthTest {
     function testRecoverTokenFromMevEthShareVault(uint128 amount) public {
         vm.assume(amount > 10_000);
 
-        address newShareVault = address(new MevEthShareVault(SamBacha, address(mevEth), SamBacha, SamBacha));
+        address newShareVault = address(new MevEthShareVault(SamBacha, address(mevEth), SamBacha));
         _updateShareVault(newShareVault);
 
         address mevEthShareVault = mevEth.mevEthShareVault();
@@ -673,7 +673,7 @@ contract MevAdminTest is MevEthTest {
     function testNegativeRecoverTokenFromMevEthShareVault(uint128 amount) public {
         vm.assume(amount > 10_000);
 
-        address newShareVault = address(new MevEthShareVault(SamBacha, address(mevEth), SamBacha, SamBacha));
+        address newShareVault = address(new MevEthShareVault(SamBacha, address(mevEth), SamBacha));
         _updateShareVault(newShareVault);
 
         address mevEthShareVault = mevEth.mevEthShareVault();
@@ -749,7 +749,7 @@ contract MevAdminTest is MevEthTest {
         vm.assume(amount > 10_000);
 
         // Create a new vault and cache the current vault
-        address newShareVault = address(new MevEthShareVault(SamBacha, address(mevEth), SamBacha, SamBacha));
+        address newShareVault = address(new MevEthShareVault(SamBacha, address(mevEth), SamBacha));
         vm.prank(SamBacha);
         MevEthShareVault(payable(newShareVault)).addOperator(Operator01);
 

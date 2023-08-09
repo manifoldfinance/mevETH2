@@ -17,7 +17,7 @@ contract MevEthShareVaultTest is MevEthTest {
         super.setUp();
 
         //Update the share vault to MevEthShareVault
-        address newShareVault = address(new MevEthShareVault(SamBacha, address(mevEth), SamBacha, SamBacha));
+        address newShareVault = address(new MevEthShareVault(SamBacha, address(mevEth), SamBacha));
 
         _updateShareVault(newShareVault);
         mevEthShareVault = MevEthShareVault(payable(mevEth.mevEthShareVault()));
@@ -26,6 +26,7 @@ contract MevEthShareVaultTest is MevEthTest {
     }
 
     function testPayRewards(uint128 rewards) public {
+        vm.assume(rewards > 0);
         _addToProtocolBalance(0, rewards);
 
         vm.prank(Operator01);
@@ -40,6 +41,7 @@ contract MevEthShareVaultTest is MevEthTest {
     }
 
     function testNegativePayRewards(uint128 rewards) public {
+        vm.assume(rewards > 0);
         _addToProtocolBalance(0, rewards);
         vm.expectRevert(Auth.Unauthorized.selector);
         mevEthShareVault.payRewards();
@@ -192,27 +194,27 @@ contract MevEthShareVaultTest is MevEthTest {
         payable(mevEthShareVault).transfer(amount);
     }
 
-    function testSetNewBeneficiary(address newBeneficiary) public {
-        vm.assume(newBeneficiary != address(0));
+    function testSetNewMevEth(address newMevEth) public {
+        vm.assume(newMevEth != address(0));
 
         vm.prank(SamBacha);
         vm.expectEmit(true, false, false, false, address(mevEthShareVault));
-        emit BeneficiaryUpdated(newBeneficiary);
-        mevEthShareVault.setNewBeneficiary(newBeneficiary);
-        assertEq(mevEthShareVault.beneficiary(), newBeneficiary);
+        emit MevEthUpdated(newMevEth);
+        mevEthShareVault.setNewMevEth(newMevEth);
+        assertEq(mevEthShareVault.mevEth(), newMevEth);
     }
 
-    function testNegativeSetNewBeneficiary(address newBeneficiary) public {
-        address currentBeneficiary = mevEthShareVault.beneficiary();
+    function testNegativeSetNewMevEth(address newMevEth) public {
+        address currentMevEth = mevEthShareVault.mevEth();
 
         vm.expectRevert(Auth.Unauthorized.selector);
-        mevEthShareVault.setNewBeneficiary(newBeneficiary);
-        assertEq(mevEthShareVault.beneficiary(), currentBeneficiary);
+        mevEthShareVault.setNewMevEth(newMevEth);
+        assertEq(mevEthShareVault.mevEth(), currentMevEth);
 
         vm.expectRevert(MevEthErrors.ZeroAddress.selector);
         vm.prank(SamBacha);
-        mevEthShareVault.setNewBeneficiary(address(0));
-        assertEq(mevEthShareVault.beneficiary(), currentBeneficiary);
+        mevEthShareVault.setNewMevEth(address(0));
+        assertEq(mevEthShareVault.mevEth(), currentMevEth);
     }
 
     function _addToProtocolBalance(uint128 fees, uint128 rewards) internal {

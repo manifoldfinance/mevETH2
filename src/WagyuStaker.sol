@@ -17,12 +17,10 @@ contract WagyuStaker is Auth, IStakingModule {
 
     /// @notice The amount of staked Ether on the beaconchain.
     uint256 public balance;
-    /// @notice The address of the beneficiary, used to secure funds in the case of failure while paying out rewards.
-    address public beneficiary;
     /// @notice The number of validators on the consensus layer registered under this contract
     uint256 public validators;
     /// @notice The address of the MevEth contract
-    address public immutable MEV_ETH;
+    address public mevEth;
     /// @notice Validator deposit size.
     uint256 public constant override VALIDATOR_DEPOSIT_SIZE = 32 ether;
     /// @notice The Canonical Address of the BeaconChainDepositContract
@@ -36,23 +34,22 @@ contract WagyuStaker is Auth, IStakingModule {
     event RewardsPaid(uint256 indexed amount);
     /// @notice Event emitted when funds representing a validator withdrawal are sent to the MevEth contract.
     event ValidatorWithdraw(address sender, uint256 amount);
-    /// @notice Event emitted when the beneficiary address is updated.
-    event BeneficiaryUpdated(address indexed beneficiary);
+    /// @notice Event emitted when the mevEth address is updated.
+    event MevEthUpdated(address indexed meveth);
 
     /// @notice Construction sets authority, MevEth, and deposit contract addresses
     /// @param _authority The address of the controlling admin authority
     /// @param _depositContract The address of the WETH contract to use for deposits
     /// @param _mevEth The address of the WETH contract to use for deposits
     constructor(address _authority, address _depositContract, address _mevEth) Auth(_authority) {
-        MEV_ETH = _mevEth;
+        mevEth = _mevEth;
         BEACON_CHAIN_DEPOSIT_CONTRACT = IBeaconDepositContract(_depositContract);
-        beneficiary = _authority;
     }
 
     /// @notice Function to deposit funds into the BEACON_CHAIN_DEPOSIT_CONTRACT, and register a validator
     function deposit(IStakingModule.ValidatorData calldata data, bytes32 latestDepositRoot) external payable {
         // Only the MevEth contract can call this function
-        if (msg.sender != MEV_ETH) {
+        if (msg.sender != mevEth) {
             revert MevEthErrors.UnAuthorizedCaller();
         }
         // Ensure the deposit amount is equal to the VALIDATOR_DEPOSIT_SIZE
@@ -82,7 +79,7 @@ contract WagyuStaker is Auth, IStakingModule {
 
     /// @notice Function to update the balance and validator count
     function oracleUpdate(uint256 newBalance, uint256 newValidators) external {
-        if (msg.sender != MEV_ETH) {
+        if (msg.sender != mevEth) {
             revert MevEthErrors.UnAuthorizedCaller();
         }
 
@@ -91,19 +88,13 @@ contract WagyuStaker is Auth, IStakingModule {
     }
 
     /// @notice Function to pay rewards to the MevEth contract
-    /// @dev Only callable by an operator. Additionally, if there is an issue when granting rewards to the MevEth contract, funds are secured to the
-    ///      beneficiary address for manual allocation to the MevEth contract.
+    /// @dev Only callable by an operator.
     function payRewards() external onlyOperator {
         // Cache the rewards balance.
         uint256 _rewards = address(this).balance - balance;
 
         // Send the rewards to the MevEth contract
-        try ITinyMevEth(MEV_ETH).grantRewards{ value: _rewards }() { }
-        catch {
-            // Catch the error and send to the admin for further fund recovery
-            bool success = payable(beneficiary).send(_rewards);
-            if (!success) revert MevEthErrors.SendError();
-        }
+        ITinyMevEth(mevEth).grantRewards{ value: _rewards }();
 
         // Emit an event to track the rewards paid
         emit RewardsPaid(_rewards);
@@ -112,7 +103,7 @@ contract WagyuStaker is Auth, IStakingModule {
     /// @notice Function to pay MevEth when withdrawing funds from a validator
     /// @dev This function is only callable by an admin and emits an event for offchain validator registry tracking.
     function payValidatorWithdraw(uint256 amount) external onlyAdmin {
-        ITinyMevEth(MEV_ETH).grantValidatorWithdraw{ value: amount }();
+        ITinyMevEth(mevEth).grantValidatorWithdraw{ value: amount }();
         emit ValidatorWithdraw(msg.sender, amount);
     }
 
@@ -123,13 +114,13 @@ contract WagyuStaker is Auth, IStakingModule {
         emit TokenRecovered(recipient, token, amount);
     }
 
-    /// @notice Function to set a new beneficiary address.
-    /// @dev The beneficiary is used to recover funds if needed.
-    function setNewBeneficiary(address newBeneficiary) external onlyAdmin {
-        if (newBeneficiary == address(0)) revert MevEthErrors.ZeroAddress();
-
-        beneficiary = newBeneficiary;
-        emit BeneficiaryUpdated(newBeneficiary);
+    /// @notice Function to set a new mevEth address.
+    function setNewMevEth(address newMevEth) external onlyAdmin {
+        if (newMevEth == address(0)) {
+            revert MevEthErrors.ZeroAddress();
+        }
+        mevEth = newMevEth;
+        emit MevEthUpdated(newMevEth);
     }
 
     /// @notice Function to receive Ether

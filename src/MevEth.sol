@@ -307,14 +307,10 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @notice Event emitted when rewards are granted.
     event Rewards(address sender, uint256 amount);
 
-    /// @notice Grants rewards from the MevEthShareVault, updating the fraction.elastic.
-    /// @dev Before updating the fraction, the withdraw queue is processed, which pays out any pending withdrawals.
-    /// @dev This function is only callable by the MevEthShareVault.
+    /// @notice Grants rewards updating the fraction.elastic.
     function grantRewards() external payable {
-        if (!(msg.sender == address(stakingModule) || msg.sender == mevEthShareVault)) revert MevEthErrors.InvalidSender();
+        if (_isZero(msg.value)) revert MevEthErrors.ZeroValue();
 
-        /// @dev Note that while a small possiblity, it is possible for the MevEthShareVault rewards + fraction.elastic to overflow a uint128.
-        /// @dev in this case, the grantRewards call will fail and the funds will be secured to the MevEthShareVault.beneficiary address.
         fraction.elastic += uint128(msg.value);
         emit Rewards(msg.sender, msg.value);
     }
