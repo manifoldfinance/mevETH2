@@ -684,7 +684,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     function redeem(uint256 shares, address receiver, address owner) external returns (uint256 assets) {
         // Convert the shares to assets and check if the owner has the allowance to withdraw the shares.
         assets = convertToAssets(shares);
-        
+
         // If withdraw is less than the minimum deposit / withdraw amount, revert
         if (assets < MIN_DEPOSIT) revert MevEthErrors.WithdrawTooSmall();
 
