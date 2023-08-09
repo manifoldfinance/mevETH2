@@ -26,7 +26,7 @@ contract WithdrawalQueueAttackTest is MevEthTest {
         vm.stopPrank();
         vm.startPrank(User01);
         // 3. Attackers withdraws 31 ETH -> MevEth balance 0 Ether
-        mevEth.leave(31 ether, User01, User01);
+        mevEth.withdrawQueue(31 ether, User01, User01);
         assertEq(address(mevEth).balance, 0 ether);
 
         // 4. Attackers shares are still worth 32 ether
@@ -36,7 +36,7 @@ contract WithdrawalQueueAttackTest is MevEthTest {
         for (uint256 i = 0; i < 1000; i++) {
             // Attacker withdraws 0.01 ETH worth of shares, but because contract has no balance left the queueLength increases by 1.
             // Attacker repeats step above many times.
-            mevEth.leave(0.011 ether, User01, User01);
+            mevEth.withdrawQueue(0.011 ether, User01, User01);
         }
 
         vm.stopPrank();

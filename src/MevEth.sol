@@ -572,13 +572,15 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     }
 
     ///@notice Function to withdraw assets from the mevEth contract
+    /// @param useQueue Flag whether to use the withdrawal queue
     /// @param receiver The address user whom should receive the mevEth out
     /// @param owner The address of the owner of the mevEth
     /// @param assets The amount of assets that should be withdrawn
-    function _withdraw(address receiver, address owner, uint256 assets) internal {
+    function _withdraw(bool useQueue, address receiver, address owner, uint256 assets) internal {
         uint256 availableBalance = address(this).balance - withdrawalAmountQueued; // available balance will be adjusted
 
         if (availableBalance < assets) {
+            if (!useQueue) revert MevEthErrors.NotEnoughEth();
             uint128 amountOwed = uint128(assets - availableBalance);
             ++queueLength;
             withdrawalQueue[queueLength] = WithdrawalTicket({
@@ -609,6 +611,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         }
     }
 
+    /// @notice Withdraw assets if balance is available
     /// @param assets The amount of assets that should be withdrawn
     /// @param receiver The address user whom should receive the mevEth out
     /// @param owner The address of the owner of the mevEth
@@ -629,20 +632,16 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         // Burn the shares and emit a withdraw event for offchain listeners to know that a withdraw has occured
         _burn(owner, shares);
 
-        uint256 availableBalance = address(this).balance - withdrawalAmountQueued; // available balance will be adjusted
-
-        require(availableBalance >= assets);
-
-        emit Withdraw(msg.sender, owner, receiver, assets, convertToShares(assets));
-        WETH.deposit{ value: assets }();
-        ERC20(address(WETH)).safeTransfer(receiver, assets);
+        // Withdraw the assets from the Mevth contract
+        _withdraw(false, receiver, owner, assets);
     }
 
+    /// @notice Withdraw assets or open queue ticket for claim depending on balance available
     /// @param assets The amount of assets that should be withdrawn
     /// @param receiver The address user whom should receive the mevEth out
     /// @param owner The address of the owner of the mevEth
     /// @return shares The amount of shares burned
-    function leave(uint256 assets, address receiver, address owner) external returns (uint256 shares) {
+    function withdrawQueue(uint256 assets, address receiver, address owner) external returns (uint256 shares) {
         // If withdraw is less than the minimum deposit / withdraw amount, revert
         if (assets < MIN_DEPOSIT) revert MevEthErrors.WithdrawTooSmall();
 
@@ -659,7 +658,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         _burn(owner, shares);
 
         // Withdraw the assets from the Mevth contract
-        _withdraw(receiver, owner, assets);
+        _withdraw(true, receiver, owner, assets);
     }
 
     ///@notice Function to simulate the maximum amount of shares that can be redeemed by the owner.
@@ -700,13 +699,8 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         // Burn the shares and emit a withdraw event for offchain listeners to know that a withdraw has occured
         _burn(owner, shares);
 
-        uint256 availableBalance = address(this).balance - withdrawalAmountQueued; // available balance will be adjusted
-
-        require(availableBalance >= assets);
-
-        emit Withdraw(msg.sender, owner, receiver, assets, convertToShares(assets));
-        WETH.deposit{ value: assets }();
-        ERC20(address(WETH)).safeTransfer(receiver, assets);
+        // Withdraw the assets from the Mevth contract
+        _withdraw(false, receiver, owner, assets);
     }
 
     /*//////////////////////////////////////////////////////////////

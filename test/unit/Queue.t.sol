@@ -34,7 +34,7 @@ contract QueueTest is MevEthTest {
         vm.stopPrank();
         vm.startPrank(User01);
         vm.recordLogs();
-        mevEth.leave(63 ether, User01, User01);
+        mevEth.withdrawQueue(63 ether, User01, User01);
         Vm.Log[] memory entries = vm.getRecordedLogs();
 
         assertEq(entries[1].topics[0], keccak256("WithdrawalQueueOpened(address,uint256,uint256)"));
