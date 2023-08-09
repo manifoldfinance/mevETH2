@@ -18,7 +18,7 @@ contract MevValidatorRefundTest is MevEthTest {
         vm.expectEmit();
         emit ValidatorWithdraw(staker, amount);
         vm.prank(SamBacha);
-        IStakingModule(staker).payValidatorWithdraw(amount);
+        IStakingModule(staker).payValidatorWithdraw();
 
         assertEq(elastic, mevEth.totalAssets());
         assertEq(base, mevEth.totalSupply());

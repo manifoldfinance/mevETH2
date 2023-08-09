@@ -93,8 +93,11 @@ contract ValidatorTest is MevEthTest {
             validatorData.operator, validatorData.pubkey, validatorData.withdrawal_credentials, validatorData.signature, validatorData.deposit_data_root
         );
         mevEth.createValidator(validatorData, depositRoot);
-
-        assertEq(wagyuStakingModule.balance(), depositSize);
+        (uint128 totalDeposited, uint128 totalWithdrawn, uint128 totalRewardsPaid, uint128 totalValidatorExitsPaid) = wagyuStakingModule.record();
+        assertEq(totalDeposited, depositSize);
+        assertEq(totalWithdrawn, 0);
+        assertEq(totalRewardsPaid, 0);
+        assertEq(totalValidatorExitsPaid, 0);
         assertEq(wagyuStakingModule.validators(), 1);
     }
 }

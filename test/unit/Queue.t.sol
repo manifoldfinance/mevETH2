@@ -49,7 +49,7 @@ contract QueueTest is MevEthTest {
 
         vm.deal(stakingModuleAddress, 32 ether);
         vm.prank(SamBacha);
-        IStakingModule(stakingModuleAddress).payValidatorWithdraw(32 ether);
+        IStakingModule(stakingModuleAddress).payValidatorWithdraw();
         vm.startPrank(Operator01);
         mevEth.processWithdrawalQueue(mevEth.queueLength());
 
@@ -102,7 +102,7 @@ contract QueueTest is MevEthTest {
 
         vm.deal(stakingModuleAddress, 32 ether);
         vm.prank(SamBacha);
-        IStakingModule(stakingModuleAddress).payValidatorWithdraw(32 ether);
+        IStakingModule(stakingModuleAddress).payValidatorWithdraw();
         vm.startPrank(Operator01);
         mevEth.processWithdrawalQueue(mevEth.queueLength());
 

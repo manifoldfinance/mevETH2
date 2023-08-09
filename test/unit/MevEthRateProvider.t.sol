@@ -25,7 +25,7 @@ contract MevEthRateProviderTest is MevEthTest {
         address staker = address(mevEth.stakingModule());
         vm.deal(staker, 2 ether);
         vm.prank(SamBacha);
-        IStakingModule(staker).payRewards();
+        IStakingModule(staker).payRewards(2 ether);
         assertGt(provider.getRate(), 1 ether);
     }
 }

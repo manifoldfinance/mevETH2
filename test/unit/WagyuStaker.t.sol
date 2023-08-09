@@ -20,9 +20,10 @@ contract WagyuStakerTest is MevEthTest {
         vm.prank(SamBacha);
         vm.expectEmit(true, false, false, false, address(wagyuStaker));
         emit RewardsPaid(amount);
-        wagyuStaker.payRewards();
-
-        assertEq(address(wagyuStaker).balance - wagyuStaker.balance(), 0);
+        wagyuStaker.payRewards(amount);
+        (uint128 totalDeposited,, uint128 totalRewardsPaid,) = wagyuStaker.record();
+        assertEq(address(wagyuStaker).balance - totalDeposited, 0);
+        assertEq(totalRewardsPaid, amount);
     }
 
     function testNegativePayRewards(uint128 amount) public {
@@ -30,9 +31,9 @@ contract WagyuStakerTest is MevEthTest {
         payable(wagyuStaker).transfer(amount);
 
         vm.expectRevert(Auth.Unauthorized.selector);
-        wagyuStaker.payRewards();
-
-        assertEq(address(wagyuStaker).balance - wagyuStaker.balance(), amount);
+        wagyuStaker.payRewards(amount);
+        (uint128 totalDeposited,,,) = wagyuStaker.record();
+        assertEq(address(wagyuStaker).balance - totalDeposited, amount);
     }
 
     function testSetNewBeneficiary(address newBeneficiary) public {
@@ -60,9 +61,7 @@ contract WagyuStakerTest is MevEthTest {
     }
 
     function testPayValidatorWithdrawGt32Ether(uint128 amount) public {
-        vm.assume(amount > 32 ether && amount < type(uint128).max);
-        // Assume that the amount is greater than the minimum deposit amount
-        vm.assume(amount >= mevEth.MIN_DEPOSIT());
+        vm.assume(amount > 32 ether);
 
         vm.deal(address(wagyuStaker), amount);
         vm.deal(address(this), amount);
@@ -72,23 +71,18 @@ contract WagyuStakerTest is MevEthTest {
         assertEq(elasticBefore, amount);
         assertEq(baseBefore, amount);
 
-        uint128 expectedElastic;
-        unchecked {
-            expectedElastic = elasticBefore + uint128(amount - 32 ether);
-        }
-        // Make sure that the amount does not overflow the elastic
-        vm.assume(expectedElastic >= elasticBefore);
-
         vm.expectEmit(true, true, false, false, address(mevEth));
         emit ValidatorWithdraw(address(wagyuStaker), amount);
         vm.expectEmit(true, true, false, false, address(wagyuStaker));
         emit ValidatorWithdraw(SamBacha, amount);
         vm.prank(SamBacha);
-        wagyuStaker.payValidatorWithdraw(amount);
+        wagyuStaker.payValidatorWithdraw();
 
         (uint128 elasticAfter, uint128 baseAfter) = mevEth.fraction();
-        assertEq(elasticAfter, expectedElastic);
+        assertEq(elasticAfter, elasticBefore);
         assertEq(baseAfter, baseBefore);
+        assertEq(address(wagyuStaker).balance, amount - 32 ether);
+        assertGt(address(mevEth).balance, 32 ether);
     }
 
     function testPayValidatorWithdrawLt32Ether(uint128 amount) public {
@@ -104,22 +98,12 @@ contract WagyuStakerTest is MevEthTest {
         assertEq(elasticBefore, amount);
         assertEq(baseBefore, amount);
 
-        uint128 expectedElastic;
-        unchecked {
-            expectedElastic = elasticBefore - uint128(32 ether - amount);
-        }
-        // Make sure that the amount does not underflow the elastic
-        vm.assume(expectedElastic < elasticBefore);
-
-        vm.expectEmit(true, true, false, false, address(mevEth));
-        emit ValidatorWithdraw(address(wagyuStaker), amount);
-        vm.expectEmit(true, true, false, false, address(wagyuStaker));
-        emit ValidatorWithdraw(SamBacha, amount);
         vm.prank(SamBacha);
-        wagyuStaker.payValidatorWithdraw(amount);
+        vm.expectRevert(MevEthErrors.NotEnoughEth.selector);
+        wagyuStaker.payValidatorWithdraw();
 
         (uint128 elasticAfter, uint128 baseAfter) = mevEth.fraction();
-        assertEq(elasticAfter, expectedElastic);
+        assertEq(elasticAfter, elasticBefore);
         assertEq(baseAfter, baseBefore);
     }
 
@@ -134,7 +118,7 @@ contract WagyuStakerTest is MevEthTest {
         vm.expectEmit(true, true, false, false, address(wagyuStaker));
         emit ValidatorWithdraw(SamBacha, amount);
         vm.prank(SamBacha);
-        wagyuStaker.payValidatorWithdraw(amount);
+        wagyuStaker.payValidatorWithdraw();
 
         (uint256 elasticAfter, uint256 baseAfter) = mevEth.fraction();
 
@@ -143,15 +127,14 @@ contract WagyuStakerTest is MevEthTest {
     }
 
     function testNegativePayValidatorWithdraw() public {
-        uint128 minDeposit = mevEth.MIN_DEPOSIT();
         // Expect Unauthorized
         vm.expectRevert(Auth.Unauthorized.selector);
-        wagyuStaker.payValidatorWithdraw(minDeposit);
+        wagyuStaker.payValidatorWithdraw();
 
         // Expect ZeroValue error
         vm.prank(SamBacha);
-        vm.expectRevert(MevEthErrors.ZeroValue.selector);
-        wagyuStaker.payValidatorWithdraw(0);
+        vm.expectRevert(MevEthErrors.NotEnoughEth.selector);
+        wagyuStaker.payValidatorWithdraw();
 
         // Configure MevEth elastic and base to uint128 max
         uint256 amount = type(uint128).max;
@@ -162,11 +145,6 @@ contract WagyuStakerTest is MevEthTest {
         (uint256 elastic, uint256 base) = mevEth.fraction();
         assertEq(elastic, amount);
         assertEq(base, amount);
-
-        // Expect overflow when msg.value > 32 eth and elastic + msg.value - 32 ether > max uint128
-        vm.prank(SamBacha);
-        vm.expectRevert(stdError.arithmeticError);
-        wagyuStaker.payValidatorWithdraw(33 ether);
     }
 
     function _mockMevEthDeposit(uint256 amount, address receiver) internal {

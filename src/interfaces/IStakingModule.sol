@@ -23,16 +23,14 @@ interface IStakingModule {
 
     function validators() external view returns (uint256);
 
-    function balance() external view returns (uint256);
-
     function MEV_ETH() external view returns (address);
 
     function VALIDATOR_DEPOSIT_SIZE() external view returns (uint256);
 
     // onlyAdmin Functions
-    function payRewards() external;
-    function payValidatorWithdraw(uint256 amount) external;
+    function payRewards(uint256 rewards) external;
+    function payValidatorWithdraw() external;
     function recoverToken(address token, address recipient, uint256 amount) external;
-
+    function record() external returns (uint128, uint128, uint128, uint128);
     function registerExit() external;
 }
