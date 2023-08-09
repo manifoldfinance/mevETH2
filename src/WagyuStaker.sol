@@ -41,8 +41,8 @@ contract WagyuStaker is Auth, IStakingModule {
 
     /// @notice Construction sets authority, MevEth, and deposit contract addresses
     /// @param _authority The address of the controlling admin authority
-    /// @param _depositContract The address of the WETH contract to use for deposits
-    /// @param _mevEth The address of the WETH contract to use for deposits
+    /// @param _depositContract The address of the beacon deposit contract
+    /// @param _mevEth The address of the mevETH contract
     constructor(address _authority, address _depositContract, address _mevEth) Auth(_authority) {
         MEV_ETH = _mevEth;
         BEACON_CHAIN_DEPOSIT_CONTRACT = IBeaconDepositContract(_depositContract);
