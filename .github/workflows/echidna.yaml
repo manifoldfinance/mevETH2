@@ -1,0 +1,27 @@
+name: Echidna Test
+
+on:
+  push:
+    paths:
+      - "**.sol"
+      - ".github/workflows/echidna.yaml"
+
+env:
+  FOUNDRY_PROFILE: ci
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Run Echidna
+        uses: crytic/echidna-action@v2
+        with:
+          files: test/echidna/ERC4626-echidna.t.sol
+          contract: CryticERC4626Harness
+          solc-version: 0.8.19
+          config: test/echidna/echidna.config.yaml

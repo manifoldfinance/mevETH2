@@ -6,3 +6,4 @@ solady/=lib/pigeon/lib/solady/src/
 @openzeppelin/=lib/openzeppelin-contracts/
 safe-contracts/=lib/safe-tools/lib/safe-contracts/contracts/
 safe-tools/=lib/safe-tools/src/
+properties/=lib/properties/contracts/
