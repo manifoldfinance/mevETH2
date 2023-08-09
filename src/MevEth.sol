@@ -629,8 +629,13 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         // Burn the shares and emit a withdraw event for offchain listeners to know that a withdraw has occured
         _burn(owner, shares);
 
-        // Withdraw the assets from the Mevth contract
-        _withdraw(receiver, owner, assets);
+        uint256 availableBalance = address(this).balance - withdrawalAmountQueued; // available balance will be adjusted
+
+        require(availableBalance >= assets);
+
+        emit Withdraw(msg.sender, owner, receiver, assets, convertToShares(assets));
+        WETH.deposit{ value: assets }();
+        ERC20(address(WETH)).safeTransfer(receiver, assets);
     }
 
     /// @param assets The amount of assets that should be withdrawn
@@ -653,13 +658,8 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         // Burn the shares and emit a withdraw event for offchain listeners to know that a withdraw has occured
         _burn(owner, shares);
 
-        uint256 availableBalance = address(this).balance - withdrawalAmountQueued; // available balance will be adjusted
-
-        require(availableBalance >= assets);
-
-        emit Withdraw(msg.sender, owner, receiver, assets, convertToShares(assets));
-        WETH.deposit{ value: assets }();
-        ERC20(address(WETH)).safeTransfer(receiver, assets);
+        // Withdraw the assets from the Mevth contract
+        _withdraw(receiver, owner, assets);
     }
 
     ///@notice Function to simulate the maximum amount of shares that can be redeemed by the owner.
@@ -682,11 +682,14 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @param owner The address of the owner of the mevEth
     /// @return assets The amount of assets withdrawn
     function redeem(uint256 shares, address receiver, address owner) external returns (uint256 assets) {
-        // If withdraw is less than the minimum deposit / withdraw amount, revert
-        if (convertToAssets(shares) < MIN_DEPOSIT) revert MevEthErrors.WithdrawTooSmall();
-
         // Convert the shares to assets and check if the owner has the allowance to withdraw the shares.
         assets = convertToAssets(shares);
+        
+        // If withdraw is less than the minimum deposit / withdraw amount, revert
+        if (assets < MIN_DEPOSIT) revert MevEthErrors.WithdrawTooSmall();
+
+        // Convert the assets to shares and check if the owner has the allowance to withdraw the shares.
+        shares = convertToShares(assets);
 
         _updateAllowance(owner, shares);
 
@@ -697,8 +700,13 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         // Burn the shares and emit a withdraw event for offchain listeners to know that a withdraw has occured
         _burn(owner, shares);
 
-        // Withdraw the assets from the Mevth contract
-        _withdraw(receiver, owner, assets);
+        uint256 availableBalance = address(this).balance - withdrawalAmountQueued; // available balance will be adjusted
+
+        require(availableBalance >= assets);
+
+        emit Withdraw(msg.sender, owner, receiver, assets, convertToShares(assets));
+        WETH.deposit{ value: assets }();
+        ERC20(address(WETH)).safeTransfer(receiver, assets);
     }
 
     /*//////////////////////////////////////////////////////////////
