@@ -279,6 +279,7 @@ abstract contract ERC4626Prop is Test {
         vm.prank(caller);
         uint256 shares = vault_deposit(assets, caller);
         vm.prank(caller);
+        vm.roll(block.number + 1);
         uint256 assets2 = vault_redeem(shares, caller, caller);
         assertApproxLeAbs(assets2, assets, _delta_);
     }
@@ -291,6 +292,7 @@ abstract contract ERC4626Prop is Test {
         vm.prank(caller);
         uint256 shares1 = vault_deposit(assets, caller);
         vm.prank(caller);
+        vm.roll(block.number + 1);
         uint256 shares2 = vault_withdraw(assets, caller, caller);
         assertApproxGeAbs(shares2, shares1, _delta_);
     }
@@ -323,6 +325,7 @@ abstract contract ERC4626Prop is Test {
         vm.prank(caller);
         uint256 assets = vault_mint(shares, caller);
         vm.prank(caller);
+        vm.roll(block.number + 1);
         uint256 shares2 = vault_withdraw(assets, caller, caller);
         assertApproxGeAbs(shares2, shares, _delta_);
     }
@@ -335,6 +338,7 @@ abstract contract ERC4626Prop is Test {
         vm.prank(caller);
         uint256 assets1 = vault_mint(shares, caller);
         vm.prank(caller);
+        vm.roll(block.number + 1);
         uint256 assets2 = vault_redeem(shares, caller, caller);
         assertApproxLeAbs(assets2, assets1, _delta_);
     }

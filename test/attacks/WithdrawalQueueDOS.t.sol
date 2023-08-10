@@ -24,6 +24,7 @@ contract WithdrawalQueueAttackTest is MevEthTest {
         assertEq(address(mevEth).balance, 31 ether);
 
         vm.stopPrank();
+        vm.roll(block.number + 1);
         vm.startPrank(User01);
         // 3. Attackers withdraws 31 ETH -> MevEth balance 0 Ether
         mevEth.withdrawQueue(31 ether, User01, User01);

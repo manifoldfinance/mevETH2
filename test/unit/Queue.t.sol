@@ -32,6 +32,7 @@ contract QueueTest is MevEthTest {
         assertEq(address(mevEth).balance, 32 ether);
 
         vm.stopPrank();
+        vm.roll(block.number + 1);
         vm.startPrank(User01);
         vm.recordLogs();
         mevEth.withdrawQueue(63 ether, User01, User01);

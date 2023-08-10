@@ -21,13 +21,13 @@ contract ReentrancyAttackTest is MevEthTest {
     receive() external payable { }
 
     function testAttack(uint128 amount) external payable {
-        vm.assume(amount > mevEth.MIN_DEPOSIT());
-        vm.assume(amount < MAX_DEPOSIT - 0.1 ether);
+        vm.assume(amount > mevEth.MIN_DEPOSIT() * 10_002 / 10_000);
+        vm.assume(amount < 100_000_000_000_000_000_000_000_000);
         vm.deal(address(this), amount);
-        uint256 bal = address(this).balance;
         mevEth.deposit{ value: amount }(amount, address(this));
-        mevEth.withdraw(amount, address(this), address(this));
-        assertEq(weth.balanceOf(address(this)), amount);
-        assertEq(address(this).balance, bal - amount);
+        vm.roll(block.number + 1);
+        mevEth.withdraw(amount * 9999 / 10_000, address(this), address(this));
+        assertEq(weth.balanceOf(address(this)), amount * 9999 / 10_000);
+        assertEq(address(this).balance, 0);
     }
 }
