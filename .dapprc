@@ -1,0 +1,2 @@
+# -*- shell -*-
+export DAPP_TEST_SMTTIMEOUT=500000

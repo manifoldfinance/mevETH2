@@ -1,63 +1,130 @@
-# See more config options https://github.com/foundry-rs/foundry/tree/master/config
-
+# -*- mode: toml; -*-
 [profile.default]
-solc_version = '0.8.19'
-src = 'src'
-out = 'out'
-libs = ['lib']
+allow_paths = ['interfaces', 'contracts', 'src']
+solc_version = '0.8.21'
+src = "src"
+test = "test"
+script = "script"
+out = "out"
+libs = ["lib"]
+
+# @see {@link https://github.com/foundry-rs/foundry/issues/4060}
+auto_detect_remappings = false
+auto_detect_solc = true
+
+remappings = [
+    "ERC4626/=lib/properties/lib/ERC4626/contracts/",
+    "ds-test/=lib/forge-std/lib/ds-test/src/",
+    "erc4626-tests/=lib/openzeppelin-contracts/lib/erc4626-tests/",
+    "forge-std/=lib/forge-std/src/",
+    "openzeppelin-contracts/=lib/openzeppelin-contracts/",
+    "openzeppelin/=lib/openzeppelin-contracts/contracts/",
+    "pigeon/=lib/pigeon/src/",
+    "properties/=lib/properties/contracts/",
+    "safe-contracts/=lib/safe-tools/lib/safe-contracts/contracts/",
+    "safe-tools/=lib/safe-tools/src/",
+    "solady/=lib/pigeon/lib/solady/src/",
+    "solmate/=lib/solmate/src/",
+]
+cache = true
+cache_path = "cache"
+broadcast = "broadcast"
+include_paths = []
+force = false
+evm_version = "paris"
+gas_reports = ["*"]
+gas_reports_ignore = []
+
+offline = false
 optimizer = true
-optimizer_runs = 500
-via_ir = true
-fuzz_runs = 500
+optimizer_runs = 200
+verbosity = 0
+ignored_error_codes = ["license", "code-size", "init-code-size"]
 deny_warnings = false
+build_info = true
+ffi = false
+sender = '0xafFEaFFEAFfeAfFEAffeaFfEAfFEaffeafFeAFfE'
+tx_origin = '0xAaaaAaAAaaaAAaAAaAaaaaAAAAAaAaaaAaAaaAA0'
+initial_balance = "0xffffffffffffffffffffffff"
+block_number = 1
+gas_limit = 9223372036854775807
+block_base_fee_per_gas = 0
+block_coinbase = "0x0000000000000000000000000000000000000000"
+block_timestamp = 1
+block_difficulty = 0
+block_prevrandao = "0x0000000000000000000000000000000000000000000000000000000000000000"
+memory_limit = 33554432
+# includes the contract's metadata in the contract's json artifact
+extra_output = ['irOptimized', 'evm.assembly']
+# emits the output selection as separate json artifact files
+extra_output_files = ['metadata']
+
+names = false
+sizes = false
+via_ir = false
+
+no_storage_caching = false
+no_rpc_rate_limit = false
+use_literal_content = false
+bytecode_hash = "none"
+cbor_metadata = false
+sparse_mode = false
+
+[[profile.default.fs_permissions]]
+access = "read"
+path = "out"
+[profile.default.rpc_storage_caching]
+chains = "all"
+endpoints = "all"
+
+fs_permissions = [{ access = "read-write", path = "./" }]
+
+[fuzz]
+runs = 256
+max_test_rejects = 65536
+dictionary_weight = 40
+include_storage = true
+include_push_bytes = true
+max_fuzz_dictionary_addresses = 15728640
+max_fuzz_dictionary_values = 6553600
+
+[invariant]
+runs = 1000
+depth = 20
+fail_on_revert = true
+call_override = false
+dictionary_weight = 80
+include_storage = true
+include_push_bytes = true
+max_fuzz_dictionary_addresses = 15728640
+max_fuzz_dictionary_values = 6553600
+shrink_sequence = true
+
 
 [profile.default.optimizer_details]
-constantOptimizer = true
+# constantOptimizer = true
 yul = true
-
+# this sets the `yulDetails` of the `optimizer_details` for the `default` profile
 [profile.default.optimizer_details.yulDetails]
-stackAllocation = true
-
-[profile.mainnet]
-solc_version = '0.8.19'
-src = 'src'
-out = 'out'
-libs = ['lib']
-chain_id = 1
-
-[profile.goerli]
-src = 'src'
-out = 'out'
-libs = ['lib']
-chain_id = 5
+stackAllocation = false
+optimizerSteps = 'u'
 
 [profile.ci]
-solc_version = '0.8.19'
-src = 'src'
-out = 'out'
-libs = ['lib']
+optimizer = false
+fuzz_runs = 4_069
+force = true
+verbosity = 4
+gas_reports = ["*"]
+block_base_fee_per_gas = 7
+cache = true
+cache_path = ".foundry/cache"
+broadcast = ".foundry/broadcast"
+# Not all networks support PUSH0 just yet!
+evm_version = "shanghai"
 
-[etherscan]
-mainnet = { key = "${ETHERSCAN_API_KEY}" }
-goerli = { key = "${ETHERSCAN_API_KEY}" }
-optimism = { key = "${ETHERSCAN_API_KEY}" }
-bsc = { key = "${BSCSCAN_API_KEY}" }
-polygon = { key = "${POLYGONSCAN_API_KEY}" }
-arbitrum = { key = "${ARBISCAN_API_KEY}" }
-avalanche = { key = "${SNOWSCAN_API_KEY}" }
 
-[rpc_endpoints]
-mainnet = "${RPC_MAINNET}"
-goerli = "${RPC_GOERLI}"
-polygon = "${POLYGON_MAINNET_RPC_URL}"
-arbitrum = "${ARBITRUM_MAINNET_RPC_URL}"
-bsc = "${BSC_MAINNET_RPC_URL}"
-optimism = "${OPTIMISM_RPC_URL}"
-avalanche = "${AVALANCHE_RPC_URL}"
-
-[fmt]
-line_length = 160
-bracket_spacing = true
-multiline_func_header = "all"
-number_underscore = "thousands"
-wrap_comments = true
+[profile.ci.invariant]
+# Fails the invariant fuzzing if a revert occurs
+fail_on_revert = false
+# Allows overriding an unsafe external call when running invariant tests. eg. reentrancy checks
+call_override = false
