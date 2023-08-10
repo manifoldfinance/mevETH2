@@ -45,6 +45,8 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     bool public stakingPaused;
     /// @notice Indicates if contract is initialized.
     bool public initialized;
+    ///@notice withdrawFee as a fraction of 10,000 i.e. 1 => 0.01%
+    uint8 internal constant withdrawFee = 1;
     /// @notice Timestamp when pending staking module update can be finalized.
     uint64 public pendingStakingModuleCommittedTimestamp;
     /// @notice Timestamp when pending mevEthShareVault update can be finalized.
@@ -576,7 +578,8 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @param assets The amount of assets that would be withdrawn
     /// @return shares The amount of shares that would be burned, *under ideal conditions* only
     function previewWithdraw(uint256 assets) external view returns (uint256 shares) {
-        shares = convertToShares(assets);
+        uint256 fee = uint256(withdrawFee) * assets / 10_000;
+        shares = convertToShares(assets + fee);
     }
 
     ///@notice Function to withdraw assets from the mevEth contract
@@ -584,7 +587,22 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @param receiver The address user whom should receive the mevEth out
     /// @param owner The address of the owner of the mevEth
     /// @param assets The amount of assets that should be withdrawn
-    function _withdraw(bool useQueue, address receiver, address owner, uint256 assets) internal {
+    /// @param shares shares that will be burned
+    function _withdraw(bool useQueue, address receiver, address owner, uint256 assets, uint256 shares) internal {
+        // If withdraw is less than the minimum deposit / withdraw amount, revert
+        if (assets < MIN_DEPOSIT) revert MevEthErrors.WithdrawTooSmall();
+        // Sandwich protection
+        if (lastDeposit[msg.sender] == block.number) revert MevEthErrors.CannotDepositAndWithdrawInSameBlock();
+
+        _updateAllowance(owner, shares);
+
+        // Update the elastic and base
+        fraction.elastic -= uint128(assets);
+        fraction.base -= uint128(shares);
+
+        // Burn the shares and emit a withdraw event for offchain listeners to know that a withdraw has occured
+        _burn(owner, shares);
+
         uint256 availableBalance = address(this).balance - withdrawalAmountQueued; // available balance will be adjusted
 
         if (availableBalance < assets) {
@@ -625,24 +643,12 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @param owner The address of the owner of the mevEth
     /// @return shares The amount of shares burned
     function withdraw(uint256 assets, address receiver, address owner) external returns (uint256 shares) {
-        // If withdraw is less than the minimum deposit / withdraw amount, revert
-        if (assets < MIN_DEPOSIT) revert MevEthErrors.WithdrawTooSmall();
-        if (lastDeposit[msg.sender] == block.number) revert MevEthErrors.CannotDepositAndWithdrawInSameBlock();
-
+        uint256 fee = uint256(withdrawFee) * assets / 10_000;
         // Convert the assets to shares and check if the owner has the allowance to withdraw the shares.
-        shares = convertToShares(assets);
-
-        _updateAllowance(owner, shares);
-
-        // Update the elastic and base
-        fraction.elastic -= uint128(assets);
-        fraction.base -= uint128(shares);
-
-        // Burn the shares and emit a withdraw event for offchain listeners to know that a withdraw has occured
-        _burn(owner, shares);
+        shares = convertToShares(assets + fee);
 
         // Withdraw the assets from the Mevth contract
-        _withdraw(false, receiver, owner, assets);
+        _withdraw(false, receiver, owner, assets, shares);
     }
 
     /// @notice Withdraw assets or open queue ticket for claim depending on balance available
@@ -651,24 +657,14 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @param owner The address of the owner of the mevEth
     /// @return shares The amount of shares burned
     function withdrawQueue(uint256 assets, address receiver, address owner) external returns (uint256 shares) {
-        // If withdraw is less than the minimum deposit / withdraw amount, revert
-        if (assets < MIN_DEPOSIT) revert MevEthErrors.WithdrawTooSmall();
-        if (lastDeposit[msg.sender] == block.number) revert MevEthErrors.CannotDepositAndWithdrawInSameBlock();
-
+        uint256 fee = uint256(withdrawFee) * assets / 10_000;
+        // last shareholder has no fee
+        if (_isZero(fraction.elastic - assets)) fee = 0;
         // Convert the assets to shares and check if the owner has the allowance to withdraw the shares.
-        shares = convertToShares(assets);
-
-        _updateAllowance(owner, shares);
-
-        // Update the elastic and base
-        fraction.elastic -= uint128(assets);
-        fraction.base -= uint128(shares);
-
-        // Burn the shares and emit a withdraw event for offchain listeners to know that a withdraw has occured
-        _burn(owner, shares);
+        shares = convertToShares(assets + fee);
 
         // Withdraw the assets from the Mevth contract
-        _withdraw(true, receiver, owner, assets);
+        _withdraw(true, receiver, owner, assets, shares);
     }
 
     ///@notice Function to simulate the maximum amount of shares that can be redeemed by the owner.
@@ -682,7 +678,8 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @param shares The amount of shares that would be burned
     /// @return assets The amount of assets that would be withdrawn, *under ideal conditions* only
     function previewRedeem(uint256 shares) external view returns (uint256 assets) {
-        assets = convertToAssets(shares);
+        uint256 fee = uint256(withdrawFee) * shares / 10_000;
+        assets = convertToAssets(shares - fee);
     }
 
     /// @notice Function to redeem shares from the mevEth contract
@@ -691,27 +688,14 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @param owner The address of the owner of the mevEth
     /// @return assets The amount of assets withdrawn
     function redeem(uint256 shares, address receiver, address owner) external returns (uint256 assets) {
+        uint256 fee = uint256(withdrawFee) * shares / 10_000;
+        // last shareholder has no fee
+        if (_isZero(totalSupply - shares)) fee = 0;
         // Convert the shares to assets and check if the owner has the allowance to withdraw the shares.
-        assets = convertToAssets(shares);
-
-        // If withdraw is less than the minimum deposit / withdraw amount, revert
-        if (assets < MIN_DEPOSIT) revert MevEthErrors.WithdrawTooSmall();
-        if (lastDeposit[msg.sender] == block.number) revert MevEthErrors.CannotDepositAndWithdrawInSameBlock();
-
-        // Convert the assets to shares and check if the owner has the allowance to withdraw the shares.
-        shares = convertToShares(assets);
-
-        _updateAllowance(owner, shares);
-
-        // Update the elastic and base
-        fraction.elastic -= uint128(assets);
-        fraction.base -= uint128(shares);
-
-        // Burn the shares and emit a withdraw event for offchain listeners to know that a withdraw has occured
-        _burn(owner, shares);
+        assets = convertToAssets(shares - fee);
 
         // Withdraw the assets from the Mevth contract
-        _withdraw(false, receiver, owner, assets);
+        _withdraw(false, receiver, owner, assets, shares);
     }
 
     /*//////////////////////////////////////////////////////////////
