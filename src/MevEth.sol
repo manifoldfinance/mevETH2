@@ -592,7 +592,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         // If withdraw is less than the minimum deposit / withdraw amount, revert
         if (assets < MIN_DEPOSIT) revert MevEthErrors.WithdrawTooSmall();
         // Sandwich protection
-        if (lastDeposit[msg.sender] == block.number) revert MevEthErrors.CannotDepositAndWithdrawInSameBlock();
+        if (_isZero(block.number - lastDeposit[msg.sender])) revert MevEthErrors.CannotDepositAndWithdrawInSameBlock();
 
         _updateAllowance(owner, shares);
 
