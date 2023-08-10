@@ -8,17 +8,32 @@
     "lib": "lib",
     "test": "test"
   },
-  "scripts": {
-  },
+  "scripts": {},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/manifoldfinance/meveth2.git"
   },
-  "keywords": ["ethereum", "lsd", "staking", "evm"],
+  "keywords": [
+    "ethereum",
+    "lsd",
+    "staking",
+    "evm"
+  ],
   "author": "SEE CONTRIBUTORS",
   "license": "SEE LICENSE IN LICENSE",
   "bugs": {
     "url": "https://github.com/manifoldfinance/meveth2/issues"
   },
-  "homepage": "https://github.com/manifoldfinance/meveth2#readme"
+  "homepage": "https://github.com/manifoldfinance/meveth2#readme",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-foundry": "^1.0.3",
+    "@nomicfoundation/hardhat-toolbox": "^3.0.0",
+    "ethers": "^6.7.0",
+    "hardhat": "^2.17.1",
+    "hardhat-tracer": "^2.6.0",
+    "prettier": "^3.0.1",
+    "prettier-plugin-solidity": "^1.1.3",
+    "typechain": "^8.3.1",
+    "typescript": "^5.1.6"
+  }
 }

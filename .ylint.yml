@@ -1,0 +1,24 @@
+---
+rules:
+  # 80 chars should be enough, but don't fail if a line is longer
+  line-length:
+    max: 80
+    level: warning
+  truthy: disable
+  braces: disable
+  colons: { max-spaces-before: 0, max-spaces-after: 1 }
+  commas: { max-spaces-before: 0, min-spaces-after: 0, max-spaces-after: 1 }
+  document-start:
+    level: warning
+  comments-indentation:
+    level: warning
+  comments:
+    level: warning
+    require-starting-space: true
+    min-spaces-from-content: 2
+  indentation:
+    level: warning
+    spaces: 2
+    indent-sequences: true
+  new-lines:
+    type: unix

@@ -1,4 +1,9 @@
-/// SPDX: License-Identifier: GPL-3.0-only
+/// SPDX-License-Identifier: Universal Permissive License v1.0
+/// @custom:org.security.mailto='ops@manifoldfinance.com'
+/// @custom:org.security.policy=' https://github.com/manifoldfinance/security'
+/// @custom:org.security.vcs-url='github.com/manifoldfinance'
+/// @custom:org.security.encryption='https://flowcrypt.com/pub/sam@manifoldfinance.com'
+/// @custom:org.security.schema-version="2023-08-10T07:40:14-0700"
 pragma solidity ^0.8.19;
 
 import "../MevEthTest.sol";
