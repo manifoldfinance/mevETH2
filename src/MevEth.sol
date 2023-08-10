@@ -568,13 +568,15 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     }
 
     ///@notice Function to withdraw assets from the mevEth contract
+    /// @param useQueue Flag whether to use the withdrawal queue
     /// @param receiver The address user whom should receive the mevEth out
     /// @param owner The address of the owner of the mevEth
     /// @param assets The amount of assets that should be withdrawn
-    function _withdraw(address receiver, address owner, uint256 assets) internal {
+    function _withdraw(bool useQueue, address receiver, address owner, uint256 assets) internal {
         uint256 availableBalance = address(this).balance - withdrawalAmountQueued; // available balance will be adjusted
 
         if (availableBalance < assets) {
+            if (!useQueue) revert MevEthErrors.NotEnoughEth();
             uint128 amountOwed = uint128(assets - availableBalance);
             ++queueLength;
             withdrawalQueue[queueLength] = WithdrawalTicket({
@@ -605,6 +607,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         }
     }
 
+    /// @notice Withdraw assets if balance is available
     /// @param assets The amount of assets that should be withdrawn
     /// @param receiver The address user whom should receive the mevEth out
     /// @param owner The address of the owner of the mevEth
@@ -626,7 +629,32 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         _burn(owner, shares);
 
         // Withdraw the assets from the Mevth contract
-        _withdraw(receiver, owner, assets);
+        _withdraw(false, receiver, owner, assets);
+    }
+
+    /// @notice Withdraw assets or open queue ticket for claim depending on balance available
+    /// @param assets The amount of assets that should be withdrawn
+    /// @param receiver The address user whom should receive the mevEth out
+    /// @param owner The address of the owner of the mevEth
+    /// @return shares The amount of shares burned
+    function withdrawQueue(uint256 assets, address receiver, address owner) external returns (uint256 shares) {
+        // If withdraw is less than the minimum deposit / withdraw amount, revert
+        if (assets < MIN_DEPOSIT) revert MevEthErrors.WithdrawTooSmall();
+
+        // Convert the assets to shares and check if the owner has the allowance to withdraw the shares.
+        shares = convertToShares(assets);
+
+        _updateAllowance(owner, shares);
+
+        // Update the elastic and base
+        fraction.elastic -= uint128(assets);
+        fraction.base -= uint128(shares);
+
+        // Burn the shares and emit a withdraw event for offchain listeners to know that a withdraw has occured
+        _burn(owner, shares);
+
+        // Withdraw the assets from the Mevth contract
+        _withdraw(true, receiver, owner, assets);
     }
 
     ///@notice Function to simulate the maximum amount of shares that can be redeemed by the owner.
@@ -649,11 +677,14 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @param owner The address of the owner of the mevEth
     /// @return assets The amount of assets withdrawn
     function redeem(uint256 shares, address receiver, address owner) external returns (uint256 assets) {
-        // If withdraw is less than the minimum deposit / withdraw amount, revert
-        if (convertToAssets(shares) < MIN_DEPOSIT) revert MevEthErrors.WithdrawTooSmall();
-
         // Convert the shares to assets and check if the owner has the allowance to withdraw the shares.
         assets = convertToAssets(shares);
+
+        // If withdraw is less than the minimum deposit / withdraw amount, revert
+        if (assets < MIN_DEPOSIT) revert MevEthErrors.WithdrawTooSmall();
+
+        // Convert the assets to shares and check if the owner has the allowance to withdraw the shares.
+        shares = convertToShares(assets);
 
         _updateAllowance(owner, shares);
 
@@ -665,7 +696,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         _burn(owner, shares);
 
         // Withdraw the assets from the Mevth contract
-        _withdraw(receiver, owner, assets);
+        _withdraw(false, receiver, owner, assets);
     }
 
     /*//////////////////////////////////////////////////////////////
