@@ -94,6 +94,8 @@ contract WagyuStaker is Auth, IStakingModule {
 
         unchecked {
             record.totalRewardsPaid += uint128(rewards);
+            // lagging withdrawn indicator, as including in receive can cause transfer out of gas
+            record.totalWithdrawn += uint128(rewards);
         }
 
         // Send the rewards to the MevEth contract
@@ -113,8 +115,11 @@ contract WagyuStaker is Auth, IStakingModule {
         if (msg.sender != MEV_ETH) {
             revert MevEthErrors.UnAuthorizedCaller();
         }
+        uint128 exitSize = uint128(VALIDATOR_DEPOSIT_SIZE);
         unchecked {
-            record.totalValidatorExitsPaid += uint128(VALIDATOR_DEPOSIT_SIZE);
+            record.totalValidatorExitsPaid += exitSize;
+            // lagging withdrawn indicator, as including in receive can cause transfer out of gas
+            record.totalWithdrawn += exitSize;
         }
         if (validators > 0) {
             unchecked {
