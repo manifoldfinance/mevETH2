@@ -39,7 +39,7 @@ contract ERC4626Test is MevEthTest {
         vm.deal(User01, amount);
         vm.startPrank(User01);
         mevEth.deposit{ value: amount }(amount, User01);
-        assertEq(mevEth.previewWithdraw(amount), amount);
+        assertEq(mevEth.previewWithdraw(amount * 9999 / 10_000), amount);
     }
 
     function testPreviewRedeem(uint128 amount) public {
@@ -47,7 +47,7 @@ contract ERC4626Test is MevEthTest {
         vm.deal(User01, amount);
         vm.startPrank(User01);
         mevEth.deposit{ value: amount }(amount, User01);
-        assertEq(mevEth.previewRedeem(amount), amount);
+        assertEq(mevEth.previewRedeem(amount), amount * 9999 / 10_000);
     }
 
     function testMaxWithdraw(uint128 amount) public {
@@ -190,7 +190,7 @@ contract ERC4626Test is MevEthTest {
         _depositOnBehalfOf(1 ether, User01);
 
         assertEq(address(mevEth).balance, 1 ether);
-
+        vm.roll(block.number + 1);
         // Withdraw 1 mevETH
         mevEth.withdraw(0.75 ether, User01, User01);
         assertEq(mevEth.balanceOf(User01), 0.25 ether);
@@ -229,6 +229,7 @@ contract ERC4626Test is MevEthTest {
         vm.stopPrank();
         vm.startPrank(User02);
 
+        vm.roll(block.number + 1);
         // Withdraw 1 mevETH
         mevEth.withdraw(0.75 ether, User02, User01);
 
@@ -252,6 +253,7 @@ contract ERC4626Test is MevEthTest {
 
         assertEq(address(mevEth).balance, amount);
 
+        vm.roll(block.number + 1);
         // Withdraw 1 mevETH
         mevEth.withdraw(amount, User01, User01);
 
@@ -352,6 +354,7 @@ contract ERC4626Test is MevEthTest {
 
         assertEq(address(mevEth).balance, 1 ether);
 
+        vm.roll(block.number + 1);
         // Redeem 1 mevETH
         mevEth.redeem(0.75 ether, User01, User01);
 
@@ -393,6 +396,7 @@ contract ERC4626Test is MevEthTest {
         vm.stopPrank();
         vm.startPrank(User02);
 
+        vm.roll(block.number + 1);
         // Withdraw 0.75 mevETH
         mevEth.redeem(0.75 ether, User02, User01);
 
@@ -414,6 +418,7 @@ contract ERC4626Test is MevEthTest {
         uint256 amountToRedeem = (amount / 100) * 75;
         uint256 amountLeftOver = amount - amountToRedeem;
 
+        vm.roll(block.number + 1);
         // Redeem 1 mevETH
         mevEth.redeem(amountToRedeem, User01, User01);
 
