@@ -67,6 +67,8 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     IWETH public immutable WETH;
     /// @notice Struct used to accounting the ETH staked within MevEth.
     Fraction public fraction;
+    /// @notice Sandwich protection mapping of last user deposits by block number
+    mapping(address => uint256) lastDeposit;
 
     /// @notice Central struct used for share accounting + math.
     /// @custom:field elastic   Represents total amount of staked ether, including rewards accrued / slashed.
@@ -503,6 +505,9 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         fraction.elastic += uint128(assets);
         fraction.base += uint128(shares);
 
+        // Update last deposit block for the user recorded for sandwich protection
+        lastDeposit[msg.sender] = block.number;
+
         // Deposit the assets
         _deposit(assets);
 
@@ -546,6 +551,9 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
 
         fraction.elastic += uint128(assets);
         fraction.base += uint128(shares);
+
+        // Update last deposit block for the user recorded for sandwich protection
+        lastDeposit[msg.sender] = block.number;
 
         // Deposit the assets
         _deposit(assets);
@@ -619,6 +627,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     function withdraw(uint256 assets, address receiver, address owner) external returns (uint256 shares) {
         // If withdraw is less than the minimum deposit / withdraw amount, revert
         if (assets < MIN_DEPOSIT) revert MevEthErrors.WithdrawTooSmall();
+        if (lastDeposit[msg.sender] == block.number) revert MevEthErrors.CannotDepositAndWithdrawInSameBlock();
 
         // Convert the assets to shares and check if the owner has the allowance to withdraw the shares.
         shares = convertToShares(assets);
@@ -644,6 +653,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     function withdrawQueue(uint256 assets, address receiver, address owner) external returns (uint256 shares) {
         // If withdraw is less than the minimum deposit / withdraw amount, revert
         if (assets < MIN_DEPOSIT) revert MevEthErrors.WithdrawTooSmall();
+        if (lastDeposit[msg.sender] == block.number) revert MevEthErrors.CannotDepositAndWithdrawInSameBlock();
 
         // Convert the assets to shares and check if the owner has the allowance to withdraw the shares.
         shares = convertToShares(assets);
@@ -686,6 +696,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
 
         // If withdraw is less than the minimum deposit / withdraw amount, revert
         if (assets < MIN_DEPOSIT) revert MevEthErrors.WithdrawTooSmall();
+        if (lastDeposit[msg.sender] == block.number) revert MevEthErrors.CannotDepositAndWithdrawInSameBlock();
 
         // Convert the assets to shares and check if the owner has the allowance to withdraw the shares.
         shares = convertToShares(assets);
