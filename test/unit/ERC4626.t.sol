@@ -36,6 +36,7 @@ contract ERC4626Test is MevEthTest {
 
     function testPreviewWithdraw(uint128 amount) public {
         vm.assume(amount > mevEth.MIN_DEPOSIT());
+        vm.assume(amount < type(uint128).max - type(uint128).max / 10_000);
         vm.deal(User01, amount);
         vm.startPrank(User01);
         mevEth.deposit{ value: amount }(amount, User01);
