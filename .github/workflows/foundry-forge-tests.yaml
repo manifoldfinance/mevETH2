@@ -46,8 +46,3 @@ jobs:
         run: |
           forge test --deny-warnings -vvv
         id: test
-
-      - name: Coverage
-        run: |
-          forge coverage
-        id: coverage
