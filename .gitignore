@@ -8,6 +8,9 @@ logs
 /broadcast/*.json
 /broadcast/*/31337/
 
+## harness dir used for grafting entrypoint
+__harness/
+
 ## CVE-2021-21300 style exploits
 .\#*
 
