@@ -154,10 +154,5 @@ contract WagyuStaker is Auth, IStakingModule {
     }
 
     /// @notice Function to receive Ether
-    receive() external payable {
-        // commented out because transer fails with out of gas
-        // unchecked {
-        //     record.totalWithdrawn += uint128(msg.value);
-        // }
-    }
+    receive() external payable { }
 }
