@@ -104,7 +104,7 @@ contract WagyuStaker is Auth, IStakingModule {
 
     function registerExit() external {
         // Only the MevEth contract can call this function
-        if (msg.sender != MEV_ETH) {
+        if (msg.sender != mevEth) {
             revert MevEthErrors.UnAuthorizedCaller();
         }
         uint128 exitSize = uint128(VALIDATOR_DEPOSIT_SIZE);
@@ -125,7 +125,7 @@ contract WagyuStaker is Auth, IStakingModule {
     function payValidatorWithdraw() external onlyOperator {
         uint256 exitSize = VALIDATOR_DEPOSIT_SIZE;
         if (exitSize > address(this).balance) revert MevEthErrors.NotEnoughEth();
-        ITinyMevEth(MEV_ETH).grantValidatorWithdraw{ value: exitSize }();
+        ITinyMevEth(mevEth).grantValidatorWithdraw{ value: exitSize }();
         emit ValidatorWithdraw(msg.sender, exitSize);
     }
 
