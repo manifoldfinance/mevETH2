@@ -35,6 +35,7 @@ contract QueueTest is MevEthTest {
         vm.roll(block.number + 1);
         vm.startPrank(User01);
         vm.recordLogs();
+
         mevEth.withdrawQueue(63 ether, User01, User01);
         Vm.Log[] memory entries = vm.getRecordedLogs();
 
@@ -50,7 +51,7 @@ contract QueueTest is MevEthTest {
 
         vm.deal(stakingModuleAddress, 32 ether);
         vm.prank(SamBacha);
-        IStakingModule(stakingModuleAddress).payValidatorWithdraw(32 ether);
+        IStakingModule(stakingModuleAddress).payValidatorWithdraw();
         vm.startPrank(Operator01);
         mevEth.processWithdrawalQueue(mevEth.queueLength());
 

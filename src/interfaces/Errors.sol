@@ -21,6 +21,7 @@ interface MevEthErrors {
     error SendError();
     error FeesTooHigh();
     error WrongDepositAmount();
+    error WrongWithdrawAmount();
     error UnAuthorizedCaller();
     error WithdrawTooSmall();
     error NotFinalised();
