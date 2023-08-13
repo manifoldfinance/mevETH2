@@ -29,4 +29,5 @@ interface MevEthErrors {
     error AlreadyFinalised();
     error IndexExceedsQueueLength();
     error DepositWasFrontrun();
+    error NonZeroVaultBalance();
 }
