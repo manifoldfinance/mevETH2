@@ -15,8 +15,15 @@ import "forge-std/console.sol";
 contract WagyuStaker is Auth, IStakingModule {
     using SafeTransferLib for ERC20;
 
-    /// @notice The amount of staked Ether on the beaconchain.
-    uint256 public balance;
+    struct Record {
+        uint128 totalDeposited;
+        uint128 totalWithdrawn;
+        uint128 totalRewardsPaid;
+        uint128 totalValidatorExitsPaid;
+    }
+
+    /// @notice Record of total deposits, withdraws, rewards paid and validators exited
+    Record public record;
     /// @notice The number of validators on the consensus layer registered under this contract
     uint256 public validators;
     /// @notice The address of the MevEth contract
@@ -57,14 +64,12 @@ contract WagyuStaker is Auth, IStakingModule {
             revert MevEthErrors.WrongDepositAmount();
         }
         if (BEACON_CHAIN_DEPOSIT_CONTRACT.get_deposit_root() != latestDepositRoot) {
-            console.logBytes32(latestDepositRoot);
-            console.logBytes32(BEACON_CHAIN_DEPOSIT_CONTRACT.get_deposit_root());
             revert MevEthErrors.DepositWasFrontrun();
         }
 
         // Update the contract balance and validator count
         unchecked {
-            balance += VALIDATOR_DEPOSIT_SIZE;
+            record.totalDeposited += uint128(VALIDATOR_DEPOSIT_SIZE);
             validators += 1;
         }
 
@@ -77,34 +82,51 @@ contract WagyuStaker is Auth, IStakingModule {
         emit NewValidator(data.operator, data.pubkey, data.withdrawal_credentials, data.signature, data.deposit_data_root);
     }
 
-    /// @notice Function to update the balance and validator count
-    function oracleUpdate(uint256 newBalance, uint256 newValidators) external {
-        if (msg.sender != mevEth) {
-            revert MevEthErrors.UnAuthorizedCaller();
+    /// @notice Function to pay rewards to the MevEth contract
+    /// @dev Only callable by an operator. Additionally, if there is an issue when granting rewards to the MevEth contract, funds are secured to the
+    ///      beneficiary address for manual allocation to the MevEth contract.
+    /// @param rewards rewards to pay to the MevEth contract
+    function payRewards(uint256 rewards) external onlyOperator {
+        if (rewards > address(this).balance) revert MevEthErrors.NotEnoughEth();
+
+        unchecked {
+            record.totalRewardsPaid += uint128(rewards);
+            // lagging withdrawn indicator, as including in receive can cause transfer out of gas
+            record.totalWithdrawn += uint128(rewards);
         }
 
-        balance = newBalance;
-        validators = newValidators;
-    }
-
-    /// @notice Function to pay rewards to the MevEth contract
-    /// @dev Only callable by an operator.
-    function payRewards() external onlyOperator {
-        // Cache the rewards balance.
-        uint256 _rewards = address(this).balance - balance;
-
         // Send the rewards to the MevEth contract
-        ITinyMevEth(mevEth).grantRewards{ value: _rewards }();
+        ITinyMevEth(mevEth).grantRewards{ value: rewards }();
 
         // Emit an event to track the rewards paid
-        emit RewardsPaid(_rewards);
+        emit RewardsPaid(rewards);
+    }
+
+    function registerExit() external {
+        // Only the MevEth contract can call this function
+        if (msg.sender != MEV_ETH) {
+            revert MevEthErrors.UnAuthorizedCaller();
+        }
+        uint128 exitSize = uint128(VALIDATOR_DEPOSIT_SIZE);
+        unchecked {
+            record.totalValidatorExitsPaid += exitSize;
+            // lagging withdrawn indicator, as including in receive can cause transfer out of gas
+            record.totalWithdrawn += exitSize;
+        }
+        if (validators > 0) {
+            unchecked {
+                validators -= 1;
+            }
+        }
     }
 
     /// @notice Function to pay MevEth when withdrawing funds from a validator
     /// @dev This function is only callable by an admin and emits an event for offchain validator registry tracking.
-    function payValidatorWithdraw(uint256 amount) external onlyAdmin {
-        ITinyMevEth(mevEth).grantValidatorWithdraw{ value: amount }();
-        emit ValidatorWithdraw(msg.sender, amount);
+    function payValidatorWithdraw() external onlyOperator {
+        uint256 exitSize = VALIDATOR_DEPOSIT_SIZE;
+        if (exitSize > address(this).balance) revert MevEthErrors.NotEnoughEth();
+        ITinyMevEth(MEV_ETH).grantValidatorWithdraw{ value: exitSize }();
+        emit ValidatorWithdraw(msg.sender, exitSize);
     }
 
     /// @notice Function to recover tokens sent to the contract.

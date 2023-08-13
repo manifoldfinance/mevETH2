@@ -326,28 +326,15 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         if (!(msg.sender == address(stakingModule) || msg.sender == mevEthShareVault)) revert MevEthErrors.InvalidSender();
 
         // Check that the value is not zero
-        if (msg.value == 0) {
-            revert MevEthErrors.ZeroValue();
+        if (msg.value != 32 ether) {
+            revert MevEthErrors.WrongWithdrawAmount();
         }
 
         // Emit an event to notify offchain listeners that a validator has withdrawn funds.
         emit ValidatorWithdraw(msg.sender, msg.value);
 
-        // If the msg.value is 32 ether, the elastic should not be updated.
-        if (msg.value == 32 ether) {
-            return;
-        }
-
-        // If the msg.value is less than 32 ether, the elastic should be reduced.
-        if (msg.value < 32 ether) {
-            /// @dev Elastic will always be at least equal to base. Base will always be at least equal to the MIN_DEPOSIT amount.
-            // assume slashed value so reduce elastic balance accordingly
-            fraction.elastic -= uint128(32 ether - msg.value);
-        } else {
-            // If the msg.value is greater than 32 ether, the elastic should be increased.
-            // account for any unclaimed rewards
-            fraction.elastic += uint128(msg.value - 32 ether);
-        }
+        // Register our exit with the staking module
+        stakingModule.registerExit();
     }
 
     /*//////////////////////////////////////////////////////////////
