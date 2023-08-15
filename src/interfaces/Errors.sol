@@ -30,4 +30,5 @@ interface MevEthErrors {
     error IndexExceedsQueueLength();
     error DepositWasFrontrun();
     error CannotDepositAndWithdrawInSameBlock();
+    error NonZeroVaultBalance();
 }

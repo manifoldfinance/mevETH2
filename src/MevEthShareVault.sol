@@ -24,7 +24,7 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
     }
 
     /// @notice ProtocolBalance struct to account for the protocol fees and rewards.
-    ProtocolBalance protocolBalance;
+    ProtocolBalance public protocolBalance;
     /// @notice The address of the MevEth contract.
     address immutable mevEth;
     /// @notice The address of the beneficiary, used to secure funds in the case of failure while paying out rewards.
@@ -122,7 +122,6 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
     ///      The block builder attaches a transaction to the end of the block sending the MEV rewards to the MevEthShareVault.
     ///      This then emits the RewardPayment event, allowing the offchain operators to track the protocolFeesOwed.
     ///      This approach trusts that the operators are acting honestly and the protocolFeesOwed is accurately calculated.
-
     function logRewards(uint128 protocolFeesOwed) external onlyOperator {
         // Cahce the protocol balance
         ProtocolBalance memory balances = protocolBalance;

@@ -243,7 +243,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
 
     /// @notice Finalizes the share vault update if a pending share vault exists.
     /// @dev This function is only callable by addresses with the admin role.
-    function finalizeUpdateMevEthShareVault() external onlyAdmin {
+    function finalizeUpdateMevEthShareVault(bool isMultisig) external onlyAdmin {
         // Revert if there is no pending share vault or if the the share vault finalization is premature.
         uint64 committedTimestamp = pendingMevEthShareVaultCommittedTimestamp;
         if (pendingMevEthShareVault == address(0) || _isZero(committedTimestamp)) {
@@ -253,6 +253,14 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         if (uint64(block.timestamp) < committedTimestamp + MODULE_UPDATE_TIME_DELAY) {
             revert MevEthErrors.PrematureMevEthShareVaultUpdateFinalization();
         }
+
+        if (!isMultisig) {
+            (uint128 fees, uint128 rewards) = MevEthShareVault(payable(mevEthShareVault)).protocolBalance();
+            if (fees != 0 || rewards != 0) {
+                revert MevEthErrors.NonZeroVaultBalance();
+            }
+        }
+
         //TODO: we need to do this for both the staking module and the mev share vault
         /// @custom:: When finalizing the update to the MevEthShareVault, make sure to grant any remaining rewards from the existing share vault.
         // Emit an event to notify offchain listeners that the share vault has been finalized.
