@@ -1,55 +1,52 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity 0.8.19;
 
-/*///////////// Manifold Mev Ether /////////////                   
+/*//////////////////////////////////// Manifold Mev Ether ///////////////////////////////////                   
 
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@%*+=-::....::-=+*%@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-@@@@@@@@@@@@@@@@@@@@@@@@@@@#=:                    :+#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-@@@@@@@@@@@@@@@@@@@@@@@@#-                           .=#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-@@@@@@@@@@@@@@@@@@@@@@*:                                -#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-@@@@@@@@@@@@@@@@@@@@#.                                    =%@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-@@@@@@@@@@@@@@@@@@%-                                       .#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-@@@@@@@@@@@@@@@@@%.                                          +@@%#%@@@@@@@@@@@@@@@@@@@@@@@
-@@@@@@@@@@@@@@@@#               .::---::..                    +@@#..-*%@@@@@@@@@@@@@@@@@@@
-@@@@@@@@@@@@@@@%.         .-+#%@@@@@@@@@@@%#*=-                #@@#    -*%@@@@@@@@@@@@@@@@
-@@@@@@@@@@@@@@@-       -*%@@@@@@@@@@@@@@@@@@@@@@#+:            :@@@#     .+%@@@@@@@@@@@@@@
-@@@@@@@@@@@@@@#     :*%@@@@@@%%#*++%@@@@@@@@@@@@@@@#=.          #@@@+      .*@@@@@@@@@@@@@
-@@@@@@@@@@@@@@=   .*@@@@@%*=.    =%@@@@@@@@@@@@@@@@@@%=         *@@@@.       -%@@@@@@@@@@@
-@@@@@@@@@@@@@@-  =%@@@%+:      .#@@@@@@@@@@@@@@@@@@@@@@#:       +@@@@-        :%@@@@@@@@@@
-@@@@@@@@@@@@@@: #@@@*:        -%@@@@@@@@@@@@@@@@@@@@@@@@@+      *@@@@+         :%@@@@@@@@@
-@@@@@@@@@@@@@@+%@@*.         -@@@@@@@@@@@@@@@@@@@@@@@@@@@@*     %@@@@+          =@@@@@@@@@
-@@@@@@@@@@@@@@@@%:          .%@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*   -@@@@@-           #@@@@@@@@
-@@@@@@@@@@@@@@@#.           #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@-  %@@@@@.           -@@@@@@@@
-@@@@@@@@@@@@@@*            :@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@% *@@@@@+             @@@@@@@@
-@@@@@@@@@@@@@#             +@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#@@@@@#              %@@@@@@@
-@@@@@@@@@@@@@:             *@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@%.              %@@@@@@@
-@@@@@@@@@@@@#              *@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@%.              .@@@@@@@@
-@@@@@@@@@@@@-              =@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*                +@@@@@@@@
-@@@@@@@@@@@@.              .@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#:                .%@@@@@@@@
-@@@@@@@@@@@@.               *@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#-                  *@@@@@@@@@
-@@@@@@@@@@@@-                %@@@@@@@@@@@@@@@@@@@@@@@@@@@%+.                   *@@@@@@@@@@
-@@@@@@@@@@@@*                :%@@@@@@@@@@@@@@@@@@@@@@%*=.                     *@@@@@@@@@@@
-@@@@@@@@@@@@%.                .%@@@@@@**#%%%%%%#*+=:.                       .#@@@@@@@@@@@@
-@@@@@@@@@@@@@+                  *@@@@@%=                                  .+%@@@@@@@@@@@@@
-@@@@@@@@@@@@@@-                  -#@@@@@%+.                             :+%@@@@@@@@@@@@@@@
-@@@@@@@@@@@@@@@=                   -#@@@@@@*=.                       .=#@@@@@@@@@@@@@@@@@@
-@@@@@@@@@@@@@@@@*                    :=#@@@@@@%*=:.             .:=*%@@@@@@@@@@@@@@@@@@@@@
-@@@@@@@@@@@@@@@@@%-                     .-+#@@@@@@@%##*+++++*##%@@@@@@@@@@@@@@@@@@@@@@@@@@
-@@@@@@@@@@@@@@@@@@@#-                        .:-=+++*%@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-@@@@@@@@@@@@@@@@@@@@@#=.                           -#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-@@@@@@@@@@@@@@@@@@@@@@@%*=:                    .-*%@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-@@@@@@@@@@@@@@@@@@@@@@@@@@@%#+=-:.      .:-=+*%@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+                                  ..,:clddxxxxxdlcc:,..                                             
+                             ..;lx0KNWMMMMMMMMMMMMMWNKOdc'.                                         
+                          .'cxKNMMMMMMMMMMMMMMMMMMMMMMMMWNOo,.                                      
+                        .;xKWMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMNOc.                                    
+                      .:ONMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMW0l.                                  
+                    .;kNMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMWO:.                                
+                   .lXMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMXo.                               
+                  .xNMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMNx.  .,'.                        
+                 .xWMMMMMMMMMMMMWXK0kxxddxxkO0XNWMMMMMMMMMMMMMMMMMMMWd. .cO0dc'.                    
+                .dWMMMMMMMMWKkoc;'...       ...,:lox0NMMMMMMMMMMMMMMMNl. .:KMWXx:.                  
+               .cXMMMMMMNOo;..                      .,cxXWMMMMMMMMMMMM0,  .cXMMMW0l'                
+               'OMMMMWKd;.       ......                .'ckNMMMMMMMMMMNl.  .dWMMMMWKl.              
+               cXMMWKl'     ..;ldk00x;.                   .;xXMMMMMMMMWx.   ,0MMMMMMWk,.            
+              .oWMXo'    .:okXWMMMXd'                       .;kNMMMMMMMO'   .dWMMMMMMMKc.           
+              .dNO;.  .;d0WMMMMMMKc.                          .lKMMMMMMO'   .lNMMMMMMMMXl.          
+              .ld'  .cONMMMMMMMM0;.                            .;0WMMMWd.    cNMMMMMMMMMXc.         
+              ... .;OWMMMMMMMMM0;                                ,OMMMNc.    cNMMMMMMMMMM0,         
+                 .dNMMMMMMMMMMXc.                                 ;KMM0,    .oWMMMMMMMMMMWd.        
+                ,OWMMMMMMMMMMWx.                                  .lNXc.    'OMMMMMMMMMMMM0,        
+               ;0WMMMMMMMMMMMX:                                    'xd.    .cXMMMMMMMMMMMMNl.       
+              'OWMMMMMMMMMMMMO'                                    ...     'OMMMMMMMMMMMMMWo.       
+             .dWMMMMMMMMMMMMMx.                                           .xWMMMMMMMMMMMMMWo.       
+             :XMMMMMMMMMMMMMMx.                                          .xNMMMMMMMMMMMMMMNl.       
+            .dWMMMMMMMMMMMMMMk.                                         ,kWMMMMMMMMMMMMMMMK;        
+            'OMMMMMMMMMMMMMMMK;                                       .lKMMMMMMMMMMMMMMMMWd.        
+            ,0MMMMMMMMMMMMMMMNl.                                    .:OWMMMMMMMMMMMMMMMMM0,         
+            ,0MMMMMMMMMMMMMMMM0,                                  .cONMMMMMMMMMMMMMMMMMMXc.         
+            .kMMMMMMMMMMMMMMMMWx.                             ..;o0WMMMMMMMMMMMMMMMMMMMXl.          
+            .oNMMMMMMMMMMMMMMMMNo.                        ..,cx0NMMMMMMMMMMMMMMMMMMMMMKc.           
+             ;KMMMMMMMMMMMMMMMMMNd.      .','.......',;cldkKNWMMMMMMMMMMMMMMMMMMMMMMNk,             
+             .oNMMMMMMMMMMMMMMMMMWk,.    .,dKXKKKKKXNNWWMMMMMMMMMMMMMMMMMMMMMMMMMMW0c.              
+              .xWMMMMMMMMMMMMMMMMMWKl.     .:xXWMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMNOc.                
+               'kWMMMMMMMMMMMMMMMMMMW0c.     .,lONWMMMMMMMMMMMMMMMMMMMMMMMMMMWKd;.                  
+                .dNMMMMMMMMMMMMMMMMMMMW0o,.     .,:lx0NWMMMMMMMMMMMMMMMMMNKOo:.                     
+                 .cKWMMMMMMMMMMMMMMMMMMMWXkl,..     ..,:ldxO0KXXXXXKOkxoc;..                        
+                   'dXMMMMMMMMMMMMMMMMMMMMMMN0xo:,....     ....'''....                              
+                    .,dXWMMMMMMMMMMMMMMMMMMMMMMMWNXK0kxdoo:.                                        
+                      .'ckXWMMMMMMMMMMMMMMMMMMMMMMMMMMWNOl'.                                        
+                         .'cx0XWMMMMMMMMMMMMMMMMMWWN0xl,.                                           
+                             .':ldkOKKXXXXXKKOkdo:;,..                                              
+                                  .....'''.....                                                     
+                                                        
 
-/////////////////////////////////////////////*/
+//////////////////////////////////////////////////////////////////////////////////////////*/
 
 import { SafeTransferLib } from "solmate/utils/SafeTransferLib.sol";
 import { FixedPointMathLib } from "solmate/utils/FixedPointMathLib.sol";
