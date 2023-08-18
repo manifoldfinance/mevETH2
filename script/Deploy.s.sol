@@ -39,9 +39,10 @@ contract DeployScript is Script {
         vm.startBroadcast();
         // deploy mevETH
         MevEth mevEth = new MevEth(authority, weth, layerZeroEndpoint);
+
         // deploy sharevault
         // TODO: Is the initial share vault a multisig? If so will need to comment this out and sub in multisig address
-        MevEthShareVault initialShareVault = new MevEthShareVault(authority, address(mevEth), authority, authority);
+        MevEthShareVault initialShareVault = new MevEthShareVault(authority, address(mevEth), authority);
         // deploy staking module
         IStakingModule initialStakingModule = new WagyuStaker(authority, beaconDepositContract, address(mevEth));
         // initialise mevETH
