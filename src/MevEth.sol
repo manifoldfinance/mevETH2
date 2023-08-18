@@ -475,14 +475,31 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     }
 
     /// @notice internal deposit function to process Weth or Eth deposits
+    /// @param receiver The address user whom should receive the mevEth out
     /// @param assets The amount of assets to deposit
-    function _deposit(uint256 assets) internal {
+    /// @param shares The amount of shares that should be minted
+    function _deposit(address receiver, uint256 assets, uint256 shares) internal {
+        // If the deposit is less than the minimum deposit, revert
+        if (assets < MIN_DEPOSIT) revert MevEthErrors.DepositTooSmall();
+
+        fraction.elastic += uint128(assets);
+        fraction.base += uint128(shares);
+
+        // Update last deposit block for the user recorded for sandwich protection
+        lastDeposit[msg.sender] = block.number;
+
         if (_isZero(msg.value)) {
             ERC20(address(WETH)).safeTransferFrom(msg.sender, address(this), assets);
             WETH.withdraw(assets);
         } else {
             if (msg.value != assets) revert MevEthErrors.WrongDepositAmount();
         }
+
+        // Mint MevEth shares to the receiver
+        _mint(receiver, shares);
+
+        // Emit the deposit event to notify offchain listeners that a deposit has occured
+        emit Deposit(msg.sender, receiver, assets, shares);
     }
 
     /// @notice Function to deposit assets into the mevEth contract
@@ -491,26 +508,12 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @return shares The amount of shares minted
     function deposit(uint256 assets, address receiver) external payable returns (uint256 shares) {
         _stakingUnpaused();
-        // If the deposit is less than the minimum deposit, revert
-        if (assets < MIN_DEPOSIT) revert MevEthErrors.DepositTooSmall();
 
         // Convert the assets to shares and update the fraction elastic and base
         shares = convertToShares(assets);
 
-        fraction.elastic += uint128(assets);
-        fraction.base += uint128(shares);
-
-        // Update last deposit block for the user recorded for sandwich protection
-        lastDeposit[msg.sender] = block.number;
-
         // Deposit the assets
-        _deposit(assets);
-
-        // Mint MevEth shares to the receiver
-        _mint(receiver, shares);
-
-        // Emit the deposit event to notify offchain listeners that a deposit has occured
-        emit Deposit(msg.sender, receiver, assets, shares);
+        _deposit(receiver, assets, shares);
     }
 
     /// @notice Function to indicate the maximum amount of shares that can be minted at the current ratio.
@@ -541,22 +544,8 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         // Convert the shares to assets and update the fraction elastic and base
         assets = convertToAssets(shares);
 
-        // If the deposit is less than the minimum deposit, revert
-        if (assets < MIN_DEPOSIT) revert MevEthErrors.DepositTooSmall();
-
-        fraction.elastic += uint128(assets);
-        fraction.base += uint128(shares);
-
-        // Update last deposit block for the user recorded for sandwich protection
-        lastDeposit[msg.sender] = block.number;
-
         // Deposit the assets
-        _deposit(assets);
-        // Mint MevEth shares to the receiver
-        _mint(receiver, shares);
-
-        // Emit the deposit event to notify offchain listeners that a deposit has occured
-        emit Deposit(msg.sender, receiver, assets, shares);
+        _deposit(receiver, assets, shares);
     }
 
     /// @notice Function to indicate the maximum amount of assets that can be withdrawn at the current state.
