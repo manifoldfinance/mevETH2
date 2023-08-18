@@ -3,6 +3,7 @@ pragma solidity 0.8.19;
 
 contract Auth {
     error Unauthorized();
+    error AlreadySet();
     error NoAdmin();
 
     event AdminAdded(address indexed newAdmin);
@@ -49,12 +50,14 @@ contract Auth {
                            Maintenance Functions
     //////////////////////////////////////////////////////////////*/
     function addAdmin(address newAdmin) external onlyAdmin {
+        if (admins[newAdmin]) revert AlreadySet();
         ++adminsCounter;
         admins[newAdmin] = true;
         emit AdminAdded(newAdmin);
     }
 
     function deleteAdmin(address oldAdmin) external onlyAdmin {
+        if (!admins[oldAdmin]) revert AlreadySet();
         --adminsCounter;
         if (adminsCounter == 0) revert NoAdmin();
         admins[oldAdmin] = false;
@@ -62,11 +65,13 @@ contract Auth {
     }
 
     function addOperator(address newOperator) external onlyAdmin {
+        if (operators[newOperator]) revert AlreadySet();
         operators[newOperator] = true;
         emit OperatorAdded(newOperator);
     }
 
     function deleteOperator(address oldOperator) external onlyAdmin {
+        if (!operators[oldOperator]) revert AlreadySet();
         operators[oldOperator] = false;
         emit OperatorDeleted(oldOperator);
     }

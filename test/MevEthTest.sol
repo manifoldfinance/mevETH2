@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 
 // Test utils
@@ -11,6 +12,8 @@ import "./mocks/WETH9.sol";
 import "./mocks/DepositContract.sol";
 import "./mocks/LZEndpointMock.sol";
 import "../src/MevEthShareVault.sol";
+import { IAuth } from "src/interfaces/IAuth.sol";
+import { AuthManager } from "src/libraries/AuthManager.sol";
 import { SafeInstance, SafeTestTools } from "../lib/safe-tools/src/SafeTestTools.sol";
 
 contract MevEthTest is Test {
@@ -94,7 +97,7 @@ contract MevEthTest is Test {
 
     event RewardPayment(uint256 indexed blockNumber, address indexed coinbase, uint256 indexed amount);
     event ProtocolFeeToUpdated(address indexed newProtocolFeeTo);
-    event BeneficiaryUpdated(address indexed beneficiary);
+    event MevEthUpdated(address indexed meveth);
     event RewardsCollected(uint256 indexed protocolFeesOwed, uint256 indexed rewardsOwed);
     event FeesSent(uint256 indexed feesSent);
     event RewardsPaid(uint256 indexed rewards);
@@ -132,12 +135,19 @@ contract MevEthTest is Test {
         address initialShareVault = address(safeInstance.safe);
 
         address initialStakingModule = address(IStakingModule(address(new WagyuStaker(SamBacha, address(depositContract), address(mevEth)))));
-        vm.prank(SamBacha);
+
+        AuthManager authManager = new AuthManager(SamBacha, address(mevEth), address(initialShareVault), address(initialStakingModule));
+
+        vm.startPrank(SamBacha);
         mevEth.init(initialShareVault, initialStakingModule);
 
+        IAuth(address(mevEth)).addAdmin(address(authManager));
+        IAuth(initialStakingModule).addAdmin(address(authManager));
+
         // Add a new operator
-        vm.prank(SamBacha);
-        mevEth.addOperator(Operator01);
+        authManager.addOperator(Operator01);
+
+        vm.stopPrank();
     }
 
     // Helper function to update the staking module for testing
