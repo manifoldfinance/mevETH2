@@ -67,6 +67,8 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     IStakingModule public pendingStakingModule;
     /// @notice WETH Implementation used by MevEth.
     IWETH public immutable WETH;
+    /// @notice Last rewards payment by block number
+    uint256 internal lastRewards;
     /// @notice Struct used to accounting the ETH staked within MevEth.
     Fraction public fraction;
     /// @notice Sandwich protection mapping of last user deposits by block number
@@ -320,10 +322,12 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     event Rewards(address sender, uint256 amount);
 
     /// @notice Grants rewards updating the fraction.elastic.
+    /// @dev called from validator rewards updates
     function grantRewards() external payable {
         if (_isZero(msg.value)) revert MevEthErrors.ZeroValue();
 
         fraction.elastic += uint128(msg.value);
+        lastRewards = block.number;
         emit Rewards(msg.sender, msg.value);
     }
 
@@ -583,7 +587,8 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         // If withdraw is less than the minimum deposit / withdraw amount, revert
         if (assets < MIN_DEPOSIT) revert MevEthErrors.WithdrawTooSmall();
         // Sandwich protection
-        if (_isZero(block.number - lastDeposit[msg.sender])) revert MevEthErrors.CannotDepositAndWithdrawInSameBlock();
+        uint256 blockNumber = block.number;
+        if (_isZero(blockNumber - lastDeposit[msg.sender]) && _isZero(blockNumber - lastRewards)) revert MevEthErrors.SandwichProtection();
 
         _updateAllowance(owner, shares);
 

@@ -47,8 +47,6 @@ abstract contract ERC4626Test is ERC4626Prop {
 
         // setup initial yield for vault
         setUpYield(init);
-
-        vm.roll(block.number + 1);
     }
 
     // setup initial yield

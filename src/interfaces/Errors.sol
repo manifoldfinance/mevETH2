@@ -29,6 +29,6 @@ interface MevEthErrors {
     error AlreadyFinalised();
     error IndexExceedsQueueLength();
     error DepositWasFrontrun();
-    error CannotDepositAndWithdrawInSameBlock();
+    error SandwichProtection();
     error NonZeroVaultBalance();
 }
