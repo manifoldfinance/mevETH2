@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
-import { MevEthShareVault } from "../MevEthShareVault.sol";
-
 pragma solidity ^0.8.19;
+
+import { MevEthShareVault } from "../MevEthShareVault.sol";
 
 interface IMevEthShareVault {
     /* The receive function handles mev/validator payments. If if the msg.sender is the block.coinbase, 
@@ -24,5 +24,5 @@ interface IMevEthShareVault {
     // Send the protocol fees to the `feeTo` address
     function sendFees() external;
     function setProtocolFeeTo(address newFeeTo) external;
-    function setNewBeneficiary(address newBeneficiary) external;
+    function setNewMevEth(address newMevEth) external;
 }
