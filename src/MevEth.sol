@@ -45,8 +45,6 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     bool public stakingPaused;
     /// @notice Indicates if contract is initialized.
     bool public initialized;
-    ///@notice withdrawFee as a fraction of 10,000 i.e. 1 => 0.01%
-    uint8 internal constant withdrawFee = 1;
     /// @notice Timestamp when pending staking module update can be finalized.
     uint64 public pendingStakingModuleCommittedTimestamp;
     /// @notice Timestamp when pending mevEthShareVault update can be finalized.
@@ -573,7 +571,8 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @param assets The amount of assets that would be withdrawn
     /// @return shares The amount of shares that would be burned, *under ideal conditions* only
     function previewWithdraw(uint256 assets) external view returns (uint256 shares) {
-        uint256 fee = uint256(withdrawFee) * assets / 10_000;
+        // withdraw fee fixed at 0.01%
+        uint256 fee = assets / 10_000;
         shares = convertToShares(assets + fee);
     }
 
@@ -639,7 +638,8 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @param owner The address of the owner of the mevEth
     /// @return shares The amount of shares burned
     function withdraw(uint256 assets, address receiver, address owner) external returns (uint256 shares) {
-        uint256 fee = uint256(withdrawFee) * assets / 10_000;
+        // withdraw fee fixed at 0.01%
+        uint256 fee = assets / 10_000;
         // Convert the assets to shares and check if the owner has the allowance to withdraw the shares.
         shares = convertToShares(assets + fee);
 
@@ -653,7 +653,8 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @param owner The address of the owner of the mevEth
     /// @return shares The amount of shares burned
     function withdrawQueue(uint256 assets, address receiver, address owner) external returns (uint256 shares) {
-        uint256 fee = uint256(withdrawFee) * assets / 10_000;
+        // withdraw fee fixed at 0.01%
+        uint256 fee = assets / 10_000;
         // last shareholder has no fee
         if (_isZero(fraction.elastic - assets)) fee = 0;
         // Convert the assets to shares and check if the owner has the allowance to withdraw the shares.
@@ -674,7 +675,8 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @param shares The amount of shares that would be burned
     /// @return assets The amount of assets that would be withdrawn, *under ideal conditions* only
     function previewRedeem(uint256 shares) external view returns (uint256 assets) {
-        uint256 fee = uint256(withdrawFee) * shares / 10_000;
+        // withdraw fee fixed at 0.01%
+        uint256 fee = shares / 10_000;
         assets = convertToAssets(shares - fee);
     }
 
@@ -684,7 +686,8 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @param owner The address of the owner of the mevEth
     /// @return assets The amount of assets withdrawn
     function redeem(uint256 shares, address receiver, address owner) external returns (uint256 assets) {
-        uint256 fee = uint256(withdrawFee) * shares / 10_000;
+        // withdraw fee fixed at 0.01%
+        uint256 fee = shares / 10_000;
         // last shareholder has no fee
         if (_isZero(totalSupply - shares)) fee = 0;
         // Convert the shares to assets and check if the owner has the allowance to withdraw the shares.
