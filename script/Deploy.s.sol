@@ -12,8 +12,8 @@ import { IStakingModule } from "src/interfaces/IStakingModule.sol";
 contract DeployScript is Script {
     error UnknownChain();
 
+    /// @dev PRIVATE_KEY and SENDER env vars must be set to initial mevETH admin
     function run() public {
-        // TODO: set authority before deployment. If left as is, deployer is initial authority
         address authority = tx.origin;
         uint256 chainId;
         address beaconDepositContract;
@@ -37,19 +37,22 @@ contract DeployScript is Script {
         }
 
         vm.startBroadcast();
+        // deploy mevETH
         MevEth mevEth = new MevEth(authority, weth, layerZeroEndpoint);
-
+        // deploy sharevault
+        // TODO: Is the initial share vault a multisig? If so will need to comment this out and sub in multisig address
         MevEthShareVault initialShareVault = new MevEthShareVault(authority, address(mevEth), authority, authority);
+        // deploy staking module
         IStakingModule initialStakingModule = new WagyuStaker(authority, beaconDepositContract, address(mevEth));
-
-        AuthManager authManager = new AuthManager(authority, address(mevEth), address(initialShareVault), address(initialStakingModule));
-
+        // initialise mevETH
         mevEth.init(address(initialShareVault), address(initialStakingModule));
 
-        // authority needs to call these
-        // IAuth(address(mevEth)).addAdmin(address(authManager));
-        // IAuth(address(initialShareVault)).addAdmin(address(authManager));
-        // IAuth(address(initialStakingModule)).addAdmin(address(authManager));
+        // deploy AuthManager
+        AuthManager authManager = new AuthManager(authority, address(mevEth), address(initialShareVault), address(initialStakingModule));
+        // set AuthManager as admin
+        IAuth(address(mevEth)).addAdmin(address(authManager));
+        IAuth(address(initialShareVault)).addAdmin(address(authManager));
+        IAuth(address(initialStakingModule)).addAdmin(address(authManager));
 
         vm.stopBroadcast();
     }

@@ -78,8 +78,6 @@
               --private-key $PRIVATE_KEY \
               --verify \
               -vvvvv \
-              --optimize \
-              --optimizer-runs 2000 \
               --rpc-url $RPC_GOERLI $@
           '';
         }
@@ -211,6 +209,7 @@
           command = ''
             forge script $PRJ_ROOT/script/Deploy.s.sol:DeployScript \
               --chain-id 1 \
+              --private-key $PRIVATE_KEY \
               --fork-url $RPC_MAINNET \
               -vvvvv
           '';
