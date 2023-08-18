@@ -3,7 +3,9 @@ pragma solidity ^0.8.19;
 
 import "forge-std/Script.sol";
 import { MevEth } from "src/MevEth.sol";
+import { IAuth } from "src/interfaces/IAuth.sol";
 import { WagyuStaker } from "src/WagyuStaker.sol";
+import { AuthManager } from "src/libraries/AuthManager.sol";
 import { MevEthShareVault } from "src/MevEthShareVault.sol";
 import { IStakingModule } from "src/interfaces/IStakingModule.sol";
 
@@ -39,7 +41,13 @@ contract DeployScript is Script {
         MevEthShareVault initialShareVault = new MevEthShareVault(authority, address(mevEth), authority);
         IStakingModule initialStakingModule = new WagyuStaker(authority, beaconDepositContract, address(mevEth));
 
+        AuthManager authManager = new AuthManager(authority, address(mevEth), address(initialShareVault), address(initialStakingModule));
+
         mevEth.init(address(initialShareVault), address(initialStakingModule));
+
+        IAuth(address(mevEth)).addAdmin(address(authManager));
+        IAuth(address(initialShareVault)).addAdmin(address(authManager));
+        IAuth(address(initialStakingModule)).addAdmin(address(authManager));
 
         vm.stopBroadcast();
     }
