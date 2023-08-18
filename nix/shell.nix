@@ -130,6 +130,21 @@
         }
         {
           category = "deployments";
+          name = "deploy-avalanche-testnet";
+          help = "Deploy the mevETH OFT on Avalanche testnet";
+          command = ''
+            forge script $PRJ_ROOT/script/DeployOFT.s.sol:DeployOFTScript \
+              --chain-id 43113 \
+              --rpc-url $AVALANCHE_TESTNET_RPC_URL \
+              --broadcast \
+              --private-key $PRIVATE_KEY \
+              --verify \
+              --etherscan-api-key $SNOWSCAN_API_KEY \
+              -vvvvv
+          '';
+        }
+        {
+          category = "deployments";
           name = "deploy-bsc";
           help = "Deploy the mevETH OFT on BSC";
           command = ''
@@ -145,12 +160,43 @@
         }
         {
           category = "deployments";
+          name = "deploy-bsc-testnet";
+          help = "Deploy the mevETH OFT on BSC testnet";
+          command = ''
+            forge script $PRJ_ROOT/script/DeployOFT.s.sol:DeployOFTScript \
+              --chain-id 97 \
+              --rpc-url $BSC_TESTNET_RPC_URL \
+              --broadcast \
+              --private-key $PRIVATE_KEY \
+              --verify \
+              --etherscan-api-key $BSCSCAN_API_KEY \
+              -vvvvv
+          '';
+        }
+        {
+          category = "deployments";
           name = "deploy-polygon";
           help = "Deploy the mevETH OFT on Polygon";
           command = ''
             forge script $PRJ_ROOT/script/DeployOFT.s.sol:DeployOFTScript \
               --chain-id 137 \
               --rpc-url $POLYGON_MAINNET_RPC_URL \
+              --broadcast \
+              --private-key $PRIVATE_KEY \
+              --verify \
+              --etherscan-api-key $POLYGONSCAN_API_KEY \
+              -vvvvv
+          '';
+        }
+        {
+          category = "deployments";
+          name = "deploy-polygon-testnet";
+          help = "Deploy the mevETH OFT on Polygon testnet";
+          command = ''
+            forge script $PRJ_ROOT/script/DeployOFT.s.sol:DeployOFTScript \
+              --legacy \
+              --chain-id 80001 \
+              --rpc-url $POLYGON_TESTNET_RPC_URL \
               --broadcast \
               --private-key $PRIVATE_KEY \
               --verify \
@@ -228,7 +274,7 @@
           category = "tests";
           name = "tests";
           help = "Test the Smart Contracts";
-          command = ''forge test -vvvvvv'';
+          command = ''forge test -vvv'';
         }
       ];
     };

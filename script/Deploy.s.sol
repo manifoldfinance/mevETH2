@@ -13,6 +13,7 @@ contract DeployScript is Script {
     error UnknownChain();
 
     function run() public {
+        // TODO: set authority before deployment. If left as is, deployer is initial authority
         address authority = tx.origin;
         uint256 chainId;
         address beaconDepositContract;
@@ -45,9 +46,10 @@ contract DeployScript is Script {
 
         mevEth.init(address(initialShareVault), address(initialStakingModule));
 
-        IAuth(address(mevEth)).addAdmin(address(authManager));
-        IAuth(address(initialShareVault)).addAdmin(address(authManager));
-        IAuth(address(initialStakingModule)).addAdmin(address(authManager));
+        // authority needs to call these
+        // IAuth(address(mevEth)).addAdmin(address(authManager));
+        // IAuth(address(initialShareVault)).addAdmin(address(authManager));
+        // IAuth(address(initialStakingModule)).addAdmin(address(authManager));
 
         vm.stopBroadcast();
     }

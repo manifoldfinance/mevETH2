@@ -3,12 +3,14 @@
 
 source .envrc.local
 
-file='lz-oft-deployment-config.json'
+file='lz-oft-deployment-config-example.json'
 
-lzIds=( $(cat "$file" | jq -r 'keys[]') )
-ofts=( $(cat "$file" | jq -r 'values[]') )
-i=0
-for id in "${lzIds[@]}"; do
+mapfile -t lzIds < <(jq -r 'to_entries[] | .key' "$file")
+mapfile -t ofts < <(jq -r 'to_entries[] | .value' "$file")
+
+for i in "${!lzIds[@]}"
+do
+    id=${lzIds[i]}
     oft=${ofts[i]}
     echo "$id $oft"
     if [[ $id == 101 ]]
@@ -35,6 +37,18 @@ for id in "${lzIds[@]}"; do
     then
         chain=10
         rpc=$OPTIMISM_RPC_URL
+    elif [[ $id == 10121 ]]
+    then
+        chain=5
+        rpc=$GOERLI_RPC_URL
+    elif [[ $id == 10102 ]]
+    then
+        chain=97
+        rpc=$BSC_TESTNET_RPC_URL
+    elif [[ $id == 10109 ]]
+    then
+        chain=80001
+        rpc=$POLYGON_TESTNET_RPC_URL
     fi
     echo "$chain $rpc"
     # strip out current chain and contract from args
@@ -53,5 +67,4 @@ for id in "${lzIds[@]}"; do
         --broadcast \
         --private-key $PRIVATE_KEY \
         -vvvvv
-    i=$i+1
 done

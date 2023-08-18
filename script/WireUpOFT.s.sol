@@ -16,7 +16,8 @@ contract WireUpOFTScript is Script {
     function run(uint16 defaultFeeBp, address localMevEth, uint16[] calldata lzChainIds, address[] calldata remoteMevEths) public {
         uint256 length = lzChainIds.length;
         if (length != remoteMevEths.length) revert ListMismatch();
-        vm.startBroadcast();
+        uint256 privateKey = vm.envUint("PRIVATE_KEY");
+        vm.startBroadcast(privateKey);
         for (uint256 i; i < length; i++) {
             OFTWithFee(localMevEth).setTrustedRemote(lzChainIds[i], abi.encodePacked(remoteMevEths[i], localMevEth));
         }
