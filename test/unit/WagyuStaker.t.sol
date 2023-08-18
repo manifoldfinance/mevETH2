@@ -14,6 +14,7 @@ contract WagyuStakerTest is MevEthTest {
     }
 
     function testPayRewards(uint128 amount) public {
+        vm.assume(amount > 0);
         vm.deal(address(this), amount);
         payable(wagyuStaker).transfer(amount);
 
@@ -27,6 +28,7 @@ contract WagyuStakerTest is MevEthTest {
     }
 
     function testNegativePayRewards(uint128 amount) public {
+        vm.assume(amount > 0);
         vm.deal(address(this), amount);
         payable(wagyuStaker).transfer(amount);
 
@@ -36,28 +38,28 @@ contract WagyuStakerTest is MevEthTest {
         assertEq(address(wagyuStaker).balance - totalDeposited, amount);
     }
 
-    function testSetNewBeneficiary(address newBeneficiary) public {
-        vm.assume(newBeneficiary != address(0));
+    function testSetNewMevEth(address newMevEth) public {
+        vm.assume(newMevEth != address(0));
 
         vm.prank(SamBacha);
         vm.expectEmit(true, false, false, false, address(wagyuStaker));
-        emit BeneficiaryUpdated(newBeneficiary);
-        wagyuStaker.setNewBeneficiary(newBeneficiary);
+        emit MevEthUpdated(newMevEth);
+        wagyuStaker.setNewMevEth(newMevEth);
 
-        assertEq(wagyuStaker.beneficiary(), newBeneficiary);
+        assertEq(wagyuStaker.mevEth(), newMevEth);
     }
 
-    function testNegativeSetNewBeneficiary(address newBeneficiary) public {
-        address currentBeneficiary = wagyuStaker.beneficiary();
+    function testNegativeSetNewMevEth(address newMevEth) public {
+        address currentMevEth = wagyuStaker.mevEth();
 
         vm.expectRevert(Auth.Unauthorized.selector);
-        wagyuStaker.setNewBeneficiary(newBeneficiary);
-        assertEq(wagyuStaker.beneficiary(), currentBeneficiary);
+        wagyuStaker.setNewMevEth(newMevEth);
+        assertEq(wagyuStaker.mevEth(), currentMevEth);
 
         vm.expectRevert(MevEthErrors.ZeroAddress.selector);
         vm.prank(SamBacha);
-        wagyuStaker.setNewBeneficiary(address(0));
-        assertEq(wagyuStaker.beneficiary(), currentBeneficiary);
+        wagyuStaker.setNewMevEth(address(0));
+        assertEq(wagyuStaker.mevEth(), currentMevEth);
     }
 
     function testPayValidatorWithdrawGt32Ether(uint128 amount) public {

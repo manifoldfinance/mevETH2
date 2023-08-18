@@ -26,9 +26,7 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
     /// @notice ProtocolBalance struct to account for the protocol fees and rewards.
     ProtocolBalance public protocolBalance;
     /// @notice The address of the MevEth contract.
-    address immutable mevEth;
-    /// @notice The address of the beneficiary, used to secure funds in the case of failure while paying out rewards.
-    address public beneficiary;
+    address public mevEth;
     /// @notice The address that protocol fees are sent to.
     address public protocolFeeTo;
 
@@ -44,8 +42,8 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
     event FeesSent(uint256 indexed feesSent);
     /// @notice Event emitted when rewards are paid to the MevEth contract.
     event RewardsPaid(uint256 indexed rewards);
-    /// @notice Event emitted when the beneficiary address is updated.
-    event BeneficiaryUpdated(address indexed beneficiary);
+    /// @notice Event emitted when the mevEth address is updated.
+    event MevEthUpdated(address indexed meveth);
     /// @notice Event emitted when funds representing a validator withdrawal are sent to the MevEth contract.
     event ValidatorWithdraw(address sender, uint256 amount);
 
@@ -53,32 +51,24 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
     /// @param authority The address of the controlling admin authority.
     /// @param _mevEth The address of the WETH contract to use for deposits.
     /// @param _protocolFeeTo The address that protocol fees are sent to.
-    /// @param _beneficiary  The address that protocol rewards are secured to in the case of failure while paying rewards.
-    constructor(address authority, address _mevEth, address _protocolFeeTo, address _beneficiary) Auth(authority) {
-        if (_protocolFeeTo == address(0) || _beneficiary == address(0)) {
+    constructor(address authority, address _mevEth, address _protocolFeeTo) Auth(authority) {
+        if (_protocolFeeTo == address(0) || authority == address(0)) {
             revert MevEthErrors.ZeroAddress();
         }
 
         mevEth = _mevEth;
         protocolFeeTo = _protocolFeeTo;
-        beneficiary = _beneficiary;
     }
 
     /// @notice Function to pay rewards to the MevEth contract
-    /// @dev Only callable by an operator. Additionally, if there is an issue when granting rewards to the MevEth contract, funds are secured to the
-    ///      beneficiary address for manual allocation to the MevEth contract.
+    /// @dev Only callable by an operator.
     function payRewards() external onlyOperator {
         // Cache the rewards balance and update the balance to 0.
         uint256 _rewards = protocolBalance.rewards;
         protocolBalance.rewards = 0;
 
         // Send the rewards to the MevEth contract
-        try ITinyMevEth(mevEth).grantRewards{ value: _rewards }() { }
-        catch {
-            // Catch the error and send to the beneficiary for further fund recovery
-            bool success = payable(beneficiary).send(_rewards);
-            if (!success) revert MevEthErrors.SendError();
-        }
+        ITinyMevEth(mevEth).grantRewards{ value: _rewards }();
 
         // Emit an event to track the rewards paid
         emit RewardsPaid(_rewards);
@@ -150,14 +140,13 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
         emit TokenRecovered(recipient, token, amount);
     }
 
-    /// @notice Function to set a new beneficiary address.
-    /// @dev The beneficiary is used to recover funds if needed.
-    function setNewBeneficiary(address newBeneficiary) external onlyAdmin {
-        if (newBeneficiary == address(0)) {
+    /// @notice Function to set a new mevEth address.
+    function setNewMevEth(address newMevEth) external onlyAdmin {
+        if (newMevEth == address(0)) {
             revert MevEthErrors.ZeroAddress();
         }
-        beneficiary = newBeneficiary;
-        emit BeneficiaryUpdated(newBeneficiary);
+        mevEth = newMevEth;
+        emit MevEthUpdated(newMevEth);
     }
 
     /// @notice Function to pay MevEth when withdrawing funds from a validator

@@ -97,7 +97,7 @@ contract MevEthTest is Test {
 
     event RewardPayment(uint256 indexed blockNumber, address indexed coinbase, uint256 indexed amount);
     event ProtocolFeeToUpdated(address indexed newProtocolFeeTo);
-    event BeneficiaryUpdated(address indexed beneficiary);
+    event MevEthUpdated(address indexed meveth);
     event RewardsCollected(uint256 indexed protocolFeesOwed, uint256 indexed rewardsOwed);
     event FeesSent(uint256 indexed feesSent);
     event RewardsPaid(uint256 indexed rewards);
