@@ -36,10 +36,11 @@ contract ERC4626Test is MevEthTest {
 
     function testPreviewWithdraw(uint128 amount) public {
         vm.assume(amount > mevEth.MIN_DEPOSIT());
+        vm.assume(amount < type(uint128).max - type(uint128).max / 10_000);
         vm.deal(User01, amount);
         vm.startPrank(User01);
         mevEth.deposit{ value: amount }(amount, User01);
-        assertEq(mevEth.previewWithdraw(amount), amount);
+        assertEq(mevEth.previewWithdraw(amount), uint256(amount) * 10_001 / 10_000);
     }
 
     function testPreviewRedeem(uint128 amount) public {
@@ -47,7 +48,7 @@ contract ERC4626Test is MevEthTest {
         vm.deal(User01, amount);
         vm.startPrank(User01);
         mevEth.deposit{ value: amount }(amount, User01);
-        assertEq(mevEth.previewRedeem(amount), amount);
+        assertGe(mevEth.previewRedeem(amount), uint256(amount) * 9999 / 10_000);
     }
 
     function testMaxWithdraw(uint128 amount) public {
@@ -190,10 +191,9 @@ contract ERC4626Test is MevEthTest {
         _depositOnBehalfOf(1 ether, User01);
 
         assertEq(address(mevEth).balance, 1 ether);
-
         // Withdraw 1 mevETH
-        mevEth.withdraw(0.75 ether, User01, User01);
-        assertEq(mevEth.balanceOf(User01), 0.25 ether);
+        uint256 shares = mevEth.withdraw(0.75 ether, User01, User01);
+        assertEq(mevEth.balanceOf(User01), 1 ether - shares);
         assertEq(weth.balanceOf(User01), 0.75 ether);
     }
 
@@ -230,12 +230,12 @@ contract ERC4626Test is MevEthTest {
         vm.startPrank(User02);
 
         // Withdraw 1 mevETH
-        mevEth.withdraw(0.75 ether, User02, User01);
+        uint256 shares = mevEth.withdraw(0.75 ether, User02, User01);
 
-        assertEq(mevEth.balanceOf(User01), 0.25 ether);
+        assertEq(mevEth.balanceOf(User01), 1 ether - shares);
         assertEq(weth.balanceOf(User02), 0.75 ether);
 
-        assertEq(mevEth.allowance(User01, User02), 0.25 ether);
+        assertEq(mevEth.allowance(User01, User02), 1 ether - shares);
     }
 
     function fuzzSimpleWithdrawal(uint256 amount) public {
@@ -353,10 +353,10 @@ contract ERC4626Test is MevEthTest {
         assertEq(address(mevEth).balance, 1 ether);
 
         // Redeem 1 mevETH
-        mevEth.redeem(0.75 ether, User01, User01);
+        uint256 assets = mevEth.redeem(0.75 ether, User01, User01);
 
         assertEq(mevEth.balanceOf(User01), 0.25 ether);
-        assertEq(weth.balanceOf(User01), 0.75 ether);
+        assertEq(weth.balanceOf(User01), assets);
     }
 
     function testNegativeRedeemStealWithoutApproval() public {
@@ -394,10 +394,10 @@ contract ERC4626Test is MevEthTest {
         vm.startPrank(User02);
 
         // Withdraw 0.75 mevETH
-        mevEth.redeem(0.75 ether, User02, User01);
+        uint256 assets = mevEth.redeem(0.75 ether, User02, User01);
 
         assertEq(mevEth.balanceOf(User01), 0.25 ether);
-        assertEq(weth.balanceOf(User02), 0.75 ether);
+        assertEq(weth.balanceOf(User02), assets);
 
         assertEq(mevEth.allowance(User01, User02), 0.25 ether);
     }
@@ -415,9 +415,9 @@ contract ERC4626Test is MevEthTest {
         uint256 amountLeftOver = amount - amountToRedeem;
 
         // Redeem 1 mevETH
-        mevEth.redeem(amountToRedeem, User01, User01);
+        uint256 assets = mevEth.redeem(amountToRedeem, User01, User01);
 
         assertEq(mevEth.balanceOf(User01), amountLeftOver);
-        assertEq(weth.balanceOf(User01), amountToRedeem);
+        assertEq(weth.balanceOf(User01), assets);
     }
 }
