@@ -1,5 +1,5 @@
 /// SPDX: License-Identifier: GPL-3.0-only
-pragma solidity 0.8.19;
+pragma solidity 0.8.20;
 
 import { IStakingModule } from "../../src/interfaces/IStakingModule.sol";
 import { IMevEthShareVault } from "../../src/interfaces/IMevEthShareVault.sol";
