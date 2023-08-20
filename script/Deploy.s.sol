@@ -12,6 +12,7 @@ import { IStakingModule } from "src/interfaces/IStakingModule.sol";
 contract DeployScript is Script {
     error UnknownChain();
 
+    /// @dev PRIVATE_KEY and SENDER env vars must be set to initial mevETH admin
     function run() public {
         address authority = tx.origin;
         uint256 chainId;
@@ -36,15 +37,20 @@ contract DeployScript is Script {
         }
 
         vm.startBroadcast();
+        // deploy mevETH
         MevEth mevEth = new MevEth(authority, weth, layerZeroEndpoint);
 
+        // deploy sharevault
+        // TODO: Is the initial share vault a multisig? If so will need to comment this out and sub in multisig address
         MevEthShareVault initialShareVault = new MevEthShareVault(authority, address(mevEth), authority);
+        // deploy staking module
         IStakingModule initialStakingModule = new WagyuStaker(authority, beaconDepositContract, address(mevEth));
-
-        AuthManager authManager = new AuthManager(authority, address(mevEth), address(initialShareVault), address(initialStakingModule));
-
+        // initialise mevETH
         mevEth.init(address(initialShareVault), address(initialStakingModule));
 
+        // deploy AuthManager
+        AuthManager authManager = new AuthManager(authority, address(mevEth), address(initialShareVault), address(initialStakingModule));
+        // set AuthManager as admin
         IAuth(address(mevEth)).addAdmin(address(authManager));
         IAuth(address(initialShareVault)).addAdmin(address(authManager));
         IAuth(address(initialStakingModule)).addAdmin(address(authManager));

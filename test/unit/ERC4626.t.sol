@@ -1,15 +1,11 @@
+// SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 
 import "forge-std/console.sol";
 import "../MevEthTest.sol";
 import "src/interfaces/Errors.sol";
 
-contract ERC4626Test is MevEthTest {
-    struct AssetsFraction {
-        uint256 elastic; // Represents total amount of staked ether, including rewards accrued / slashed
-        uint256 base; // Represents claims to ownership of the staked ether
-    }
-
+contract ERC4626FullTest is MevEthTest {
     function setUp() public override {
         super.setUp();
     }
