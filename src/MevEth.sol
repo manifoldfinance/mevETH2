@@ -18,10 +18,8 @@ pragma solidity 0.8.19;
 
 import { SafeTransferLib } from "solmate/utils/SafeTransferLib.sol";
 import { FixedPointMathLib } from "solmate/utils/FixedPointMathLib.sol";
-import { ERC20 } from "solmate/tokens/ERC20.sol";
-import { IERC20 } from "./interfaces/IERC20.sol";
 import { IERC4626 } from "./interfaces/IERC4626.sol";
-import { IWETH } from "./interfaces/IWETH.sol";
+import { WETH } from "solmate/tokens/WETH.sol";
 import { MevEthErrors } from "./interfaces/Errors.sol";
 import { IStakingModule } from "./interfaces/IStakingModule.sol";
 import { MevEthShareVault } from "./MevEthShareVault.sol";
@@ -34,7 +32,7 @@ import { OFTWithFee } from "./layerZero/oft/OFTWithFee.sol";
 /// @dev Contract that allows deposit of ETH, for a Liquid Staking Receipt (LSR) in return.
 /// @dev LSR is represented through an ERC4626 token and interface.
 contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
-    using SafeTransferLib for ERC20;
+    using SafeTransferLib for WETH;
     using FixedPointMathLib for uint256;
 
     /*//////////////////////////////////////////////////////////////
@@ -66,7 +64,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @notice The pending staking module when a new module has been comitted but not finalized.
     IStakingModule public pendingStakingModule;
     /// @notice WETH Implementation used by MevEth.
-    IWETH public immutable WETH;
+    WETH public immutable WETH9;
     /// @notice Last rewards payment by block number
     uint256 internal lastRewards;
     /// @notice Struct used to accounting the ETH staked within MevEth.
@@ -98,7 +96,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     )
         OFTWithFee("Mev Liquid Staked Ether", "mevETH", 18, 8, authority, layerZeroEndpoint)
     {
-        WETH = IWETH(weth);
+        WETH9 = WETH(payable(weth));
     }
 
     /// @notice Calculate the needed Ether buffer required when creating a new validator.
@@ -395,8 +393,8 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         withdrawalQueue[withdrawalId].claimed = true;
         withdrawalAmountQueued -= uint256(ticket.amount);
         emit WithdrawalQueueClosed(ticket.receiver, withdrawalId, uint256(ticket.amount));
-        WETH.deposit{ value: uint256(ticket.amount) }();
-        ERC20(address(WETH)).safeTransfer(ticket.receiver, uint256(ticket.amount));
+        WETH9.deposit{ value: uint256(ticket.amount) }();
+        WETH9.safeTransfer(ticket.receiver, uint256(ticket.amount));
     }
 
     /// @notice Processes the withdrawal queue, reserving any pending withdrawals with the contract's available balance.
@@ -422,7 +420,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @notice The underlying asset of the mevEth contract
     /// @return assetTokenAddress The address of the asset token
     function asset() external view returns (address assetTokenAddress) {
-        assetTokenAddress = address(WETH);
+        assetTokenAddress = address(WETH9);
     }
 
     /// @notice The total amount of assets controlled by the mevEth contract
@@ -491,8 +489,8 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         lastDeposit[msg.sender] = block.number;
 
         if (_isZero(msg.value)) {
-            ERC20(address(WETH)).safeTransferFrom(msg.sender, address(this), assets);
-            WETH.withdraw(assets);
+            WETH9.safeTransferFrom(msg.sender, address(this), assets);
+            WETH9.withdraw(assets);
         } else {
             if (msg.value != assets) revert MevEthErrors.WrongDepositAmount();
         }
@@ -606,8 +604,8 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         }
         if (!_isZero(assets)) {
             emit Withdraw(msg.sender, owner, receiver, assets, convertToShares(assets));
-            WETH.deposit{ value: assets }();
-            ERC20(address(WETH)).safeTransfer(receiver, assets);
+            WETH9.deposit{ value: assets }();
+            WETH9.safeTransfer(receiver, assets);
         }
     }
 
@@ -714,6 +712,6 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @dev Only Weth withdraw is defined for the behaviour. Deposits should be directed to deposit / mint. Rewards via grantRewards and validator withdraws
     /// via grantValidatorWithdraw.
     receive() external payable {
-        if (msg.sender != address(WETH)) revert MevEthErrors.InvalidSender();
+        if (msg.sender != address(WETH9)) revert MevEthErrors.InvalidSender();
     }
 }
