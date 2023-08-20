@@ -13,6 +13,15 @@ contract WagyuStakerTest is MevEthTest {
         wagyuStaker = WagyuStaker(payable(address(mevEth.stakingModule())));
     }
 
+    function testUnAuthorizedCaller() public {
+        vm.expectRevert(MevEthErrors.UnAuthorizedCaller.selector);
+        IStakingModule.ValidatorData memory data;
+        wagyuStaker.deposit(data, bytes32(0));
+
+        vm.expectRevert(MevEthErrors.UnAuthorizedCaller.selector);
+        wagyuStaker.registerExit();
+    }
+
     function testPayRewards(uint128 amount) public {
         vm.assume(amount > 0);
         vm.deal(address(this), amount);
@@ -29,11 +38,17 @@ contract WagyuStakerTest is MevEthTest {
 
     function testNegativePayRewards(uint128 amount) public {
         vm.assume(amount > 0);
+        vm.assume(amount < 100_000_000_000_000_000_000_000_000);
         vm.deal(address(this), amount);
         payable(wagyuStaker).transfer(amount);
 
         vm.expectRevert(Auth.Unauthorized.selector);
         wagyuStaker.payRewards(amount);
+
+        vm.prank(SamBacha);
+        vm.expectRevert(MevEthErrors.NotEnoughEth.selector);
+        wagyuStaker.payRewards(amount * 2);
+
         (uint128 totalDeposited,,,) = wagyuStaker.record();
         assertEq(address(wagyuStaker).balance - totalDeposited, amount);
     }
