@@ -21,7 +21,7 @@ contract LayerZeroTest is MevEthTest {
         weth = new WETH9();
         layerZeroEndpoint = new LZEndpointMock(ETH_ID);
         // deploy mevEth (mainnet)
-        mevEth = new MevEth(SamBacha, address(weth), address(layerZeroEndpoint));
+        mevEth = new MevEth(SamBacha, address(weth), address(layerZeroEndpoint), address(0), 106);
 
         // simulate deploy OFT on arbitrum
         arbitrumEndpoint = new LZEndpointMock(ARBITRUM_ID);

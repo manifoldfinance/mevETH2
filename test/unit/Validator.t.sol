@@ -100,4 +100,50 @@ contract ValidatorTest is MevEthTest {
         assertEq(totalValidatorExitsPaid, 0);
         assertEq(wagyuStakingModule.validators(), 1);
     }
+
+    function testMigrateValidator() public {
+        IStakingModule staker = mevEth.stakingModule();
+        IStakingModule.ValidatorData[] memory validatorData = new IStakingModule.ValidatorData[](4);
+        validatorData[0] = mockValidatorData(User01, 32 ether / 1 gwei);
+        validatorData[1] = mockValidatorData(User02, 32 ether / 1 gwei);
+        validatorData[2] = mockValidatorData(User03, 32 ether / 1 gwei);
+        validatorData[3] = mockValidatorData(User04, 32 ether / 1 gwei);
+
+        vm.expectEmit();
+        emit NewValidator(
+            validatorData[0].operator,
+            validatorData[0].pubkey,
+            validatorData[0].withdrawal_credentials,
+            validatorData[0].signature,
+            validatorData[0].deposit_data_root
+        );
+        vm.expectEmit();
+        emit NewValidator(
+            validatorData[1].operator,
+            validatorData[1].pubkey,
+            validatorData[1].withdrawal_credentials,
+            validatorData[1].signature,
+            validatorData[1].deposit_data_root
+        );
+        vm.expectEmit();
+        emit NewValidator(
+            validatorData[2].operator,
+            validatorData[2].pubkey,
+            validatorData[2].withdrawal_credentials,
+            validatorData[2].signature,
+            validatorData[2].deposit_data_root
+        );
+        vm.expectEmit();
+        emit NewValidator(
+            validatorData[3].operator,
+            validatorData[3].pubkey,
+            validatorData[3].withdrawal_credentials,
+            validatorData[3].signature,
+            validatorData[3].deposit_data_root
+        );
+        vm.prank(SamBacha);
+        staker.batchMigrate(validatorData);
+
+        assertEq(staker.validators(), 4);
+    }
 }

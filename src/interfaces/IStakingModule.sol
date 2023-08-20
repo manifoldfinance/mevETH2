@@ -22,6 +22,7 @@ interface IStakingModule {
 
     function validators() external view returns (uint256);
 
+    function batchMigrate(ValidatorData[] calldata batchData) external;
 
     function mevEth() external view returns (address);
 

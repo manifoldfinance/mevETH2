@@ -15,6 +15,7 @@ import "../src/MevEthShareVault.sol";
 import { IAuth } from "src/interfaces/IAuth.sol";
 import { AuthManager } from "src/libraries/AuthManager.sol";
 import { SafeInstance, SafeTestTools } from "../lib/safe-tools/src/SafeTestTools.sol";
+import { MockERC20 } from "solmate/test/utils/mocks/MockERC20.sol";
 
 contract MevEthTest is Test {
     // LayerZero Ids
@@ -75,6 +76,9 @@ contract MevEthTest is Test {
 
     LZEndpointMock internal layerZeroEndpoint;
 
+    uint8 creamRedeem;
+    MockERC20 internal creamToken;
+
     //Events
     event StakingPaused();
     event StakingUnpaused();
@@ -101,6 +105,7 @@ contract MevEthTest is Test {
     event RewardsCollected(uint256 indexed protocolFeesOwed, uint256 indexed rewardsOwed);
     event FeesSent(uint256 indexed feesSent);
     event RewardsPaid(uint256 indexed rewards);
+    event CreamRedeemed(address indexed redeemer, uint256 creamAmount, uint256 mevEthAmount);
 
     function setUp() public virtual {
         // Deploy the BeaconChainDepositContract
@@ -112,8 +117,11 @@ contract MevEthTest is Test {
 
         layerZeroEndpoint = new LZEndpointMock(ETH_ID);
 
+        creamToken = new MockERC20("Cream Staked Ether 2","CRETH2", 18);
+        creamRedeem = 106;
+
         // Deploy the mevETH contract
-        mevEth = new MevEth(SamBacha, address(weth), address(layerZeroEndpoint));
+        mevEth = new MevEth(SamBacha, address(weth), address(layerZeroEndpoint), address(creamToken), creamRedeem);
 
         // Initialize initial share vault as a multisig
 

@@ -40,7 +40,7 @@ contract LayerZeroPigeonTest is MevEthTest {
         lzHelper = new LayerZeroHelper();
 
         // deploy mevEth (mainnet)
-        mevEth = new MevEth(SamBacha, mainnetWeth, L1_lzEndpoint);
+        mevEth = new MevEth(SamBacha, mainnetWeth, L1_lzEndpoint, address(0), 106);
 
         ARBITRUM_FORK_ID = vm.createSelectFork(RPC_ARBITRUM_MAINNET);
         arbMevEth = new OFTWithFee(name, symbol, 18, 8, SamBacha, arbitrumEndpoint);

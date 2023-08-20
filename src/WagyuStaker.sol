@@ -145,6 +145,23 @@ contract WagyuStaker is Auth, IStakingModule {
         emit MevEthUpdated(newMevEth);
     }
 
+    /// @notice Batch register Validators for migration
+    /// @dev only Admin
+    /// @param batchData list of each validators' data struct
+    function batchMigrate(IStakingModule.ValidatorData[] calldata batchData) external onlyAdmin {
+        uint256 length = batchData.length;
+        // Update the contract balance and validator count
+        unchecked {
+            record.totalDeposited += uint128(length * VALIDATOR_DEPOSIT_SIZE);
+            validators += length;
+        }
+        for (uint256 i = 0; i < length; i++) {
+            IStakingModule.ValidatorData memory data = batchData[i];
+            // Emit an event inidicating a new validator has been registered, allowing for offchain listeners to track the validator registry
+            emit NewValidator(data.operator, data.pubkey, data.withdrawal_credentials, data.signature, data.deposit_data_root);
+        }
+    }
+
     /// @notice Function to receive Ether
     receive() external payable { }
 }

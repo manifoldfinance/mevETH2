@@ -602,7 +602,7 @@ contract MevAdminTest is MevEthTest {
      */
     function testInitMevEth() public {
         // Deploy the mevETH contract
-        MevEth mevEth = new MevEth(SamBacha, address(weth), address(0));
+        MevEth mevEth = new MevEth(SamBacha, address(weth), address(0), address(0), 106);
 
         // Create new share vault and staking module
         address initialShareVault = address(new MevEthShareVault(SamBacha, address(mevEth), SamBacha));
@@ -628,7 +628,7 @@ contract MevAdminTest is MevEthTest {
 
     function testNegativeInitMevEth() public {
         // Deploy the mevETH contract
-        MevEth mevEth = new MevEth(SamBacha, address(weth), address(0));
+        MevEth mevEth = new MevEth(SamBacha, address(weth), address(0), address(0), 106);
 
         // Create new share vault and staking module
         address initialShareVault = address(new MevEthShareVault(SamBacha, address(mevEth), SamBacha));

@@ -20,6 +20,7 @@ import { SafeTransferLib } from "solmate/utils/SafeTransferLib.sol";
 import { FixedPointMathLib } from "solmate/utils/FixedPointMathLib.sol";
 import { IERC4626 } from "./interfaces/IERC4626.sol";
 import { WETH } from "solmate/tokens/WETH.sol";
+import { ERC20 } from "solmate/tokens/ERC20.sol";
 import { MevEthErrors } from "./interfaces/Errors.sol";
 import { IStakingModule } from "./interfaces/IStakingModule.sol";
 import { MevEthShareVault } from "./MevEthShareVault.sol";
@@ -33,6 +34,7 @@ import { OFTWithFee } from "./layerZero/oft/OFTWithFee.sol";
 /// @dev LSR is represented through an ERC4626 token and interface.
 contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     using SafeTransferLib for WETH;
+    using SafeTransferLib for ERC20;
     using FixedPointMathLib for uint256;
 
     /*//////////////////////////////////////////////////////////////
@@ -43,6 +45,8 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     bool public stakingPaused;
     /// @notice Indicates if contract is initialized.
     bool public initialized;
+    /// @notice cream staked eth token redemption percent
+    uint8 internal immutable creamToMevEthPercent;
     /// @notice withdraw fee denominator
     uint16 internal constant feeDenominator = 10_000;
     /// @notice Timestamp when pending staking module update can be finalized.
@@ -65,6 +69,8 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     IStakingModule public pendingStakingModule;
     /// @notice WETH Implementation used by MevEth.
     WETH public immutable WETH9;
+    /// @notice cream staked eth token
+    ERC20 internal immutable creamToken;
     /// @notice Last rewards payment by block number
     uint256 internal lastRewards;
     /// @notice Struct used to accounting the ETH staked within MevEth.
@@ -89,14 +95,20 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @param authority Address of the controlling admin authority.
     /// @param weth Address of the WETH contract to use for deposits.
     /// @param layerZeroEndpoint Chain specific endpoint for LayerZero.
+    /// @param creamToken_ Cream staked eth token address
+    /// @param creamToMevEthPercent_ cream to MevEth Percent redemtion e.g. 106 == 106 % (or 1 CRETH2 = 1.06 MevEth)
     constructor(
         address authority,
         address weth,
-        address layerZeroEndpoint
+        address layerZeroEndpoint,
+        address creamToken_,
+        uint8 creamToMevEthPercent_
     )
         OFTWithFee("Mev Liquid Staked Ether", "mevETH", 18, 8, authority, layerZeroEndpoint)
     {
         WETH9 = WETH(payable(weth));
+        creamToken = ERC20(creamToken_);
+        creamToMevEthPercent = creamToMevEthPercent_;
     }
 
     /// @notice Calculate the needed Ether buffer required when creating a new validator.
@@ -685,6 +697,37 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         // Withdraw the assets from the Mevth contract
         _withdraw(false, receiver, owner, assets, shares);
     }
+
+    /*//////////////////////////////////////////////////////////////
+            Special CreamEth2 redeem (from initial migration)
+    //////////////////////////////////////////////////////////////*/
+
+    /// @notice Redeem Cream staked eth tokens for mevETH at a fixed ratio
+    /// @param creamAmount The amount of Cream tokens to redeem
+    function redeemCream(uint256 creamAmount) external {
+        if (_isZero(creamAmount)) revert MevEthErrors.ZeroValue();
+
+        // Calculate the equivalent mevETH to be redeemed based on the ratio
+        uint256 mevEthAmount = creamAmount * uint256(creamToMevEthPercent) / 100;
+
+        // Transfer Cream tokens from the sender to the burn address
+        creamToken.safeTransferFrom(msg.sender, address(0), creamAmount);
+
+        // Convert the shares to assets and update the fraction elastic and base
+        uint256 assets = convertToAssets(mevEthAmount);
+
+        fraction.elastic += uint128(assets);
+        fraction.base += uint128(mevEthAmount);
+
+        // Mint the equivalent mevETH
+        _mint(msg.sender, mevEthAmount);
+
+        // Emit event
+        emit CreamRedeemed(msg.sender, creamAmount, mevEthAmount);
+    }
+
+    // Event emitted when Cream tokens are redeemed for mevETH
+    event CreamRedeemed(address indexed redeemer, uint256 creamAmount, uint256 mevEthAmount);
 
     /*//////////////////////////////////////////////////////////////
                             Utility Functions
