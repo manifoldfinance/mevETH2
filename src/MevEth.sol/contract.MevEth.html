@@ -1,0 +1,799 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>MevEth</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../book.css">
+
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var html = document.querySelector('html');
+            var sidebar = null;
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item "><a href="../../index.html">Home</a></li><li class="chapter-item affix "><li class="part-title">src</li><li class="chapter-item "><a href="../../src/interfaces/index.html">❱ interfaces</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../src/interfaces/Errors.sol/interface.MevEthErrors.html">MevEthErrors</a></li><li class="chapter-item "><a href="../../src/interfaces/IAuth.sol/interface.IAuth.html">IAuth</a></li><li class="chapter-item "><a href="../../src/interfaces/IBeaconDepositContract.sol/interface.IBeaconDepositContract.html">IBeaconDepositContract</a></li><li class="chapter-item "><a href="../../src/interfaces/ICommonOFT.sol/interface.ICommonOFT.html">ICommonOFT</a></li><li class="chapter-item "><a href="../../src/interfaces/IERC4626.sol/interface.IERC4626.html">IERC4626</a></li><li class="chapter-item "><a href="../../src/interfaces/ILayerZeroEndpoint.sol/interface.ILayerZeroEndpoint.html">ILayerZeroEndpoint</a></li><li class="chapter-item "><a href="../../src/interfaces/ILayerZeroReceiver.sol/interface.ILayerZeroReceiver.html">ILayerZeroReceiver</a></li><li class="chapter-item "><a href="../../src/interfaces/ILayerZeroUserApplicationConfig.sol/interface.ILayerZeroUserApplicationConfig.html">ILayerZeroUserApplicationConfig</a></li><li class="chapter-item "><a href="../../src/interfaces/IMevEth.sol/interface.IMevEth.html">IMevEth</a></li><li class="chapter-item "><a href="../../src/interfaces/IMevEthShareVault.sol/interface.IMevEthShareVault.html">IMevEthShareVault</a></li><li class="chapter-item "><a href="../../src/interfaces/IOFTReceiverV2.sol/interface.IOFTReceiverV2.html">IOFTReceiverV2</a></li><li class="chapter-item "><a href="../../src/interfaces/IOFTWithFee.sol/interface.IOFTWithFee.html">IOFTWithFee</a></li><li class="chapter-item "><a href="../../src/interfaces/IRateProvider.sol/interface.IRateProvider.html">IRateProvider</a></li><li class="chapter-item "><a href="../../src/interfaces/IStakingModule.sol/interface.IStakingModule.html">IStakingModule</a></li><li class="chapter-item "><a href="../../src/interfaces/ITinyMevEth.sol/interface.ITinyMevEth.html">ITinyMevEth</a></li></ol></li><li class="chapter-item "><a href="../../src/layerZero/index.html">❱ layerZero</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../src/layerZero/lzApp/index.html">❱ lzApp</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../src/layerZero/lzApp/LzApp.sol/abstract.LzApp.html">LzApp</a></li><li class="chapter-item "><a href="../../src/layerZero/lzApp/NonblockingLzApp.sol/error.InvalidPayload.html">InvalidPayload</a></li><li class="chapter-item "><a href="../../src/layerZero/lzApp/NonblockingLzApp.sol/error.AmountTooSmall.html">AmountTooSmall</a></li><li class="chapter-item "><a href="../../src/layerZero/lzApp/NonblockingLzApp.sol/abstract.NonblockingLzApp.html">NonblockingLzApp</a></li></ol></li><li class="chapter-item "><a href="../../src/layerZero/oft/index.html">❱ oft</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../src/layerZero/oft/BaseOFTWithFee.sol/abstract.BaseOFTWithFee.html">BaseOFTWithFee</a></li><li class="chapter-item "><a href="../../src/layerZero/oft/Fee.sol/abstract.Fee.html">Fee</a></li><li class="chapter-item "><a href="../../src/layerZero/oft/OFTCoreV2.sol/abstract.OFTCoreV2.html">OFTCoreV2</a></li><li class="chapter-item "><a href="../../src/layerZero/oft/OFTWithFee.sol/contract.OFTWithFee.html">OFTWithFee</a></li></ol></li></ol></li><li class="chapter-item "><a href="../../src/libraries/index.html">❱ libraries</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../src/libraries/Auth.sol/contract.Auth.html">Auth</a></li><li class="chapter-item "><a href="../../src/libraries/AuthManager.sol/contract.AuthManager.html">AuthManager</a></li></ol></li><li class="chapter-item "><a href="../../src/util/index.html">❱ util</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../src/util/BytesLib.sol/library.BytesLib.html">BytesLib</a></li><li class="chapter-item "><a href="../../src/util/ExcessivelySafeCall.sol/library.ExcessivelySafeCall.html">ExcessivelySafeCall</a></li></ol></li><li class="chapter-item expanded "><a href="../../src/MevEth.sol/contract.MevEth.html" class="active">MevEth</a></li><li class="chapter-item "><a href="../../src/MevEthRateProvider.sol/contract.MevETHRateProvider.html">MevETHRateProvider</a></li><li class="chapter-item "><a href="../../src/MevEthShareVault.sol/contract.MevEthShareVault.html">MevEthShareVault</a></li><li class="chapter-item "><a href="../../src/WagyuStaker.sol/contract.WagyuStaker.html">WagyuStaker</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/manifoldfinance/meveth2" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="meveth"><a class="header" href="#meveth">MevEth</a></h1>
+<p><a href="https://github.com/manifoldfinance/meveth2/blob/78c21cc4599b98ca3e162bb95b3cdeee822730a8/src/MevEth.sol">Git Source</a></p>
+<p><strong>Inherits:</strong>
+<a href="/src/layerZero/oft/OFTWithFee.sol/contract.OFTWithFee.html">OFTWithFee</a>, <a href="/src/interfaces/IERC4626.sol/interface.IERC4626.html">IERC4626</a>, <a href="/src/interfaces/ITinyMevEth.sol/interface.ITinyMevEth.html">ITinyMevEth</a></p>
+<p><strong>Author:</strong>
+Manifold Finance</p>
+<p><em>Contract that allows deposit of ETH, for a Liquid Staking Receipt (LSR) in return.</em></p>
+<p><em>LSR is represented through an ERC4626 token and interface.</em></p>
+<h2 id="state-variables"><a class="header" href="#state-variables">State Variables</a></h2>
+<h3 id="stakingpaused"><a class="header" href="#stakingpaused">stakingPaused</a></h3>
+<p>Inidicates if staking is paused.</p>
+<pre><code class="language-solidity">bool public stakingPaused;
+</code></pre>
+<h3 id="initialized"><a class="header" href="#initialized">initialized</a></h3>
+<p>Indicates if contract is initialized.</p>
+<pre><code class="language-solidity">bool public initialized;
+</code></pre>
+<h3 id="feedenominator"><a class="header" href="#feedenominator">feeDenominator</a></h3>
+<p>withdraw fee denominator</p>
+<pre><code class="language-solidity">uint16 internal constant feeDenominator = 10_000;
+</code></pre>
+<h3 id="pendingstakingmodulecommittedtimestamp"><a class="header" href="#pendingstakingmodulecommittedtimestamp">pendingStakingModuleCommittedTimestamp</a></h3>
+<p>Timestamp when pending staking module update can be finalized.</p>
+<pre><code class="language-solidity">uint64 public pendingStakingModuleCommittedTimestamp;
+</code></pre>
+<h3 id="pendingmevethsharevaultcommittedtimestamp"><a class="header" href="#pendingmevethsharevaultcommittedtimestamp">pendingMevEthShareVaultCommittedTimestamp</a></h3>
+<p>Timestamp when pending mevEthShareVault update can be finalized.</p>
+<pre><code class="language-solidity">uint64 public pendingMevEthShareVaultCommittedTimestamp;
+</code></pre>
+<h3 id="module_update_time_delay"><a class="header" href="#module_update_time_delay">MODULE_UPDATE_TIME_DELAY</a></h3>
+<p>Time delay before staking module or share vault can be finalized.</p>
+<pre><code class="language-solidity">uint64 internal constant MODULE_UPDATE_TIME_DELAY = 7 days;
+</code></pre>
+<h3 id="max_deposit"><a class="header" href="#max_deposit">MAX_DEPOSIT</a></h3>
+<p>Max amount of ETH that can be deposited.</p>
+<pre><code class="language-solidity">uint128 internal constant MAX_DEPOSIT = type(uint128).max;
+</code></pre>
+<h3 id="min_deposit"><a class="header" href="#min_deposit">MIN_DEPOSIT</a></h3>
+<p>Min amount of ETH that can be deposited.</p>
+<pre><code class="language-solidity">uint128 public constant MIN_DEPOSIT = 0.01 ether;
+</code></pre>
+<h3 id="mevethsharevault"><a class="header" href="#mevethsharevault">mevEthShareVault</a></h3>
+<p>The address of the MevEthShareVault.</p>
+<pre><code class="language-solidity">address public mevEthShareVault;
+</code></pre>
+<h3 id="pendingmevethsharevault"><a class="header" href="#pendingmevethsharevault">pendingMevEthShareVault</a></h3>
+<p>The address of the pending MevEthShareVault when a new vault has been comitted but not finalized.</p>
+<pre><code class="language-solidity">address public pendingMevEthShareVault;
+</code></pre>
+<h3 id="stakingmodule"><a class="header" href="#stakingmodule">stakingModule</a></h3>
+<p>The staking module used to stake Ether.</p>
+<pre><code class="language-solidity">IStakingModule public stakingModule;
+</code></pre>
+<h3 id="pendingstakingmodule"><a class="header" href="#pendingstakingmodule">pendingStakingModule</a></h3>
+<p>The pending staking module when a new module has been comitted but not finalized.</p>
+<pre><code class="language-solidity">IStakingModule public pendingStakingModule;
+</code></pre>
+<h3 id="weth9"><a class="header" href="#weth9">WETH9</a></h3>
+<p>WETH Implementation used by MevEth.</p>
+<pre><code class="language-solidity">WETH public immutable WETH9;
+</code></pre>
+<h3 id="lastrewards"><a class="header" href="#lastrewards">lastRewards</a></h3>
+<p>Last rewards payment by block number</p>
+<pre><code class="language-solidity">uint256 internal lastRewards;
+</code></pre>
+<h3 id="fraction"><a class="header" href="#fraction">fraction</a></h3>
+<p>Struct used to accounting the ETH staked within MevEth.</p>
+<pre><code class="language-solidity">Fraction public fraction;
+</code></pre>
+<h3 id="lastdeposit"><a class="header" href="#lastdeposit">lastDeposit</a></h3>
+<p>Sandwich protection mapping of last user deposits by block number</p>
+<pre><code class="language-solidity">mapping(address =&gt; uint256) lastDeposit;
+</code></pre>
+<h3 id="queuelength"><a class="header" href="#queuelength">queueLength</a></h3>
+<p>The length of the withdrawal queue.</p>
+<pre><code class="language-solidity">uint256 public queueLength;
+</code></pre>
+<h3 id="requestsfinaliseduntil"><a class="header" href="#requestsfinaliseduntil">requestsFinalisedUntil</a></h3>
+<p>mark the latest withdrawal request that was finalised</p>
+<pre><code class="language-solidity">uint256 public requestsFinalisedUntil;
+</code></pre>
+<h3 id="withdrawalamountqueued"><a class="header" href="#withdrawalamountqueued">withdrawalAmountQueued</a></h3>
+<p>Withdrawal amount queued</p>
+<pre><code class="language-solidity">uint256 public withdrawalAmountQueued;
+</code></pre>
+<h3 id="withdrawalqueue"><a class="header" href="#withdrawalqueue">withdrawalQueue</a></h3>
+<p>The mapping representing the withdrawal queue.</p>
+<p><em>The index in the queue is the key, and the value is the WithdrawalTicket.</em></p>
+<pre><code class="language-solidity">mapping(uint256 ticketNumber =&gt; WithdrawalTicket ticket) public withdrawalQueue;
+</code></pre>
+<h2 id="functions"><a class="header" href="#functions">Functions</a></h2>
+<h3 id="constructor"><a class="header" href="#constructor">constructor</a></h3>
+<p>Construction creates mevETH token, sets authority and weth address.</p>
+<p><em>Pending staking module and committed timestamp will both be zero on deployment.</em></p>
+<pre><code class="language-solidity">constructor(address authority, address weth, address layerZeroEndpoint)
+    OFTWithFee(&quot;Mev Liquid Staked Ether&quot;, &quot;mevETH&quot;, 18, 8, authority, layerZeroEndpoint);
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>authority</code></td><td><code>address</code></td><td>Address of the controlling admin authority.</td></tr>
+<tr><td><code>weth</code></td><td><code>address</code></td><td>Address of the WETH contract to use for deposits.</td></tr>
+<tr><td><code>layerZeroEndpoint</code></td><td><code>address</code></td><td>Chain specific endpoint for LayerZero.</td></tr>
+</tbody></table>
+</div>
+<h3 id="calculateneededetherbuffer"><a class="header" href="#calculateneededetherbuffer">calculateNeededEtherBuffer</a></h3>
+<p>Calculate the needed Ether buffer required when creating a new validator.</p>
+<pre><code class="language-solidity">function calculateNeededEtherBuffer() public view returns (uint256);
+</code></pre>
+<p><strong>Returns</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>&lt;none&gt;</code></td><td><code>uint256</code></td><td>uint256 The required Ether buffer.</td></tr>
+</tbody></table>
+</div>
+<h3 id="init"><a class="header" href="#init">init</a></h3>
+<p>Initializes the MevEth contract, setting the staking module and share vault addresses.</p>
+<p><em>This function can only be called once and is protected by the onlyAdmin modifier.</em></p>
+<pre><code class="language-solidity">function init(address initialShareVault, address initialStakingModule) external onlyAdmin;
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>initialShareVault</code></td><td><code>address</code></td><td>The initial share vault set during initialization.</td></tr>
+<tr><td><code>initialStakingModule</code></td><td><code>address</code></td><td>The initial staking module set during initialization.</td></tr>
+</tbody></table>
+</div>
+<h3 id="_stakingunpaused"><a class="header" href="#_stakingunpaused">_stakingUnpaused</a></h3>
+<p>Ensures that staking is not paused when invoking a specific function.</p>
+<p><em>This check is used on the createValidator, deposit and mint functions.</em></p>
+<pre><code class="language-solidity">function _stakingUnpaused() internal view;
+</code></pre>
+<h3 id="pausestaking"><a class="header" href="#pausestaking">pauseStaking</a></h3>
+<p>Pauses staking on the MevEth contract.</p>
+<p><em>This function is only callable by addresses with the admin role.</em></p>
+<pre><code class="language-solidity">function pauseStaking() external onlyAdmin;
+</code></pre>
+<h3 id="unpausestaking"><a class="header" href="#unpausestaking">unpauseStaking</a></h3>
+<p>Unauses staking on the MevEth contract.</p>
+<p><em>This function is only callable by addresses with the admin role.</em></p>
+<pre><code class="language-solidity">function unpauseStaking() external onlyAdmin;
+</code></pre>
+<h3 id="commitupdatestakingmodule"><a class="header" href="#commitupdatestakingmodule">commitUpdateStakingModule</a></h3>
+<p>Starts the process to update the staking module. To finalize the update, the MODULE_UPDATE_TIME_DELAY must elapse and the
+finalizeUpdateStakingModule function must be called.</p>
+<p><em>This function is only callable by addresses with the admin role.</em></p>
+<pre><code class="language-solidity">function commitUpdateStakingModule(IStakingModule newModule) external onlyAdmin;
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>newModule</code></td><td><code>IStakingModule</code></td><td>The new staking module.</td></tr>
+</tbody></table>
+</div>
+<h3 id="finalizeupdatestakingmodule"><a class="header" href="#finalizeupdatestakingmodule">finalizeUpdateStakingModule</a></h3>
+<p>Finalizes the staking module update if a pending staking module exists.</p>
+<p><em>This function is only callable by addresses with the admin role.</em></p>
+<pre><code class="language-solidity">function finalizeUpdateStakingModule() external onlyAdmin;
+</code></pre>
+<h3 id="cancelupdatestakingmodule"><a class="header" href="#cancelupdatestakingmodule">cancelUpdateStakingModule</a></h3>
+<p>Cancels a pending staking module update.</p>
+<p><em>This function is only callable by addresses with the admin role.</em></p>
+<pre><code class="language-solidity">function cancelUpdateStakingModule() external onlyAdmin;
+</code></pre>
+<h3 id="commitupdatemevethsharevault"><a class="header" href="#commitupdatemevethsharevault">commitUpdateMevEthShareVault</a></h3>
+<p>Starts the process to update the share vault. To finalize the update, the MODULE_UPDATE_TIME_DELAY must elapse and the
+finalizeUpdateStakingModule function must be called.</p>
+<p><em>This function is only callable by addresses with the admin role</em></p>
+<pre><code class="language-solidity">function commitUpdateMevEthShareVault(address newMevEthShareVault) external onlyAdmin;
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>newMevEthShareVault</code></td><td><code>address</code></td><td>The new share vault</td></tr>
+</tbody></table>
+</div>
+<h3 id="finalizeupdatemevethsharevault"><a class="header" href="#finalizeupdatemevethsharevault">finalizeUpdateMevEthShareVault</a></h3>
+<p>Finalizes the share vault update if a pending share vault exists.</p>
+<p><em>This function is only callable by addresses with the admin role.</em></p>
+<pre><code class="language-solidity">function finalizeUpdateMevEthShareVault(bool isMultisig) external onlyAdmin;
+</code></pre>
+<h3 id="cancelupdatemevethsharevault"><a class="header" href="#cancelupdatemevethsharevault">cancelUpdateMevEthShareVault</a></h3>
+<p>Cancels a pending share vault update.</p>
+<p><em>This function is only callable by addresses with the admin role.</em></p>
+<pre><code class="language-solidity">function cancelUpdateMevEthShareVault() external onlyAdmin;
+</code></pre>
+<h3 id="createvalidator"><a class="header" href="#createvalidator">createValidator</a></h3>
+<p>This function passes through the needed Ether to the Staking module, and the assosiated credentials with it</p>
+<p><em>This function is only callable by addresses with the operator role and if staking is unpaused</em></p>
+<pre><code class="language-solidity">function createValidator(IStakingModule.ValidatorData calldata newData, bytes32 latestDepositRoot)
+    external
+    onlyOperator;
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>newData</code></td><td><code>IStakingModule.ValidatorData</code></td><td>The data needed to create a new validator</td></tr>
+<tr><td><code>latestDepositRoot</code></td><td><code>bytes32</code></td><td></td></tr>
+</tbody></table>
+</div>
+<h3 id="grantrewards"><a class="header" href="#grantrewards">grantRewards</a></h3>
+<p>Grants rewards updating the fraction.elastic.</p>
+<p><em>called from validator rewards updates</em></p>
+<pre><code class="language-solidity">function grantRewards() external payable;
+</code></pre>
+<h3 id="grantvalidatorwithdraw"><a class="header" href="#grantvalidatorwithdraw">grantValidatorWithdraw</a></h3>
+<p>Allows the MevEthShareVault or the staking module to withdraw validator funds from the contract.</p>
+<p><em>Before updating the fraction, the withdrawal queue is processed, which pays out any pending withdrawals.</em></p>
+<p><em>This function is only callable by the MevEthShareVault or the staking module.</em></p>
+<pre><code class="language-solidity">function grantValidatorWithdraw() external payable;
+</code></pre>
+<h3 id="claim"><a class="header" href="#claim">claim</a></h3>
+<p>Claim Finalised Withdrawal Ticket</p>
+<pre><code class="language-solidity">function claim(uint256 withdrawalId) external;
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>withdrawalId</code></td><td><code>uint256</code></td><td>Unique ID of the withdrawal ticket</td></tr>
+</tbody></table>
+</div>
+<h3 id="processwithdrawalqueue"><a class="header" href="#processwithdrawalqueue">processWithdrawalQueue</a></h3>
+<p>Processes the withdrawal queue, reserving any pending withdrawals with the contract's available balance.</p>
+<pre><code class="language-solidity">function processWithdrawalQueue(uint256 newRequestsFinalisedUntil) external onlyOperator;
+</code></pre>
+<h3 id="asset"><a class="header" href="#asset">asset</a></h3>
+<p>The underlying asset of the mevEth contract</p>
+<pre><code class="language-solidity">function asset() external view returns (address assetTokenAddress);
+</code></pre>
+<p><strong>Returns</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>assetTokenAddress</code></td><td><code>address</code></td><td>The address of the asset token</td></tr>
+</tbody></table>
+</div>
+<h3 id="totalassets"><a class="header" href="#totalassets">totalAssets</a></h3>
+<p>The total amount of assets controlled by the mevEth contract</p>
+<pre><code class="language-solidity">function totalAssets() external view returns (uint256 totalManagedAssets);
+</code></pre>
+<p><strong>Returns</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>totalManagedAssets</code></td><td><code>uint256</code></td><td>The amount of eth controlled by the mevEth contract</td></tr>
+</tbody></table>
+</div>
+<h3 id="converttoshares"><a class="header" href="#converttoshares">convertToShares</a></h3>
+<p>Function to convert a specified amount of assets to shares based on the elastic and base.</p>
+<pre><code class="language-solidity">function convertToShares(uint256 assets) public view returns (uint256 shares);
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>assets</code></td><td><code>uint256</code></td><td>The amount of assets to convert to shares</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>shares</code></td><td><code>uint256</code></td><td>The value of the given assets in shares</td></tr>
+</tbody></table>
+</div>
+<h3 id="converttoassets"><a class="header" href="#converttoassets">convertToAssets</a></h3>
+<p>Function to convert a specified amount of shares to assets based on the elastic and base.</p>
+<pre><code class="language-solidity">function convertToAssets(uint256 shares) public view returns (uint256 assets);
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>shares</code></td><td><code>uint256</code></td><td>The amount of shares to convert to assets</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>assets</code></td><td><code>uint256</code></td><td>The value of the given shares in assets</td></tr>
+</tbody></table>
+</div>
+<h3 id="maxdeposit"><a class="header" href="#maxdeposit">maxDeposit</a></h3>
+<p>Function to indicate the maximum deposit possible.</p>
+<pre><code class="language-solidity">function maxDeposit(address) external view returns (uint256 maxAssets);
+</code></pre>
+<p><strong>Returns</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>maxAssets</code></td><td><code>uint256</code></td><td>The maximum amount of assets that can be deposited.</td></tr>
+</tbody></table>
+</div>
+<h3 id="previewdeposit"><a class="header" href="#previewdeposit">previewDeposit</a></h3>
+<p>Function to simulate the amount of shares that would be minted for a given deposit at the current ratio.</p>
+<pre><code class="language-solidity">function previewDeposit(uint256 assets) external view returns (uint256 shares);
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>assets</code></td><td><code>uint256</code></td><td>The amount of assets that would be deposited</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>shares</code></td><td><code>uint256</code></td><td>The amount of shares that would be minted, <em>under ideal conditions</em> only</td></tr>
+</tbody></table>
+</div>
+<h3 id="_deposit"><a class="header" href="#_deposit">_deposit</a></h3>
+<p>internal deposit function to process Weth or Eth deposits</p>
+<pre><code class="language-solidity">function _deposit(address receiver, uint256 assets, uint256 shares) internal;
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>receiver</code></td><td><code>address</code></td><td>The address user whom should receive the mevEth out</td></tr>
+<tr><td><code>assets</code></td><td><code>uint256</code></td><td>The amount of assets to deposit</td></tr>
+<tr><td><code>shares</code></td><td><code>uint256</code></td><td>The amount of shares that should be minted</td></tr>
+</tbody></table>
+</div>
+<h3 id="deposit"><a class="header" href="#deposit">deposit</a></h3>
+<p>Function to deposit assets into the mevEth contract</p>
+<pre><code class="language-solidity">function deposit(uint256 assets, address receiver) external payable returns (uint256 shares);
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>assets</code></td><td><code>uint256</code></td><td>The amount of WETH which should be deposited</td></tr>
+<tr><td><code>receiver</code></td><td><code>address</code></td><td>The address user whom should receive the mevEth out</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>shares</code></td><td><code>uint256</code></td><td>The amount of shares minted</td></tr>
+</tbody></table>
+</div>
+<h3 id="maxmint"><a class="header" href="#maxmint">maxMint</a></h3>
+<p>Function to indicate the maximum amount of shares that can be minted at the current ratio.</p>
+<pre><code class="language-solidity">function maxMint(address) external view returns (uint256 maxShares);
+</code></pre>
+<p><strong>Returns</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>maxShares</code></td><td><code>uint256</code></td><td>The maximum amount of shares that can be minted</td></tr>
+</tbody></table>
+</div>
+<h3 id="previewmint"><a class="header" href="#previewmint">previewMint</a></h3>
+<p>Function to simulate the amount of assets that would be required to mint a given amount of shares at the current ratio.</p>
+<pre><code class="language-solidity">function previewMint(uint256 shares) external view returns (uint256 assets);
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>shares</code></td><td><code>uint256</code></td><td>The amount of shares that would be minted</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>assets</code></td><td><code>uint256</code></td><td>The amount of assets that would be required, <em>under ideal conditions</em> only</td></tr>
+</tbody></table>
+</div>
+<h3 id="mint"><a class="header" href="#mint">mint</a></h3>
+<p>Function to mint shares of the mevEth contract</p>
+<pre><code class="language-solidity">function mint(uint256 shares, address receiver) external payable returns (uint256 assets);
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>shares</code></td><td><code>uint256</code></td><td>The amount of shares that should be minted</td></tr>
+<tr><td><code>receiver</code></td><td><code>address</code></td><td>The address user whom should receive the mevEth out</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>assets</code></td><td><code>uint256</code></td><td>The amount of assets deposited</td></tr>
+</tbody></table>
+</div>
+<h3 id="maxwithdraw"><a class="header" href="#maxwithdraw">maxWithdraw</a></h3>
+<p>Function to indicate the maximum amount of assets that can be withdrawn at the current state.</p>
+<pre><code class="language-solidity">function maxWithdraw(address owner) public view returns (uint256 maxAssets);
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>owner</code></td><td><code>address</code></td><td>The address in question of who would be withdrawing</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>maxAssets</code></td><td><code>uint256</code></td><td>The maximum amount of assets that can be withdrawn</td></tr>
+</tbody></table>
+</div>
+<h3 id="previewwithdraw"><a class="header" href="#previewwithdraw">previewWithdraw</a></h3>
+<p>Function to simulate the amount of shares that would be allocated for a specified amount of assets.</p>
+<pre><code class="language-solidity">function previewWithdraw(uint256 assets) external view returns (uint256 shares);
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>assets</code></td><td><code>uint256</code></td><td>The amount of assets that would be withdrawn</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>shares</code></td><td><code>uint256</code></td><td>The amount of shares that would be burned, <em>under ideal conditions</em> only</td></tr>
+</tbody></table>
+</div>
+<h3 id="_withdraw"><a class="header" href="#_withdraw">_withdraw</a></h3>
+<p>Function to withdraw assets from the mevEth contract</p>
+<pre><code class="language-solidity">function _withdraw(bool useQueue, address receiver, address owner, uint256 assets, uint256 shares) internal;
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>useQueue</code></td><td><code>bool</code></td><td>Flag whether to use the withdrawal queue</td></tr>
+<tr><td><code>receiver</code></td><td><code>address</code></td><td>The address user whom should receive the mevEth out</td></tr>
+<tr><td><code>owner</code></td><td><code>address</code></td><td>The address of the owner of the mevEth</td></tr>
+<tr><td><code>assets</code></td><td><code>uint256</code></td><td>The amount of assets that should be withdrawn</td></tr>
+<tr><td><code>shares</code></td><td><code>uint256</code></td><td>shares that will be burned</td></tr>
+</tbody></table>
+</div>
+<h3 id="_updateallowance"><a class="header" href="#_updateallowance">_updateAllowance</a></h3>
+<p><em>internal function to update allowance for withdraws if necessary</em></p>
+<pre><code class="language-solidity">function _updateAllowance(address owner, uint256 shares) internal;
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>owner</code></td><td><code>address</code></td><td>owner of tokens</td></tr>
+<tr><td><code>shares</code></td><td><code>uint256</code></td><td>amount of shares to update</td></tr>
+</tbody></table>
+</div>
+<h3 id="withdraw"><a class="header" href="#withdraw">withdraw</a></h3>
+<p>Withdraw assets if balance is available</p>
+<pre><code class="language-solidity">function withdraw(uint256 assets, address receiver, address owner) external returns (uint256 shares);
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>assets</code></td><td><code>uint256</code></td><td>The amount of assets that should be withdrawn</td></tr>
+<tr><td><code>receiver</code></td><td><code>address</code></td><td>The address user whom should receive the mevEth out</td></tr>
+<tr><td><code>owner</code></td><td><code>address</code></td><td>The address of the owner of the mevEth</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>shares</code></td><td><code>uint256</code></td><td>The amount of shares burned</td></tr>
+</tbody></table>
+</div>
+<h3 id="withdrawqueue"><a class="header" href="#withdrawqueue">withdrawQueue</a></h3>
+<p>Withdraw assets or open queue ticket for claim depending on balance available</p>
+<pre><code class="language-solidity">function withdrawQueue(uint256 assets, address receiver, address owner) external returns (uint256 shares);
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>assets</code></td><td><code>uint256</code></td><td>The amount of assets that should be withdrawn</td></tr>
+<tr><td><code>receiver</code></td><td><code>address</code></td><td>The address user whom should receive the mevEth out</td></tr>
+<tr><td><code>owner</code></td><td><code>address</code></td><td>The address of the owner of the mevEth</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>shares</code></td><td><code>uint256</code></td><td>The amount of shares burned</td></tr>
+</tbody></table>
+</div>
+<h3 id="maxredeem"><a class="header" href="#maxredeem">maxRedeem</a></h3>
+<p>Function to simulate the maximum amount of shares that can be redeemed by the owner.</p>
+<pre><code class="language-solidity">function maxRedeem(address owner) external view returns (uint256 maxShares);
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>owner</code></td><td><code>address</code></td><td>The address in question of who would be redeeming their shares</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>maxShares</code></td><td><code>uint256</code></td><td>The maximum amount of shares they could redeem</td></tr>
+</tbody></table>
+</div>
+<h3 id="previewredeem"><a class="header" href="#previewredeem">previewRedeem</a></h3>
+<p>Function to simulate the amount of assets that would be withdrawn for a specified amount of shares.</p>
+<pre><code class="language-solidity">function previewRedeem(uint256 shares) external view returns (uint256 assets);
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>shares</code></td><td><code>uint256</code></td><td>The amount of shares that would be burned</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>assets</code></td><td><code>uint256</code></td><td>The amount of assets that would be withdrawn, <em>under ideal conditions</em> only</td></tr>
+</tbody></table>
+</div>
+<h3 id="redeem"><a class="header" href="#redeem">redeem</a></h3>
+<p>Function to redeem shares from the mevEth contract</p>
+<pre><code class="language-solidity">function redeem(uint256 shares, address receiver, address owner) external returns (uint256 assets);
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>shares</code></td><td><code>uint256</code></td><td>The amount of shares that should be burned</td></tr>
+<tr><td><code>receiver</code></td><td><code>address</code></td><td>The address user whom should receive the wETH out</td></tr>
+<tr><td><code>owner</code></td><td><code>address</code></td><td>The address of the owner of the mevEth</td></tr>
+</tbody></table>
+</div>
+<p><strong>Returns</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>assets</code></td><td><code>uint256</code></td><td>The amount of assets withdrawn</td></tr>
+</tbody></table>
+</div>
+<h3 id="max"><a class="header" href="#max">max</a></h3>
+<p><em>Returns the largest of two numbers.</em></p>
+<pre><code class="language-solidity">function max(uint256 a, uint256 b) internal pure returns (uint256);
+</code></pre>
+<h3 id="min"><a class="header" href="#min">min</a></h3>
+<p><em>Returns the smallest of two numbers.</em></p>
+<pre><code class="language-solidity">function min(uint256 a, uint256 b) internal pure returns (uint256);
+</code></pre>
+<h3 id="_iszero"><a class="header" href="#_iszero">_isZero</a></h3>
+<p><em>Gas efficient zero check</em></p>
+<pre><code class="language-solidity">function _isZero(uint256 value) internal pure returns (bool boolValue);
+</code></pre>
+<h3 id="receive"><a class="header" href="#receive">receive</a></h3>
+<p><em>Only Weth withdraw is defined for the behaviour. Deposits should be directed to deposit / mint. Rewards via grantRewards and validator withdraws
+via grantValidatorWithdraw.</em></p>
+<pre><code class="language-solidity">receive() external payable;
+</code></pre>
+<h2 id="events"><a class="header" href="#events">Events</a></h2>
+<h3 id="mevethinitialized"><a class="header" href="#mevethinitialized">MevEthInitialized</a></h3>
+<p>Event emitted when the MevEth is successfully initialized.</p>
+<pre><code class="language-solidity">event MevEthInitialized(address indexed mevEthShareVault, address indexed stakingModule);
+</code></pre>
+<h3 id="stakingpaused-1"><a class="header" href="#stakingpaused-1">StakingPaused</a></h3>
+<p>Emitted when staking is paused.</p>
+<pre><code class="language-solidity">event StakingPaused();
+</code></pre>
+<h3 id="stakingunpaused"><a class="header" href="#stakingunpaused">StakingUnpaused</a></h3>
+<p>Emitted when staking is unpaused.</p>
+<pre><code class="language-solidity">event StakingUnpaused();
+</code></pre>
+<h3 id="stakingmoduleupdatecommitted"><a class="header" href="#stakingmoduleupdatecommitted">StakingModuleUpdateCommitted</a></h3>
+<p>Event emitted when a new staking module is committed. The MODULE_UPDATE_TIME_DELAY must elapse before the staking module update can be
+finalized.</p>
+<pre><code class="language-solidity">event StakingModuleUpdateCommitted(
+    address indexed oldModule, address indexed pendingModule, uint64 indexed eligibleForFinalization
+);
+</code></pre>
+<h3 id="stakingmoduleupdatefinalized"><a class="header" href="#stakingmoduleupdatefinalized">StakingModuleUpdateFinalized</a></h3>
+<p>Event emitted when a new staking module is finalized.</p>
+<pre><code class="language-solidity">event StakingModuleUpdateFinalized(address indexed oldModule, address indexed newModule);
+</code></pre>
+<h3 id="stakingmoduleupdatecanceled"><a class="header" href="#stakingmoduleupdatecanceled">StakingModuleUpdateCanceled</a></h3>
+<p>Event emitted when a new pending module update is canceled.</p>
+<pre><code class="language-solidity">event StakingModuleUpdateCanceled(address indexed oldModule, address indexed pendingModule);
+</code></pre>
+<h3 id="mevethsharevaultupdatecommitted"><a class="header" href="#mevethsharevaultupdatecommitted">MevEthShareVaultUpdateCommitted</a></h3>
+<p>Event emitted when a new share vault is committed. To finalize the update, the MODULE_UPDATE_TIME_DELAY must elapse and the
+finalizeUpdateMevEthShareVault function must be called.</p>
+<pre><code class="language-solidity">event MevEthShareVaultUpdateCommitted(
+    address indexed oldVault, address indexed pendingVault, uint64 indexed eligibleForFinalization
+);
+</code></pre>
+<h3 id="mevethsharevaultupdatefinalized"><a class="header" href="#mevethsharevaultupdatefinalized">MevEthShareVaultUpdateFinalized</a></h3>
+<p>Event emitted when a new share vault is finalized.</p>
+<pre><code class="language-solidity">event MevEthShareVaultUpdateFinalized(address indexed oldVault, address indexed newVault);
+</code></pre>
+<h3 id="mevethsharevaultupdatecanceled"><a class="header" href="#mevethsharevaultupdatecanceled">MevEthShareVaultUpdateCanceled</a></h3>
+<p>Event emitted when a new pending share vault update is canceled.</p>
+<pre><code class="language-solidity">event MevEthShareVaultUpdateCanceled(address indexed oldVault, address indexed newVault);
+</code></pre>
+<h3 id="validatorcreated"><a class="header" href="#validatorcreated">ValidatorCreated</a></h3>
+<p>Event emitted when a new validator is created</p>
+<pre><code class="language-solidity">event ValidatorCreated(address indexed stakingModule, IStakingModule.ValidatorData newValidator);
+</code></pre>
+<h3 id="rewards"><a class="header" href="#rewards">Rewards</a></h3>
+<p>Event emitted when rewards are granted.</p>
+<pre><code class="language-solidity">event Rewards(address sender, uint256 amount);
+</code></pre>
+<h3 id="validatorwithdraw"><a class="header" href="#validatorwithdraw">ValidatorWithdraw</a></h3>
+<p>Emitted when validator withdraw funds are received.</p>
+<pre><code class="language-solidity">event ValidatorWithdraw(address sender, uint256 amount);
+</code></pre>
+<h3 id="withdrawalqueueopened"><a class="header" href="#withdrawalqueueopened">WithdrawalQueueOpened</a></h3>
+<p>Event emitted when a withdrawal ticket is added to the queue.</p>
+<pre><code class="language-solidity">event WithdrawalQueueOpened(address indexed recipient, uint256 indexed withdrawalId, uint256 assets);
+</code></pre>
+<h3 id="withdrawalqueueclosed"><a class="header" href="#withdrawalqueueclosed">WithdrawalQueueClosed</a></h3>
+<pre><code class="language-solidity">event WithdrawalQueueClosed(address indexed recipient, uint256 indexed withdrawalId, uint256 assets);
+</code></pre>
+<h2 id="structs"><a class="header" href="#structs">Structs</a></h2>
+<h3 id="fraction-1"><a class="header" href="#fraction-1">Fraction</a></h3>
+<p>Central struct used for share accounting + math.</p>
+<pre><code class="language-solidity">struct Fraction {
+    uint128 elastic;
+    uint128 base;
+}
+</code></pre>
+<h3 id="withdrawalticket"><a class="header" href="#withdrawalticket">WithdrawalTicket</a></h3>
+<p>Struct representing a withdrawal ticket which is added to the withdrawal queue.</p>
+<pre><code class="language-solidity">struct WithdrawalTicket {
+    bool claimed;
+    address receiver;
+    uint128 amount;
+    uint128 accumulatedAmount;
+}
+</code></pre>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../src/util/ExcessivelySafeCall.sol/library.ExcessivelySafeCall.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next" href="../../src/MevEthRateProvider.sol/contract.MevETHRateProvider.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../src/util/ExcessivelySafeCall.sol/library.ExcessivelySafeCall.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next" href="../../src/MevEthRateProvider.sol/contract.MevETHRateProvider.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../solidity.min.js"></script>
+
+
+    </div>
+    </body>
+</html>
