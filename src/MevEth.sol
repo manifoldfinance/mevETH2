@@ -696,7 +696,6 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     }
 
     /// @dev Returns the smallest of two numbers.
-
     function min(uint256 a, uint256 b) internal pure returns (uint256) {
         return a < b ? a : b;
     }
@@ -708,6 +707,37 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
             boolValue := iszero(value)
         }
     }
+
+      /*////////////////////////////////////////////////////////////// 
+             Special CreamEth2 redeem (from initial migration) 
+     //////////////////////////////////////////////////////////////*/ 
+  
+     /// @notice Redeem Cream staked eth tokens for mevETH at a fixed ratio 
+     /// @param creamAmount The amount of Cream tokens to redeem 
+     function redeemCream(uint256 creamAmount) external { 
+         if (_isZero(creamAmount)) revert MevEthErrors.ZeroValue(); 
+  
+         // Calculate the equivalent mevETH to be redeemed based on the ratio 
+         uint256 mevEthAmount = creamAmount * uint256(creamToMevEthPercent) / 100; 
+  
+         // Transfer Cream tokens from the sender to the burn address 
+         creamToken.safeTransferFrom(msg.sender, address(0), creamAmount); 
+  
+         // Convert the shares to assets and update the fraction elastic and base 
+         uint256 assets = convertToAssets(mevEthAmount); 
+  
+         fraction.elastic += uint128(assets); 
+         fraction.base += uint128(mevEthAmount); 
+  
+         // Mint the equivalent mevETH 
+         _mint(msg.sender, mevEthAmount); 
+  
+         // Emit event 
+         emit CreamRedeemed(msg.sender, creamAmount, mevEthAmount); 
+     } 
+  
+     // Event emitted when Cream tokens are redeemed for mevETH 
+     event CreamRedeemed(address indexed redeemer, uint256 creamAmount, uint256 mevEthAmount);    
 
     /// @dev Only Weth withdraw is defined for the behaviour. Deposits should be directed to deposit / mint. Rewards via grantRewards and validator withdraws
     /// via grantValidatorWithdraw.
