@@ -14,7 +14,7 @@ contract MevEthMigrationTest is MevEthTest {
   function setUp() override public {
     super.setUp();
 
-    string MAINNET_RPC_URL = vm.envString("MAINNET_RPC_URL");
+    string memory MAINNET_RPC_URL = vm.envString("MAINNET_RPC_URL");
     vm.selectFork(vm.createFork(MAINNET_RPC_URL));
   }
 

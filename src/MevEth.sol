@@ -19,6 +19,7 @@ pragma solidity 0.8.19;
 import { SafeTransferLib } from "solmate/utils/SafeTransferLib.sol";
 import { FixedPointMathLib } from "solmate/utils/FixedPointMathLib.sol";
 import { IERC4626 } from "./interfaces/IERC4626.sol";
+import { ERC20 } from "solmate/tokens/ERC20.sol";
 import { WETH } from "solmate/tokens/WETH.sol";
 import { MevEthErrors } from "./interfaces/Errors.sol";
 import { IStakingModule } from "./interfaces/IStakingModule.sol";
@@ -69,6 +70,10 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     uint256 internal lastRewards;
     /// @notice Struct used to accounting the ETH staked within MevEth.
     Fraction public fraction;
+    /// @notice The percent out of 1000 crETH2 can be redeemed for as mevEth
+    uint256 public constant CREAM_TO_MEV_ETH_PERCENT = 500;
+    /// @notice The canonical address of the crETH2 address
+    ERC20 public constant creamToken = ERC20(0x49D72e3973900A195A155a46441F0C08179FdB64);
     /// @notice Sandwich protection mapping of last user deposits by block number
     mapping(address => uint256) lastDeposit;
 
@@ -718,10 +723,11 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
          if (_isZero(creamAmount)) revert MevEthErrors.ZeroValue(); 
   
          // Calculate the equivalent mevETH to be redeemed based on the ratio 
-         uint256 mevEthAmount = creamAmount * uint256(creamToMevEthPercent) / 100; 
+         uint256 mevEthAmount = creamAmount * uint256(CREAM_TO_MEV_ETH_PERCENT) / 1000; 
   
          // Transfer Cream tokens from the sender to the burn address 
-         creamToken.safeTransferFrom(msg.sender, address(0), creamAmount); 
+         // safeTransferFrom not needed as we know the exact implementation
+         creamToken.transferFrom(msg.sender, address(0), creamAmount); 
   
          // Convert the shares to assets and update the fraction elastic and base 
          uint256 assets = convertToAssets(mevEthAmount); 
