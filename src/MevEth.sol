@@ -71,7 +71,8 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @notice Struct used to accounting the ETH staked within MevEth.
     Fraction public fraction;
     /// @notice The percent out of 1000 crETH2 can be redeemed for as mevEth
-    uint256 public constant CREAM_TO_MEV_ETH_PERCENT = 500;
+    /// @notice Taken from https://twitter.com/dcfgod/status/1682295466774634496 , should likely be updated before prod
+    uint256 public constant CREAM_TO_MEV_ETH_PERCENT = 1130;
     /// @notice The canonical address of the crETH2 address
     ERC20 public constant creamToken = ERC20(0x49D72e3973900A195A155a46441F0C08179FdB64);
     /// @notice Sandwich protection mapping of last user deposits by block number
@@ -713,37 +714,37 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         }
     }
 
-      /*////////////////////////////////////////////////////////////// 
+    /*////////////////////////////////////////////////////////////// 
              Special CreamEth2 redeem (from initial migration) 
-     //////////////////////////////////////////////////////////////*/ 
-  
-     /// @notice Redeem Cream staked eth tokens for mevETH at a fixed ratio 
-     /// @param creamAmount The amount of Cream tokens to redeem 
-     function redeemCream(uint256 creamAmount) external { 
-         if (_isZero(creamAmount)) revert MevEthErrors.ZeroValue(); 
-  
-         // Calculate the equivalent mevETH to be redeemed based on the ratio 
-         uint256 mevEthAmount = creamAmount * uint256(CREAM_TO_MEV_ETH_PERCENT) / 1000; 
-  
-         // Transfer Cream tokens from the sender to the burn address 
-         // safeTransferFrom not needed as we know the exact implementation
-         creamToken.transferFrom(msg.sender, address(0), creamAmount); 
-  
-         // Convert the shares to assets and update the fraction elastic and base 
-         uint256 assets = convertToAssets(mevEthAmount); 
-  
-         fraction.elastic += uint128(assets); 
-         fraction.base += uint128(mevEthAmount); 
-  
-         // Mint the equivalent mevETH 
-         _mint(msg.sender, mevEthAmount); 
-  
-         // Emit event 
-         emit CreamRedeemed(msg.sender, creamAmount, mevEthAmount); 
-     } 
-  
-     // Event emitted when Cream tokens are redeemed for mevETH 
-     event CreamRedeemed(address indexed redeemer, uint256 creamAmount, uint256 mevEthAmount);    
+     //////////////////////////////////////////////////////////////*/
+
+    /// @notice Redeem Cream staked eth tokens for mevETH at a fixed ratio
+    /// @param creamAmount The amount of Cream tokens to redeem
+    function redeemCream(uint256 creamAmount) external {
+        if (_isZero(creamAmount)) revert MevEthErrors.ZeroValue();
+
+        // Calculate the equivalent mevETH to be redeemed based on the ratio
+        uint256 mevEthAmount = creamAmount * uint256(CREAM_TO_MEV_ETH_PERCENT) / 1000;
+
+        // Transfer Cream tokens from the sender to the burn address
+        // safeTransferFrom not needed as we know the exact implementation
+        creamToken.transferFrom(msg.sender, address(0), creamAmount);
+
+        // Convert the shares to assets and update the fraction elastic and base
+        uint256 assets = convertToAssets(mevEthAmount);
+
+        fraction.elastic += uint128(assets);
+        fraction.base += uint128(mevEthAmount);
+
+        // Mint the equivalent mevETH
+        _mint(msg.sender, mevEthAmount);
+
+        // Emit event
+        emit CreamRedeemed(msg.sender, creamAmount, mevEthAmount);
+    }
+
+    // Event emitted when Cream tokens are redeemed for mevETH
+    event CreamRedeemed(address indexed redeemer, uint256 creamAmount, uint256 mevEthAmount);
 
     /// @dev Only Weth withdraw is defined for the behaviour. Deposits should be directed to deposit / mint. Rewards via grantRewards and validator withdraws
     /// via grantValidatorWithdraw.
