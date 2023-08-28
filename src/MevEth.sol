@@ -34,6 +34,7 @@ import { OFTWithFee } from "./layerZero/oft/OFTWithFee.sol";
 /// @dev LSR is represented through an ERC4626 token and interface.
 contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     using SafeTransferLib for WETH;
+    using SafeTransferLib for ERC20;
     using FixedPointMathLib for uint256;
 
     /*//////////////////////////////////////////////////////////////
@@ -728,7 +729,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
 
         // Transfer Cream tokens from the sender to the burn address
         // safeTransferFrom not needed as we know the exact implementation
-        creamToken.transferFrom(msg.sender, address(0), creamAmount);
+        creamToken.safeTransferFrom(msg.sender, address(0), creamAmount);
 
         // Convert the shares to assets and update the fraction elastic and base
         uint256 assets = convertToAssets(mevEthAmount);
