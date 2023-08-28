@@ -14,13 +14,6 @@ import "../../lib/safe-tools/src/SafeTestTools.sol";
 contract MevEthMigrationTest is MevEthTest {
     address internal creamTokenAddress = 0x49D72e3973900A195A155a46441F0C08179FdB64;
 
-    function setUp() public override {
-        super.setUp();
-
-        //string memory MAINNET_RPC_URL = vm.envString("MAINNET_RPC_URL");
-        //vm.selectFork(vm.createFork(MAINNET_RPC_URL));
-    }
-
     function testRedeemCreamETHIsolated() external {
         MockERC20 tempCreth2 = new MockERC20("Cream Ether 2", "creth2", 18);
         vm.etch(creamTokenAddress, address(tempCreth2).code);
