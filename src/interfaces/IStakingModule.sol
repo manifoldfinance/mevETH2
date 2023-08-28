@@ -22,7 +22,6 @@ interface IStakingModule {
 
     function validators() external view returns (uint256);
 
-
     function mevEth() external view returns (address);
 
     function VALIDATOR_DEPOSIT_SIZE() external view returns (uint256);
@@ -33,4 +32,6 @@ interface IStakingModule {
     function recoverToken(address token, address recipient, uint256 amount) external;
     function record() external returns (uint128, uint128, uint128, uint128);
     function registerExit() external;
+
+    function batchMigrate(IStakingModule.ValidatorData[] calldata batchData) external;
 }
