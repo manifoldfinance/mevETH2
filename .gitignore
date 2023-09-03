@@ -29,3 +29,13 @@ remappings.txt
 crytic-export/
 test/echidna/echidna-corpus/
 
+# macOS
+.DS_Store
+
+# Nodejs
+node_modules
+build/
+dist/
+.cache/
+.coverage/
+
