@@ -172,22 +172,28 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         emit StakingUnpaused();
     }
 
-    /// @notice Event emitted when a new staking module is committed. The MODULE_UPDATE_TIME_DELAY must elapse before the staking module update can be
+    /// @notice Event emitted when a new staking module is committed. The MODULE_UPDATE_TIME_DELAY must elapse before
+    /// the staking module update can be
     /// finalized.
-    event StakingModuleUpdateCommitted(address indexed oldModule, address indexed pendingModule, uint64 indexed eligibleForFinalization);
+    event StakingModuleUpdateCommitted(
+        address indexed oldModule, address indexed pendingModule, uint64 indexed eligibleForFinalization
+    );
     /// @notice Event emitted when a new staking module is finalized.
     event StakingModuleUpdateFinalized(address indexed oldModule, address indexed newModule);
     /// @notice Event emitted when a new pending module update is canceled.
     event StakingModuleUpdateCanceled(address indexed oldModule, address indexed pendingModule);
 
-    /// @notice Starts the process to update the staking module. To finalize the update, the MODULE_UPDATE_TIME_DELAY must elapse and the
+    /// @notice Starts the process to update the staking module. To finalize the update, the MODULE_UPDATE_TIME_DELAY
+    /// must elapse and the
     ///         finalizeUpdateStakingModule function must be called.
     /// @param newModule The new staking module.
     /// @dev This function is only callable by addresses with the admin role.
     function commitUpdateStakingModule(IStakingModule newModule) external onlyAdmin {
         pendingStakingModule = newModule;
         pendingStakingModuleCommittedTimestamp = uint64(block.timestamp);
-        emit StakingModuleUpdateCommitted(address(stakingModule), address(newModule), uint64(block.timestamp + MODULE_UPDATE_TIME_DELAY));
+        emit StakingModuleUpdateCommitted(
+            address(stakingModule), address(newModule), uint64(block.timestamp + MODULE_UPDATE_TIME_DELAY)
+        );
     }
 
     /// @notice Finalizes the staking module update if a pending staking module exists.
@@ -230,22 +236,28 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         pendingStakingModuleCommittedTimestamp = 0;
     }
 
-    /// @notice Event emitted when a new share vault is committed. To finalize the update, the MODULE_UPDATE_TIME_DELAY must elapse and the
+    /// @notice Event emitted when a new share vault is committed. To finalize the update, the MODULE_UPDATE_TIME_DELAY
+    /// must elapse and the
     ///         finalizeUpdateMevEthShareVault function must be called.
-    event MevEthShareVaultUpdateCommitted(address indexed oldVault, address indexed pendingVault, uint64 indexed eligibleForFinalization);
+    event MevEthShareVaultUpdateCommitted(
+        address indexed oldVault, address indexed pendingVault, uint64 indexed eligibleForFinalization
+    );
     /// @notice Event emitted when a new share vault is finalized.
     event MevEthShareVaultUpdateFinalized(address indexed oldVault, address indexed newVault);
     /// @notice Event emitted when a new pending share vault update is canceled.
     event MevEthShareVaultUpdateCanceled(address indexed oldVault, address indexed newVault);
 
-    /// @notice Starts the process to update the share vault. To finalize the update, the MODULE_UPDATE_TIME_DELAY must elapse and the
+    /// @notice Starts the process to update the share vault. To finalize the update, the MODULE_UPDATE_TIME_DELAY must
+    /// elapse and the
     ///         finalizeUpdateStakingModule function must be called.
     /// @param newMevEthShareVault The new share vault
     /// @dev This function is only callable by addresses with the admin role
     function commitUpdateMevEthShareVault(address newMevEthShareVault) external onlyAdmin {
         pendingMevEthShareVault = newMevEthShareVault;
         pendingMevEthShareVaultCommittedTimestamp = uint64(block.timestamp);
-        emit MevEthShareVaultUpdateCommitted(mevEthShareVault, newMevEthShareVault, uint64(block.timestamp + MODULE_UPDATE_TIME_DELAY));
+        emit MevEthShareVaultUpdateCommitted(
+            mevEthShareVault, newMevEthShareVault, uint64(block.timestamp + MODULE_UPDATE_TIME_DELAY)
+        );
     }
 
     /// @notice Finalizes the share vault update if a pending share vault exists.
@@ -269,7 +281,8 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         }
 
         //TODO: we need to do this for both the staking module and the mev share vault
-        /// @custom:: When finalizing the update to the MevEthShareVault, make sure to grant any remaining rewards from the existing share vault.
+        /// @custom:: When finalizing the update to the MevEthShareVault, make sure to grant any remaining rewards from
+        /// the existing share vault.
         // Emit an event to notify offchain listeners that the share vault has been finalized.
         emit MevEthShareVaultUpdateFinalized(mevEthShareVault, address(pendingMevEthShareVault));
 
@@ -303,10 +316,17 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @notice Event emitted when a new validator is created
     event ValidatorCreated(address indexed stakingModule, IStakingModule.ValidatorData newValidator);
 
-    /// @notice This function passes through the needed Ether to the Staking module, and the assosiated credentials with it
+    /// @notice This function passes through the needed Ether to the Staking module, and the assosiated credentials with
+    /// it
     /// @param newData The data needed to create a new validator
     /// @dev This function is only callable by addresses with the operator role and if staking is unpaused
-    function createValidator(IStakingModule.ValidatorData calldata newData, bytes32 latestDepositRoot) external onlyOperator {
+    function createValidator(
+        IStakingModule.ValidatorData calldata newData,
+        bytes32 latestDepositRoot
+    )
+        external
+        onlyOperator
+    {
         _stakingUnpaused();
         IStakingModule _stakingModule = stakingModule;
         // Determine how big deposit is for the validator
@@ -344,7 +364,9 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @dev This function is only callable by the MevEthShareVault or the staking module.
     function grantValidatorWithdraw() external payable {
         // Check that the sender is the staking module or the MevEthShareVault.
-        if (!(msg.sender == address(stakingModule) || msg.sender == mevEthShareVault)) revert MevEthErrors.InvalidSender();
+        if (!(msg.sender == address(stakingModule) || msg.sender == mevEthShareVault)) {
+            revert MevEthErrors.InvalidSender();
+        }
 
         // Check that the value is not zero
         if (msg.value != 32 ether) {
@@ -414,7 +436,9 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         uint256 finalised = requestsFinalisedUntil;
         if (newRequestsFinalisedUntil < finalised) revert MevEthErrors.AlreadyFinalised();
 
-        uint256 delta = uint256(withdrawalQueue[newRequestsFinalisedUntil].accumulatedAmount - withdrawalQueue[finalised].accumulatedAmount);
+        uint256 delta = uint256(
+            withdrawalQueue[newRequestsFinalisedUntil].accumulatedAmount - withdrawalQueue[finalised].accumulatedAmount
+        );
         if (available < delta) revert MevEthErrors.NotEnoughEth();
 
         requestsFinalisedUntil = newRequestsFinalisedUntil;
@@ -534,7 +558,8 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         return MAX_DEPOSIT;
     }
 
-    /// @notice Function to simulate the amount of assets that would be required to mint a given amount of shares at the current ratio.
+    /// @notice Function to simulate the amount of assets that would be required to mint a given amount of shares at the
+    /// current ratio.
     /// @param shares The amount of shares that would be minted
     /// @return assets The amount of assets that would be required, *under ideal conditions* only
     function previewMint(uint256 shares) external view returns (uint256 assets) {
@@ -583,7 +608,9 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         if (assets < MIN_DEPOSIT) revert MevEthErrors.WithdrawTooSmall();
         // Sandwich protection
         uint256 blockNumber = block.number;
-        if (_isZero(blockNumber - lastDeposit[msg.sender]) && _isZero(blockNumber - lastRewards)) revert MevEthErrors.SandwichProtection();
+        if (_isZero(blockNumber - lastDeposit[msg.sender]) && _isZero(blockNumber - lastRewards)) {
+            revert MevEthErrors.SandwichProtection();
+        }
 
         _updateAllowance(owner, shares);
 
@@ -747,7 +774,8 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     // Event emitted when Cream tokens are redeemed for mevETH
     event CreamRedeemed(address indexed redeemer, uint256 creamAmount, uint256 mevEthAmount);
 
-    /// @dev Only Weth withdraw is defined for the behaviour. Deposits should be directed to deposit / mint. Rewards via grantRewards and validator withdraws
+    /// @dev Only Weth withdraw is defined for the behaviour. Deposits should be directed to deposit / mint. Rewards via
+    /// grantRewards and validator withdraws
     /// via grantValidatorWithdraw.
     receive() external payable {
         if (msg.sender != address(WETH9)) revert MevEthErrors.InvalidSender();

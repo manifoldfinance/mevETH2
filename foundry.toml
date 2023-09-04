@@ -56,7 +56,7 @@ optimism = "${OPTIMISM_RPC_URL}"
 avalanche = "${AVALANCHE_RPC_URL}"
 
 [fmt]
-line_length = 160
+line_length = 120
 bracket_spacing = true
 multiline_func_header = "all"
 number_underscore = "thousands"

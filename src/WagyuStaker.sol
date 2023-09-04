@@ -34,7 +34,13 @@ contract WagyuStaker is Auth, IStakingModule {
     IBeaconDepositContract public immutable BEACON_CHAIN_DEPOSIT_CONTRACT;
 
     /// @notice Event emitted when a validator is registered
-    event NewValidator(address indexed operator, bytes pubkey, bytes32 withdrawalCredentials, bytes signature, bytes32 deposit_data_root);
+    event NewValidator(
+        address indexed operator,
+        bytes pubkey,
+        bytes32 withdrawalCredentials,
+        bytes signature,
+        bytes32 deposit_data_root
+    );
     /// @notice Event emitted when tokens are recovered from the contract.
     event TokenRecovered(address indexed recipient, address indexed token, uint256 indexed amount);
     /// @notice Event emitted when rewards are paid to the MevEth contract.
@@ -78,12 +84,16 @@ contract WagyuStaker is Auth, IStakingModule {
             data.pubkey, abi.encodePacked(data.withdrawal_credentials), data.signature, data.deposit_data_root
         );
 
-        // Emit an event inidicating a new validator has been registered, allowing for offchain listeners to track the validator registry
-        emit NewValidator(data.operator, data.pubkey, data.withdrawal_credentials, data.signature, data.deposit_data_root);
+        // Emit an event inidicating a new validator has been registered, allowing for offchain listeners to track the
+        // validator registry
+        emit NewValidator(
+            data.operator, data.pubkey, data.withdrawal_credentials, data.signature, data.deposit_data_root
+        );
     }
 
     /// @notice Function to pay rewards to the MevEth contract
-    /// @dev Only callable by an operator. Additionally, if there is an issue when granting rewards to the MevEth contract, funds are secured to the
+    /// @dev Only callable by an operator. Additionally, if there is an issue when granting rewards to the MevEth
+    /// contract, funds are secured to the
     ///      beneficiary address for manual allocation to the MevEth contract.
     /// @param rewards rewards to pay to the MevEth contract
     function payRewards(uint256 rewards) external onlyOperator {
@@ -157,8 +167,11 @@ contract WagyuStaker is Auth, IStakingModule {
         }
         for (uint256 i = 0; i < length; ++i) {
             IStakingModule.ValidatorData memory data = batchData[i];
-            // Emit an event inidicating a new validator has been registered, allowing for offchain listeners to track the validator registry
-            emit NewValidator(data.operator, data.pubkey, data.withdrawal_credentials, data.signature, data.deposit_data_root);
+            // Emit an event inidicating a new validator has been registered, allowing for offchain listeners to track
+            // the validator registry
+            emit NewValidator(
+                data.operator, data.pubkey, data.withdrawal_credentials, data.signature, data.deposit_data_root
+            );
         }
     }
 

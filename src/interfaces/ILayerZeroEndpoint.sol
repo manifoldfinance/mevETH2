@@ -9,9 +9,11 @@ interface ILayerZeroEndpoint is ILayerZeroUserApplicationConfig {
     // @param _dstChainId - the destination chain identifier
     // @param _destination - the address on destination chain (in bytes). address length/format may vary by chains
     // @param _payload - a custom bytes payload to send to the destination contract
-    // @param _refundAddress - if the source transaction is cheaper than the amount of value passed, refund the additional amount to this address
+    // @param _refundAddress - if the source transaction is cheaper than the amount of value passed, refund the
+    // additional amount to this address
     // @param _zroPaymentAddress - the address of the ZRO token holder who would pay for the transaction
-    // @param _adapterParams - parameters for custom functionality. e.g. receive airdropped native gas from the relayer on destination
+    // @param _adapterParams - parameters for custom functionality. e.g. receive airdropped native gas from the relayer
+    // on destination
     function send(
         uint16 _dstChainId,
         bytes calldata _destination,
@@ -101,7 +103,15 @@ interface ILayerZeroEndpoint is ILayerZeroUserApplicationConfig {
     // @param _chainId - the chainId for the pending config change
     // @param _userApplication - the contract address of the user application
     // @param _configType - type of configuration. every messaging library has its own convention.
-    function getConfig(uint16 _version, uint16 _chainId, address _userApplication, uint256 _configType) external view returns (bytes memory);
+    function getConfig(
+        uint16 _version,
+        uint16 _chainId,
+        address _userApplication,
+        uint256 _configType
+    )
+        external
+        view
+        returns (bytes memory);
 
     // @notice get the send() LayerZero messaging library version
     // @param _userApplication - the contract address of the user application

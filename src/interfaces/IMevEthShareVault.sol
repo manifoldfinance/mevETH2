@@ -9,7 +9,8 @@ interface IMevEthShareVault {
     Otherwise, a MevPayment should be emitted and the fees/profits should be updated based on the medianMevPayment.
     */
 
-    // Function to send rewards to MevEth Contract. In the case of failure, this function sends the funds to the Admin as a fallback.
+    // Function to send rewards to MevEth Contract. In the case of failure, this function sends the funds to the Admin
+    // as a fallback.
     function payRewards() external;
 
     // Getter functions for public variables

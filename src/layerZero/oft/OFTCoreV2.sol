@@ -49,7 +49,13 @@ abstract contract OFTCoreV2 is NonblockingLzApp {
     event NonContractAddress(address _address);
 
     // _sharedDecimals should be the minimum decimals on all chains
-    constructor(uint8 _sharedDecimals, address authority, address _lzEndpoint) NonblockingLzApp(authority, _lzEndpoint) {
+    constructor(
+        uint8 _sharedDecimals,
+        address authority,
+        address _lzEndpoint
+    )
+        NonblockingLzApp(authority, _lzEndpoint)
+    {
         sharedDecimals = _sharedDecimals;
     }
 
@@ -78,7 +84,9 @@ abstract contract OFTCoreV2 is NonblockingLzApp {
         emit ReceiveFromChain(_srcChainId, _to, _amount);
 
         // call
-        IOFTReceiverV2(_to).onOFTReceived{ gas: _gasForCall }(_srcChainId, _srcAddress, _nonce, _from, _amount, _payload);
+        IOFTReceiverV2(_to).onOFTReceived{ gas: _gasForCall }(
+            _srcChainId, _srcAddress, _nonce, _from, _amount, _payload
+        );
     }
 
     function setUseCustomAdapterParams(bool _useCustomAdapterParams) public virtual onlyAdmin {
@@ -108,7 +116,16 @@ abstract contract OFTCoreV2 is NonblockingLzApp {
         return lzEndpoint.estimateFees(_dstChainId, address(this), payload, _useZro, _adapterParams);
     }
 
-    function _nonblockingLzReceive(uint16 _srcChainId, bytes memory _srcAddress, uint64 _nonce, bytes memory _payload) internal virtual override {
+    function _nonblockingLzReceive(
+        uint16 _srcChainId,
+        bytes memory _srcAddress,
+        uint64 _nonce,
+        bytes memory _payload
+    )
+        internal
+        virtual
+        override
+    {
         uint8 packetType = _payload.toUint8(0);
 
         if (packetType == PT_SEND) {
@@ -155,7 +172,15 @@ abstract contract OFTCoreV2 is NonblockingLzApp {
         emit ReceiveFromChain(_srcChainId, to, amount);
     }
 
-    function _checkAdapterParams(uint16 _dstChainId, uint16 _pkType, bytes memory _adapterParams, uint256 _extraGas) internal virtual {
+    function _checkAdapterParams(
+        uint16 _dstChainId,
+        uint16 _pkType,
+        bytes memory _adapterParams,
+        uint256 _extraGas
+    )
+        internal
+        virtual
+    {
         if (useCustomAdapterParams) {
             _checkGasLimit(_dstChainId, _pkType, _adapterParams, _extraGas);
         } else {
@@ -189,7 +214,15 @@ abstract contract OFTCoreV2 is NonblockingLzApp {
         amountSD = _payload.toUint64(33);
     }
 
-    function _debitFrom(address _from, uint16 _dstChainId, bytes32 _toAddress, uint256 _amount) internal virtual returns (uint256);
+    function _debitFrom(
+        address _from,
+        uint16 _dstChainId,
+        bytes32 _toAddress,
+        uint256 _amount
+    )
+        internal
+        virtual
+        returns (uint256);
 
     function _creditTo(uint16 _srcChainId, address _toAddress, uint256 _amount) internal virtual returns (uint256);
 

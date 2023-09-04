@@ -43,21 +43,42 @@ abstract contract LzApp is Auth, ILayerZeroReceiver, ILayerZeroUserApplicationCo
         lzEndpoint = ILayerZeroEndpoint(_endpoint);
     }
 
-    function lzReceive(uint16 _srcChainId, bytes calldata _srcAddress, uint64 _nonce, bytes calldata _payload) public virtual override {
+    function lzReceive(
+        uint16 _srcChainId,
+        bytes calldata _srcAddress,
+        uint64 _nonce,
+        bytes calldata _payload
+    )
+        public
+        virtual
+        override
+    {
         // lzReceive must be called by the endpoint for security
         if (msg.sender != address(lzEndpoint)) revert InvalidEndpointCaller();
 
         bytes memory trustedRemote = trustedRemoteLookup[_srcChainId];
-        // if will still block the message pathway from (srcChainId, srcAddress). should not receive message from untrusted remote.
-        if (_srcAddress.length != trustedRemote.length || trustedRemote.length == 0 || keccak256(_srcAddress) != keccak256(trustedRemote)) {
+        // if will still block the message pathway from (srcChainId, srcAddress). should not receive message from
+        // untrusted remote.
+        if (
+            _srcAddress.length != trustedRemote.length || trustedRemote.length == 0
+                || keccak256(_srcAddress) != keccak256(trustedRemote)
+        ) {
             revert InvalidSourceSendingContract();
         }
 
         _blockingLzReceive(_srcChainId, _srcAddress, _nonce, _payload);
     }
 
-    // abstract function - the default behaviour of LayerZero is blocking. See: NonblockingLzApp if you dont need to enforce ordered messaging
-    function _blockingLzReceive(uint16 _srcChainId, bytes memory _srcAddress, uint64 _nonce, bytes memory _payload) internal virtual;
+    // abstract function - the default behaviour of LayerZero is blocking. See: NonblockingLzApp if you dont need to
+    // enforce ordered messaging
+    function _blockingLzReceive(
+        uint16 _srcChainId,
+        bytes memory _srcAddress,
+        uint64 _nonce,
+        bytes memory _payload
+    )
+        internal
+        virtual;
 
     function _lzSend(
         uint16 _dstChainId,
@@ -73,10 +94,21 @@ abstract contract LzApp is Auth, ILayerZeroReceiver, ILayerZeroUserApplicationCo
         bytes memory trustedRemote = trustedRemoteLookup[_dstChainId];
         if (trustedRemote.length == 0) revert DestinationChainNotTrusted();
         _checkPayloadSize(_dstChainId, _payload.length);
-        lzEndpoint.send{ value: _nativeFee }(_dstChainId, trustedRemote, _payload, _refundAddress, _zroPaymentAddress, _adapterParams);
+        lzEndpoint.send{ value: _nativeFee }(
+            _dstChainId, trustedRemote, _payload, _refundAddress, _zroPaymentAddress, _adapterParams
+        );
     }
 
-    function _checkGasLimit(uint16 _dstChainId, uint16 _type, bytes memory _adapterParams, uint256 _extraGas) internal view virtual {
+    function _checkGasLimit(
+        uint16 _dstChainId,
+        uint16 _type,
+        bytes memory _adapterParams,
+        uint256 _extraGas
+    )
+        internal
+        view
+        virtual
+    {
         uint256 providedGasLimit = _getGasLimit(_adapterParams);
         uint256 minGasLimit = minDstGasLookup[_dstChainId][_type] + _extraGas;
         if (minGasLimit == 0) revert MinGasLimitNotSet();
@@ -100,12 +132,30 @@ abstract contract LzApp is Auth, ILayerZeroReceiver, ILayerZeroUserApplicationCo
     }
 
     //---------------------------UserApplication config----------------------------------------
-    function getConfig(uint16 _version, uint16 _chainId, address, uint256 _configType) external view returns (bytes memory) {
+    function getConfig(
+        uint16 _version,
+        uint16 _chainId,
+        address,
+        uint256 _configType
+    )
+        external
+        view
+        returns (bytes memory)
+    {
         return lzEndpoint.getConfig(_version, _chainId, address(this), _configType);
     }
 
     // generic config for LayerZero user Application
-    function setConfig(uint16 _version, uint16 _chainId, uint256 _configType, bytes calldata _config) external override onlyAdmin {
+    function setConfig(
+        uint16 _version,
+        uint16 _chainId,
+        uint256 _configType,
+        bytes calldata _config
+    )
+        external
+        override
+        onlyAdmin
+    {
         lzEndpoint.setConfig(_version, _chainId, _configType, _config);
     }
 

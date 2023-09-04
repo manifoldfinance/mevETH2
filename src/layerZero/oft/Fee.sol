@@ -57,7 +57,15 @@ abstract contract Fee is Auth {
         }
     }
 
-    function _payOFTFee(address _from, uint16 _dstChainId, uint256 _amount) internal virtual returns (uint256 amount, uint256 fee) {
+    function _payOFTFee(
+        address _from,
+        uint16 _dstChainId,
+        uint256 _amount
+    )
+        internal
+        virtual
+        returns (uint256 amount, uint256 fee)
+    {
         fee = quoteOFTFee(_dstChainId, _amount);
         amount = _amount - fee;
         if (fee > 0) {

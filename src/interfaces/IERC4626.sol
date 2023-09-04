@@ -79,5 +79,7 @@ interface IERC4626 {
     /**
      * @dev Emitted when a withdrawal is made, either through redeem or withdraw
      */
-    event Withdraw(address indexed caller, address indexed receiver, address indexed owner, uint256 assets, uint256 shares);
+    event Withdraw(
+        address indexed caller, address indexed receiver, address indexed owner, uint256 assets, uint256 shares
+    );
 }

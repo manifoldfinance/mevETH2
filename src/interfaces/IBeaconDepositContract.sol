@@ -10,7 +10,14 @@ interface IBeaconDepositContract {
     /// @param deposit_data_root The SHA-256 hash of the SSZ-encoded DepositData object.
 
     /// Used as a protection against malformed input.
-    function deposit(bytes calldata pubkey, bytes calldata withdrawal_credentials, bytes calldata signature, bytes32 deposit_data_root) external payable;
+    function deposit(
+        bytes calldata pubkey,
+        bytes calldata withdrawal_credentials,
+        bytes calldata signature,
+        bytes32 deposit_data_root
+    )
+        external
+        payable;
 
     /// @notice Query the current deposit root hash.
     /// @return The deposit root hash.

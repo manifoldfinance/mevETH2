@@ -11,7 +11,14 @@ abstract contract BaseOFTWithFee is OFTCoreV2, Fee, ERC165, IOFTWithFee {
     // Custom errors save gas
     error AmountLessThanMinAmount();
 
-    constructor(uint8 _sharedDecimals, address authority, address _lzEndpoint) OFTCoreV2(_sharedDecimals, authority, _lzEndpoint) Fee(authority) { }
+    constructor(
+        uint8 _sharedDecimals,
+        address authority,
+        address _lzEndpoint
+    )
+        OFTCoreV2(_sharedDecimals, authority, _lzEndpoint)
+        Fee(authority)
+    { }
 
     /**
      *
@@ -32,7 +39,15 @@ abstract contract BaseOFTWithFee is OFTCoreV2, Fee, ERC165, IOFTWithFee {
         override
     {
         (_amount,) = _payOFTFee(_from, _dstChainId, _amount);
-        _amount = _send(_from, _dstChainId, _toAddress, _amount, _callParams.refundAddress, _callParams.zroPaymentAddress, _callParams.adapterParams);
+        _amount = _send(
+            _from,
+            _dstChainId,
+            _toAddress,
+            _amount,
+            _callParams.refundAddress,
+            _callParams.zroPaymentAddress,
+            _callParams.adapterParams
+        );
         if (_amount < _minAmount) revert AmountLessThanMinAmount();
     }
 
@@ -65,5 +80,13 @@ abstract contract BaseOFTWithFee is OFTCoreV2, Fee, ERC165, IOFTWithFee {
 
     function token() public view virtual override returns (address);
 
-    function _transferFrom(address _from, address _to, uint256 _amount) internal virtual override(Fee, OFTCoreV2) returns (uint256);
+    function _transferFrom(
+        address _from,
+        address _to,
+        uint256 _amount
+    )
+        internal
+        virtual
+        override(Fee, OFTCoreV2)
+        returns (uint256);
 }

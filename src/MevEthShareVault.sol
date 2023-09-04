@@ -105,13 +105,17 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
         emit ProtocolFeeToUpdated(newProtocolFeeTo);
     }
 
-    /// @notice Function to log rewards, updating the protocol balance. Once all balances are updated, the RewardsCollected event is emitted.
+    /// @notice Function to log rewards, updating the protocol balance. Once all balances are updated, the
+    /// RewardsCollected event is emitted.
     /// @dev Operators are tracking the RewardPayment events to calculate the protocolFeesOwed.
     ///      The logRewards function is then called to update the fees and rewards within the protocol balance.
-    ///      Validators associated with the MevETH protocol set the block builder's address as the feeRecepient for the block.
-    ///      The block builder attaches a transaction to the end of the block sending the MEV rewards to the MevEthShareVault.
+    ///      Validators associated with the MevETH protocol set the block builder's address as the feeRecepient for the
+    /// block.
+    ///      The block builder attaches a transaction to the end of the block sending the MEV rewards to the
+    /// MevEthShareVault.
     ///      This then emits the RewardPayment event, allowing the offchain operators to track the protocolFeesOwed.
-    ///      This approach trusts that the operators are acting honestly and the protocolFeesOwed is accurately calculated.
+    ///      This approach trusts that the operators are acting honestly and the protocolFeesOwed is accurately
+    /// calculated.
     function logRewards(uint128 protocolFeesOwed) external onlyOperator {
         // Cahce the protocol balance
         ProtocolBalance memory balances = protocolBalance;
