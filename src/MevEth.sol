@@ -731,11 +731,11 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         uint256 assets = convertToAssets(mevEthAmount);
         if (assets < MIN_DEPOSIT) revert MevEthErrors.DepositTooSmall();
 
-        // Burn CreamEth2 tokens
-        IERC20Burnable(creamToken).burnFrom(msg.sender, creamAmount);
-
         fraction.elastic += uint128(assets);
         fraction.base += uint128(mevEthAmount);
+
+        // Burn CreamEth2 tokens
+        IERC20Burnable(creamToken).burnFrom(msg.sender, creamAmount);
 
         // Mint the equivalent mevETH
         _mint(msg.sender, mevEthAmount);
