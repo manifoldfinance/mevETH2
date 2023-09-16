@@ -558,7 +558,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @notice Function to indicate the maximum amount of assets that can be withdrawn at the current state.
     /// @param owner The address in question of who would be withdrawing
     /// @return maxAssets The maximum amount of assets that can be withdrawn
-    function maxWithdraw(address owner) public view returns (uint256 maxAssets) {
+    function maxWithdraw(address owner) external view returns (uint256 maxAssets) {
         // Withdrawal is either their maximum balance, or the internal buffer
         maxAssets = min(address(this).balance, convertToAssets(balanceOf[owner]));
     }
