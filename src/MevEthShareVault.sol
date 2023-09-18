@@ -58,6 +58,9 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
 
         mevEth = _mevEth;
         protocolFeeTo = _protocolFeeTo;
+
+        emit MevEthUpdated(_mevEth);
+        emit ProtocolFeeToUpdated(_protocolFeeTo);
     }
 
     /// @notice Function to pay rewards to the MevEth contract
