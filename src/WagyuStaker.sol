@@ -155,10 +155,13 @@ contract WagyuStaker is Auth, IStakingModule {
             record.totalDeposited += uint128(length * VALIDATOR_DEPOSIT_SIZE);
             validators += length;
         }
-        for (uint256 i = 0; i < length; ++i) {
+        for (uint256 i = 0; i < length;) {
             IStakingModule.ValidatorData memory data = batchData[i];
             // Emit an event inidicating a new validator has been registered, allowing for offchain listeners to track the validator registry
             emit NewValidator(data.operator, data.pubkey, data.withdrawal_credentials, data.signature, data.deposit_data_root);
+            unchecked {
+                i += 1;
+            }
         }
     }
 
