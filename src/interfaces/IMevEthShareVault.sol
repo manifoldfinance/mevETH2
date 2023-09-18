@@ -10,19 +10,12 @@ interface IMevEthShareVault {
     */
 
     // Function to send rewards to MevEth Contract. In the case of failure, this function sends the funds to the Admin as a fallback.
-    function payRewards() external;
-
-    // Getter functions for public variables
-    function fees() external view returns (uint128);
-    function rewards() external view returns (uint128);
-
-    // Function to update the protocol balance, allocating to the fees and rewards
-    function logRewards(uint128 protocolFeesOwed) external;
+    function payRewards(uint256 rewards) external;
 
     // Admin controls
     function recoverToken(address token, address recipient, uint256 amount) external;
     // Send the protocol fees to the `feeTo` address
-    function sendFees() external;
+    function sendFees(uint256 fees) external;
     function setProtocolFeeTo(address newFeeTo) external;
     function setNewMevEth(address newMevEth) external;
 }

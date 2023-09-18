@@ -515,7 +515,7 @@ contract MevAdminTest is MevEthTest {
         vm.warp(finalizationTimestamp + uint64(MODULE_UPDATE_TIME_DELAY));
 
         // Update the protocol balance and expect a reversion when trying to update the vault while balances are not empty
-        _addToProtocolBalance(newVault, 100, 100);
+        _addToProtocolBalance(newVault, 200);
         vm.expectRevert(MevEthErrors.NonZeroVaultBalance.selector);
         vm.prank(SamBacha);
         mevEth.finalizeUpdateMevEthShareVault(false);
@@ -526,18 +526,14 @@ contract MevAdminTest is MevEthTest {
         assertEq(address(mevEth.mevEthShareVault()), newVault);
     }
 
-    function _addToProtocolBalance(address mevEthShareVault, uint128 fees, uint128 rewards) internal {
-        uint256 amount = fees + rewards;
+    function _addToProtocolBalance(address mevEthShareVault, uint128 rewards) internal {
+        uint256 amount = rewards;
 
         vm.deal(address(this), amount);
         (bool success,) = mevEthShareVault.call{ value: amount }("");
         if (!success) revert TransferFailed();
 
-        vm.prank(SamBacha);
-        IMevEthShareVault(mevEthShareVault).logRewards(fees);
-
-        assertEq(IMevEthShareVault(mevEthShareVault).fees(), fees);
-        assertEq(IMevEthShareVault(mevEthShareVault).rewards(), rewards);
+        assertEq(mevEthShareVault.balance, rewards);
     }
 
     /**
@@ -783,10 +779,7 @@ contract MevAdminTest is MevEthTest {
         vm.deal(address(this), amount);
         payable(newShareVault).transfer(amount);
 
-        vm.prank(Operator01);
-        IMevEthShareVault(newShareVault).logRewards(0);
-
-        uint256 rewardsAmount = IMevEthShareVault(newShareVault).rewards();
+        uint256 rewardsAmount = newShareVault.balance;
 
         vm.expectEmit(true, true, false, false, address(mevEth));
         emit Rewards(newShareVault, rewardsAmount);
@@ -795,7 +788,7 @@ contract MevAdminTest is MevEthTest {
         emit RewardsPaid(rewardsAmount);
 
         vm.prank(SamBacha);
-        IMevEthShareVault(newShareVault).payRewards();
+        IMevEthShareVault(newShareVault).payRewards(rewardsAmount);
         //TODO: assert balances after rewards are paid on mev eth share vault
 
         uint256 elastic = mevEth.totalAssets();

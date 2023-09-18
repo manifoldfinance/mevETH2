@@ -262,8 +262,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         }
 
         if (!isMultisig) {
-            (uint128 fees, uint128 rewards) = MevEthShareVault(payable(mevEthShareVault)).protocolBalance();
-            if (fees != 0 || rewards != 0) {
+            if (mevEthShareVault.balance > 0) {
                 revert MevEthErrors.NonZeroVaultBalance();
             }
         }
