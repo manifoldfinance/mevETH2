@@ -207,7 +207,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         emit StakingModuleUpdateFinalized(address(stakingModule), address(pendingStakingModule));
 
         // Update the staking module
-        stakingModule = IStakingModule(address(pendingStakingModule));
+        stakingModule = pendingStakingModule;
 
         // Set the pending staking module variables to zero.
         pendingStakingModule = IStakingModule(address(0));
