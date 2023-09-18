@@ -59,11 +59,11 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     uint128 public constant MIN_DEPOSIT = 0.01 ether; // 0.01 eth
     /// @notice The address of the MevEthShareVault.
     address public mevEthShareVault;
-    /// @notice The address of the pending MevEthShareVault when a new vault has been comitted but not finalized.
+    /// @notice The address of the pending MevEthShareVault when a new vault has been committed but not finalized.
     address public pendingMevEthShareVault;
     /// @notice The staking module used to stake Ether.
     IStakingModule public stakingModule;
-    /// @notice The pending staking module when a new module has been comitted but not finalized.
+    /// @notice The pending staking module when a new module has been committed but not finalized.
     IStakingModule public pendingStakingModule;
     /// @notice WETH Implementation used by MevEth.
     WETH public immutable WETH9;
@@ -639,7 +639,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         // Convert the assets to shares and check if the owner has the allowance to withdraw the shares.
         shares = convertToShares(assets + fee);
 
-        // Withdraw the assets from the Mevth contract
+        // Withdraw the assets from the MevEth contract
         _withdraw(false, receiver, owner, assets, shares);
     }
 
@@ -656,7 +656,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         // Convert the assets to shares and check if the owner has the allowance to withdraw the shares.
         shares = convertToShares(assets + fee);
 
-        // Withdraw the assets from the Mevth contract
+        // Withdraw the assets from the MevEth contract
         _withdraw(true, receiver, owner, assets, shares);
     }
 
@@ -689,7 +689,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         // Convert the shares to assets and check if the owner has the allowance to withdraw the shares.
         assets = convertToAssets(shares - fee);
 
-        // Withdraw the assets from the Mevth contract
+        // Withdraw the assets from the MevEth contract
         _withdraw(false, receiver, owner, assets, shares);
     }
 
