@@ -1,0 +1,357 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>MevEthShareVault</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../../book.css">
+
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var html = document.querySelector('html');
+            var sidebar = null;
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item "><a href="../../index.html">Home</a></li><li class="chapter-item affix "><li class="part-title">src</li><li class="chapter-item "><a href="../../src/interfaces/index.html">❱ interfaces</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../src/interfaces/Errors.sol/interface.MevEthErrors.html">MevEthErrors</a></li><li class="chapter-item "><a href="../../src/interfaces/IAuth.sol/interface.IAuth.html">IAuth</a></li><li class="chapter-item "><a href="../../src/interfaces/IBeaconDepositContract.sol/interface.IBeaconDepositContract.html">IBeaconDepositContract</a></li><li class="chapter-item "><a href="../../src/interfaces/ICommonOFT.sol/interface.ICommonOFT.html">ICommonOFT</a></li><li class="chapter-item "><a href="../../src/interfaces/IERC4626.sol/interface.IERC4626.html">IERC4626</a></li><li class="chapter-item "><a href="../../src/interfaces/ILayerZeroEndpoint.sol/interface.ILayerZeroEndpoint.html">ILayerZeroEndpoint</a></li><li class="chapter-item "><a href="../../src/interfaces/ILayerZeroReceiver.sol/interface.ILayerZeroReceiver.html">ILayerZeroReceiver</a></li><li class="chapter-item "><a href="../../src/interfaces/ILayerZeroUserApplicationConfig.sol/interface.ILayerZeroUserApplicationConfig.html">ILayerZeroUserApplicationConfig</a></li><li class="chapter-item "><a href="../../src/interfaces/IMevEth.sol/interface.IMevEth.html">IMevEth</a></li><li class="chapter-item "><a href="../../src/interfaces/IMevEthShareVault.sol/interface.IMevEthShareVault.html">IMevEthShareVault</a></li><li class="chapter-item "><a href="../../src/interfaces/IOFTReceiverV2.sol/interface.IOFTReceiverV2.html">IOFTReceiverV2</a></li><li class="chapter-item "><a href="../../src/interfaces/IOFTWithFee.sol/interface.IOFTWithFee.html">IOFTWithFee</a></li><li class="chapter-item "><a href="../../src/interfaces/IRateProvider.sol/interface.IRateProvider.html">IRateProvider</a></li><li class="chapter-item "><a href="../../src/interfaces/IStakingModule.sol/interface.IStakingModule.html">IStakingModule</a></li><li class="chapter-item "><a href="../../src/interfaces/ITinyMevEth.sol/interface.ITinyMevEth.html">ITinyMevEth</a></li></ol></li><li class="chapter-item "><a href="../../src/layerZero/index.html">❱ layerZero</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../src/layerZero/lzApp/index.html">❱ lzApp</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../src/layerZero/lzApp/LzApp.sol/abstract.LzApp.html">LzApp</a></li><li class="chapter-item "><a href="../../src/layerZero/lzApp/NonblockingLzApp.sol/error.InvalidPayload.html">InvalidPayload</a></li><li class="chapter-item "><a href="../../src/layerZero/lzApp/NonblockingLzApp.sol/error.AmountTooSmall.html">AmountTooSmall</a></li><li class="chapter-item "><a href="../../src/layerZero/lzApp/NonblockingLzApp.sol/abstract.NonblockingLzApp.html">NonblockingLzApp</a></li></ol></li><li class="chapter-item "><a href="../../src/layerZero/oft/index.html">❱ oft</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../src/layerZero/oft/BaseOFTWithFee.sol/abstract.BaseOFTWithFee.html">BaseOFTWithFee</a></li><li class="chapter-item "><a href="../../src/layerZero/oft/Fee.sol/abstract.Fee.html">Fee</a></li><li class="chapter-item "><a href="../../src/layerZero/oft/OFTCoreV2.sol/abstract.OFTCoreV2.html">OFTCoreV2</a></li><li class="chapter-item "><a href="../../src/layerZero/oft/OFTWithFee.sol/contract.OFTWithFee.html">OFTWithFee</a></li></ol></li></ol></li><li class="chapter-item "><a href="../../src/libraries/index.html">❱ libraries</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../src/libraries/Auth.sol/contract.Auth.html">Auth</a></li><li class="chapter-item "><a href="../../src/libraries/AuthManager.sol/contract.AuthManager.html">AuthManager</a></li></ol></li><li class="chapter-item "><a href="../../src/util/index.html">❱ util</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../src/util/BytesLib.sol/library.BytesLib.html">BytesLib</a></li><li class="chapter-item "><a href="../../src/util/ExcessivelySafeCall.sol/library.ExcessivelySafeCall.html">ExcessivelySafeCall</a></li></ol></li><li class="chapter-item "><a href="../../src/MevEth.sol/contract.MevEth.html">MevEth</a></li><li class="chapter-item "><a href="../../src/MevEthRateProvider.sol/contract.MevETHRateProvider.html">MevETHRateProvider</a></li><li class="chapter-item expanded "><a href="../../src/MevEthShareVault.sol/contract.MevEthShareVault.html" class="active">MevEthShareVault</a></li><li class="chapter-item "><a href="../../src/WagyuStaker.sol/contract.WagyuStaker.html">WagyuStaker</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/manifoldfinance/mevETH2" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="mevethsharevault"><a class="header" href="#mevethsharevault">MevEthShareVault</a></h1>
+<p><a href="https://github.com/manifoldfinance/mevETH2/blob/216fe89b4b259aa768c698247b6facac9d08597e/src/MevEthShareVault.sol">Git Source</a></p>
+<p><strong>Inherits:</strong>
+<a href="/src/libraries/Auth.sol/contract.Auth.html">Auth</a>, <a href="/src/interfaces/IMevEthShareVault.sol/interface.IMevEthShareVault.html">IMevEthShareVault</a></p>
+<p><strong>Author:</strong>
+Manifold Finance</p>
+<p>This contract controls the ETH Rewards earned by mevEth</p>
+<h2 id="state-variables"><a class="header" href="#state-variables">State Variables</a></h2>
+<h3 id="protocolbalance"><a class="header" href="#protocolbalance">protocolBalance</a></h3>
+<p>ProtocolBalance struct to account for the protocol fees and rewards.</p>
+<pre><code class="language-solidity">ProtocolBalance public protocolBalance;
+</code></pre>
+<h3 id="meveth"><a class="header" href="#meveth">mevEth</a></h3>
+<p>The address of the MevEth contract.</p>
+<pre><code class="language-solidity">address public mevEth;
+</code></pre>
+<h3 id="protocolfeeto"><a class="header" href="#protocolfeeto">protocolFeeTo</a></h3>
+<p>The address that protocol fees are sent to.</p>
+<pre><code class="language-solidity">address public protocolFeeTo;
+</code></pre>
+<h2 id="functions"><a class="header" href="#functions">Functions</a></h2>
+<h3 id="constructor"><a class="header" href="#constructor">constructor</a></h3>
+<p>Construction sets authority, MevEth, and averageFeeRewardsPerBlock.</p>
+<pre><code class="language-solidity">constructor(address authority, address _mevEth, address _protocolFeeTo) Auth(authority);
+</code></pre>
+<p><strong>Parameters</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>authority</code></td><td><code>address</code></td><td>The address of the controlling admin authority.</td></tr>
+<tr><td><code>_mevEth</code></td><td><code>address</code></td><td>The address of the WETH contract to use for deposits.</td></tr>
+<tr><td><code>_protocolFeeTo</code></td><td><code>address</code></td><td>The address that protocol fees are sent to.</td></tr>
+</tbody></table>
+</div>
+<h3 id="payrewards"><a class="header" href="#payrewards">payRewards</a></h3>
+<p>Function to pay rewards to the MevEth contract</p>
+<p><em>Only callable by an operator.</em></p>
+<pre><code class="language-solidity">function payRewards() external onlyOperator;
+</code></pre>
+<h3 id="fees"><a class="header" href="#fees">fees</a></h3>
+<p>View function to return the fees balance of the protocol</p>
+<pre><code class="language-solidity">function fees() external view returns (uint128);
+</code></pre>
+<p><strong>Returns</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>&lt;none&gt;</code></td><td><code>uint128</code></td><td>uint128 fees balance of the protocol</td></tr>
+</tbody></table>
+</div>
+<h3 id="rewards"><a class="header" href="#rewards">rewards</a></h3>
+<p>View function to return the rewards balance of the protocol</p>
+<pre><code class="language-solidity">function rewards() external view returns (uint128);
+</code></pre>
+<p><strong>Returns</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>&lt;none&gt;</code></td><td><code>uint128</code></td><td>uint128 rewards balance of the protocol</td></tr>
+</tbody></table>
+</div>
+<h3 id="sendfees"><a class="header" href="#sendfees">sendFees</a></h3>
+<p>Function to collect the fees owed to the prorotocol.</p>
+<pre><code class="language-solidity">function sendFees() external onlyAdmin;
+</code></pre>
+<h3 id="setprotocolfeeto"><a class="header" href="#setprotocolfeeto">setProtocolFeeTo</a></h3>
+<pre><code class="language-solidity">function setProtocolFeeTo(address newProtocolFeeTo) external onlyAdmin;
+</code></pre>
+<h3 id="logrewards"><a class="header" href="#logrewards">logRewards</a></h3>
+<p>Function to log rewards, updating the protocol balance. Once all balances are updated, the RewardsCollected event is emitted.</p>
+<p><em>Operators are tracking the RewardPayment events to calculate the protocolFeesOwed.
+The logRewards function is then called to update the fees and rewards within the protocol balance.
+Validators associated with the MevETH protocol set the block builder's address as the feeRecepient for the block.
+The block builder attaches a transaction to the end of the block sending the MEV rewards to the MevEthShareVault.
+This then emits the RewardPayment event, allowing the offchain operators to track the protocolFeesOwed.
+This approach trusts that the operators are acting honestly and the protocolFeesOwed is accurately calculated.</em></p>
+<pre><code class="language-solidity">function logRewards(uint128 protocolFeesOwed) external onlyOperator;
+</code></pre>
+<h3 id="recovertoken"><a class="header" href="#recovertoken">recoverToken</a></h3>
+<p>Function to recover tokens sent to the contract.</p>
+<p><em>This function is only callable by an admin.</em></p>
+<pre><code class="language-solidity">function recoverToken(address token, address recipient, uint256 amount) external onlyAdmin;
+</code></pre>
+<h3 id="setnewmeveth"><a class="header" href="#setnewmeveth">setNewMevEth</a></h3>
+<p>Function to set a new mevEth address.</p>
+<pre><code class="language-solidity">function setNewMevEth(address newMevEth) external onlyAdmin;
+</code></pre>
+<h3 id="payvalidatorwithdraw"><a class="header" href="#payvalidatorwithdraw">payValidatorWithdraw</a></h3>
+<p>Function to pay MevEth when withdrawing funds from a validator</p>
+<p><em>This function is only callable by an admin and emits an event for offchain validator registry tracking.</em></p>
+<pre><code class="language-solidity">function payValidatorWithdraw() external onlyOperator;
+</code></pre>
+<h3 id="receive"><a class="header" href="#receive">receive</a></h3>
+<p>Function to receive ETH.</p>
+<p><em>All Ether sent to the contract is handled as a MevPayment.</em></p>
+<pre><code class="language-solidity">receive() external payable;
+</code></pre>
+<h2 id="events"><a class="header" href="#events">Events</a></h2>
+<h3 id="rewardpayment"><a class="header" href="#rewardpayment">RewardPayment</a></h3>
+<p>Event emitted when a reward payment is made</p>
+<pre><code class="language-solidity">event RewardPayment(uint256 indexed blockNumber, address indexed coinbase, uint256 indexed amount);
+</code></pre>
+<h3 id="rewardscollected"><a class="header" href="#rewardscollected">RewardsCollected</a></h3>
+<p>Event emitted when the protocol balance is updated during logRewards</p>
+<pre><code class="language-solidity">event RewardsCollected(uint256 indexed protocolFeesOwed, uint256 indexed rewardsOwed);
+</code></pre>
+<h3 id="tokenrecovered"><a class="header" href="#tokenrecovered">TokenRecovered</a></h3>
+<p>Event emitted when a tokens are recovered from the contract.</p>
+<pre><code class="language-solidity">event TokenRecovered(address indexed recipient, address indexed token, uint256 indexed amount);
+</code></pre>
+<h3 id="protocolfeetoupdated"><a class="header" href="#protocolfeetoupdated">ProtocolFeeToUpdated</a></h3>
+<p>Event emitted when the protocolFeeTo address is updated.</p>
+<pre><code class="language-solidity">event ProtocolFeeToUpdated(address indexed newProtocolFeeTo);
+</code></pre>
+<h3 id="feessent"><a class="header" href="#feessent">FeesSent</a></h3>
+<p>Event emitted when the protocol fees are sent to the protocolFeeTo address.</p>
+<pre><code class="language-solidity">event FeesSent(uint256 indexed feesSent);
+</code></pre>
+<h3 id="rewardspaid"><a class="header" href="#rewardspaid">RewardsPaid</a></h3>
+<p>Event emitted when rewards are paid to the MevEth contract.</p>
+<pre><code class="language-solidity">event RewardsPaid(uint256 indexed rewards);
+</code></pre>
+<h3 id="mevethupdated"><a class="header" href="#mevethupdated">MevEthUpdated</a></h3>
+<p>Event emitted when the mevEth address is updated.</p>
+<pre><code class="language-solidity">event MevEthUpdated(address indexed meveth);
+</code></pre>
+<h3 id="validatorwithdraw"><a class="header" href="#validatorwithdraw">ValidatorWithdraw</a></h3>
+<p>Event emitted when funds representing a validator withdrawal are sent to the MevEth contract.</p>
+<pre><code class="language-solidity">event ValidatorWithdraw(address sender, uint256 amount);
+</code></pre>
+<h2 id="structs"><a class="header" href="#structs">Structs</a></h2>
+<h3 id="protocolbalance-1"><a class="header" href="#protocolbalance-1">ProtocolBalance</a></h3>
+<p>Struct to account for the protocol fees and rewards.</p>
+<pre><code class="language-solidity">struct ProtocolBalance {
+  uint128 fees;
+  uint128 rewards;
+}
+</code></pre>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../src/MevEthRateProvider.sol/contract.MevETHRateProvider.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next" href="../../src/WagyuStaker.sol/contract.WagyuStaker.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../src/MevEthRateProvider.sol/contract.MevETHRateProvider.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next" href="../../src/WagyuStaker.sol/contract.WagyuStaker.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../../solidity.min.js"></script>
+
+
+    </div>
+    </body>
+</html>
