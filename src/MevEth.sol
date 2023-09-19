@@ -620,10 +620,13 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @param owner owner of tokens
     /// @param shares amount of shares to update
     function _updateAllowance(address owner, uint256 shares) internal {
+        uint256 allowed = allowance[owner][msg.sender];
         if (owner != msg.sender) {
-            if (allowance[owner][msg.sender] < shares) revert MevEthErrors.TransferExceedsAllowance();
-            unchecked {
-                allowance[owner][msg.sender] -= shares;
+            if (allowed < shares) revert MevEthErrors.TransferExceedsAllowance();
+            if (allowed != type(uint256).max) {
+                unchecked {
+                    allowance[owner][msg.sender] -= shares;
+                }
             }
         }
     }
