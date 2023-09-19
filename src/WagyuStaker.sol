@@ -160,7 +160,7 @@ contract WagyuStaker is Auth, IStakingModule {
             // Emit an event inidicating a new validator has been registered, allowing for offchain listeners to track the validator registry
             emit NewValidator(data.operator, data.pubkey, data.withdrawal_credentials, data.signature, data.deposit_data_root);
             unchecked {
-                i += 1;
+                ++i;
             }
         }
     }
