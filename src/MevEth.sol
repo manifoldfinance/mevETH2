@@ -456,7 +456,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     function convertToAssets(uint256 shares) public view returns (uint256 assets) {
         // So if there are no shares, then they will mint 1:1 with assets
         // Otherwise, shares will mint proportional to the amount of assets
-        if (uint256(fraction.elastic == 0) || uint256(fraction.base == 0)) {
+        if (uint256(fraction.elastic) == 0 || uint256(fraction.base) == 0) {
             assets = shares;
         } else {
             assets = (shares * uint256(fraction.elastic)) / uint256(fraction.base);
