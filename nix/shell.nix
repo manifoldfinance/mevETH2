@@ -270,6 +270,69 @@
           '';
         }
         {
+          category = "admin";
+          name = "init";
+          help = "Initialise mevETH with the share vault and staking module addresses";
+          command = ''
+            forge cast send \
+              --rpc-url $RPC_MAINNET \
+              --private-key $PRIVATE_KEY \
+              $MEV_ETH_ADDRESS \
+              "init(address,address)" \
+              $SHARE_VAULT_ADDRESS $STAKER_ADDRESS
+          '';
+        }
+        {
+          category = "admin";
+          name = "PauseStaking";
+          help = "Pause Staking";
+          command = ''
+            forge cast send \
+              --rpc-url $RPC_MAINNET \
+              --private-key $PRIVATE_KEY \
+              $MEV_ETH_ADDRESS \
+              "pauseStaking()"
+          '';
+        }
+        {
+          category = "admin";
+          name = "UnpauseStaking";
+          help = "Unpause Staking";
+          command = ''
+            forge cast send \
+              --rpc-url $RPC_MAINNET \
+              --private-key $PRIVATE_KEY \
+              $MEV_ETH_ADDRESS \
+              "unpauseStaking()"
+          '';
+        }
+        {
+          category = "operator";
+          name = "CreateValidator";
+          help = "Create a Validator";
+          command = ''
+            forge cast send \
+              --rpc-url $RPC_MAINNET \
+              --private-key $PRIVATE_KEY \
+              $MEV_ETH_ADDRESS \
+              "createValidator((address,bytes,bytes32,bytes,bytes32),bytes32)" \
+              "($OPERATOR,$PUBLIC_KEY,$WITHDRAW_CREDS,$SIGNATURE,$DEPOSIT_DATA_ROOT)" $LAST_DEPOSIT_ROOT
+          '';
+        }
+        {
+          category = "operator";
+          name = "ProcessQueue";
+          help = "Process withdraw queue";
+          command = ''
+            forge cast send \
+              --rpc-url $RPC_MAINNET \
+              --private-key $PRIVATE_KEY \
+              $MEV_ETH_ADDRESS \
+              "processWithdrawalQueue(uint256)" \
+              $WITHDRAW_QUEUE_LENGTH
+          '';
+        }
+        {
           category = "tests";
           name = "tests";
           help = "Test the Smart Contracts";
