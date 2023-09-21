@@ -274,7 +274,7 @@
           name = "init";
           help = "Initialise mevETH with the share vault and staking module addresses";
           command = ''
-            forge cast send \
+            cast send \
               --rpc-url $RPC_MAINNET \
               --private-key $PRIVATE_KEY \
               $MEV_ETH_ADDRESS \
@@ -287,7 +287,7 @@
           name = "PauseStaking";
           help = "Pause Staking";
           command = ''
-            forge cast send \
+            cast send \
               --rpc-url $RPC_MAINNET \
               --private-key $PRIVATE_KEY \
               $MEV_ETH_ADDRESS \
@@ -299,7 +299,7 @@
           name = "UnpauseStaking";
           help = "Unpause Staking";
           command = ''
-            forge cast send \
+            cast send \
               --rpc-url $RPC_MAINNET \
               --private-key $PRIVATE_KEY \
               $MEV_ETH_ADDRESS \
@@ -311,7 +311,7 @@
           name = "CreateValidator";
           help = "Create a Validator";
           command = ''
-            forge cast send \
+            cast send \
               --rpc-url $RPC_MAINNET \
               --private-key $PRIVATE_KEY \
               $MEV_ETH_ADDRESS \
@@ -324,7 +324,7 @@
           name = "ProcessQueue";
           help = "Process withdraw queue";
           command = ''
-            forge cast send \
+            cast send \
               --rpc-url $RPC_MAINNET \
               --private-key $PRIVATE_KEY \
               $MEV_ETH_ADDRESS \
@@ -337,7 +337,7 @@
           name = "PayStakerValidatorWithdraw";
           help = "Pay MevEth contract for validator withdraw from Wagyu staker";
           command = ''
-            forge cast send \
+            cast send \
               --rpc-url $RPC_MAINNET \
               --private-key $PRIVATE_KEY \
               $STAKER_ADDRESS \
@@ -349,7 +349,7 @@
           name = "PayStakerRewards";
           help = "Pay MevEth contract rewards from Wagyu staker";
           command = ''
-            forge cast send \
+            cast send \
               --rpc-url $RPC_MAINNET \
               --private-key $PRIVATE_KEY \
               $STAKER_ADDRESS \
@@ -362,7 +362,7 @@
           name = "PayShareVaultValidatorWithdraw";
           help = "Pay MevEth contract for validator withdraw from Share Vault";
           command = ''
-            forge cast send \
+            cast send \
               --rpc-url $RPC_MAINNET \
               --private-key $PRIVATE_KEY \
               $SHARE_VAULT_ADDRESS \
@@ -374,7 +374,7 @@
           name = "PayShareVaultRewards";
           help = "Pay MevEth contract rewards from Share Vault";
           command = ''
-            forge cast send \
+            cast send \
               --rpc-url $RPC_MAINNET \
               --private-key $PRIVATE_KEY \
               $SHARE_VAULT_ADDRESS \
