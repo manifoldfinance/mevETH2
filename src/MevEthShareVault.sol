@@ -66,8 +66,6 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
     /// @dev Only callable by an operator.
     /// @param rewards rewards to pay to the MevEth contract
     function payRewards(uint256 rewards) external onlyOperator {
-        if (rewards > address(this).balance) revert MevEthErrors.NotEnoughEth();
-
         unchecked {
             protocolBalance.rewardsPaid += uint128(rewards);
             protocolBalance.totalWithdrawn += uint128(rewards);
@@ -82,8 +80,6 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
 
     /// @notice Function to collect the fees owed to the prorotocol.
     function sendFees(uint256 fees) external onlyAdmin {
-        if (fees > address(this).balance) revert MevEthErrors.NotEnoughEth();
-
         unchecked {
             protocolBalance.feesPaid += uint128(fees);
             protocolBalance.totalWithdrawn += uint128(fees);
@@ -123,7 +119,6 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
     /// @dev This function is only callable by an admin and emits an event for offchain validator registry tracking.
     function payValidatorWithdraw() external onlyOperator {
         uint256 exitSize = 32 ether;
-        if (exitSize > address(this).balance) revert MevEthErrors.NotEnoughEth();
         unchecked {
             protocolBalance.exitsPaid += uint128(exitSize);
             protocolBalance.totalWithdrawn += uint128(exitSize);

@@ -466,7 +466,7 @@ contract MevAdminTest is MevEthTest {
         emit MevEthShareVaultUpdateFinalized(existingVault, newVault);
 
         vm.prank(SamBacha);
-        mevEth.finalizeUpdateMevEthShareVault(true);
+        mevEth.finalizeUpdateMevEthShareVault();
 
         assertEq(address(mevEth.pendingMevEthShareVault()), address(0));
         assertEq(mevEth.pendingMevEthShareVaultCommittedTimestamp(), 0);
@@ -485,7 +485,7 @@ contract MevAdminTest is MevEthTest {
         // Expect a revert when there is no pending mev share vault
         vm.expectRevert(MevEthErrors.InvalidPendingMevEthShareVault.selector);
         vm.prank(SamBacha);
-        mevEth.finalizeUpdateMevEthShareVault(true);
+        mevEth.finalizeUpdateMevEthShareVault();
 
         // Create a new vault and cache the current vault
         address newVault = address(new MevEthShareVault(SamBacha, address(mevEth), SamBacha));
@@ -498,27 +498,21 @@ contract MevAdminTest is MevEthTest {
         // Expect a reversion if the time delay has not elapsed
         vm.expectRevert(MevEthErrors.PrematureMevEthShareVaultUpdateFinalization.selector);
         vm.prank(SamBacha);
-        mevEth.finalizeUpdateMevEthShareVault(true);
+        mevEth.finalizeUpdateMevEthShareVault();
 
         // Warp to the finalization timestamp, expect a reversion when unauthorized
         vm.warp(finalizationTimestamp);
         vm.expectRevert(Auth.Unauthorized.selector);
-        mevEth.finalizeUpdateMevEthShareVault(true);
+        mevEth.finalizeUpdateMevEthShareVault();
 
         // finalise share vault update for real
         vm.prank(SamBacha);
-        mevEth.finalizeUpdateMevEthShareVault(true);
+        mevEth.finalizeUpdateMevEthShareVault();
         // now begin a new update
         address newVault2 = address(new MevEthShareVault(SamBacha, address(mevEth), SamBacha));
         vm.prank(SamBacha);
         mevEth.commitUpdateMevEthShareVault(newVault2);
         vm.warp(finalizationTimestamp + uint64(MODULE_UPDATE_TIME_DELAY));
-
-        // Update the protocol balance and expect a reversion when trying to update the vault while balances are not empty
-        _addToProtocolBalance(newVault, 200);
-        vm.expectRevert(MevEthErrors.NonZeroVaultBalance.selector);
-        vm.prank(SamBacha);
-        mevEth.finalizeUpdateMevEthShareVault(false);
 
         // Check that there are no effects from finalization
         assertEq(address(mevEth.pendingMevEthShareVault()), newVault2);

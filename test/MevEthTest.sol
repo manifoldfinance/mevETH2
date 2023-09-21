@@ -179,7 +179,7 @@ contract MevEthTest is Test {
         // Warp to the finalization timestamp, finalize the update
         vm.warp(finalizationTimestamp);
         vm.prank(SamBacha);
-        mevEth.finalizeUpdateMevEthShareVault(true);
+        mevEth.finalizeUpdateMevEthShareVault();
 
         assertEq(address(mevEth.pendingMevEthShareVault()), address(0));
         assertEq(mevEth.pendingMevEthShareVaultCommittedTimestamp(), 0);

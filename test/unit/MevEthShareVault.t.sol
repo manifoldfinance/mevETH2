@@ -142,7 +142,7 @@ contract MevEthShareVaultTest is MevEthTest {
     function testReceive(uint256 amount) public {
         vm.deal(address(this), amount);
         payable(mevEthShareVault).transfer(amount / 2);
-        payable(mevEthShareVault).send(amount / 2);
+        payable(mevEthShareVault).transfer(amount / 2);
     }
 
     function testSetNewMevEth(address newMevEth) public {
@@ -212,7 +212,7 @@ contract MevEthShareVaultTest is MevEthTest {
         assertEq(baseBefore, amount);
 
         vm.prank(SamBacha);
-        vm.expectRevert(MevEthErrors.NotEnoughEth.selector);
+        vm.expectRevert();
         mevEthShareVault.payValidatorWithdraw();
     }
 
@@ -242,7 +242,7 @@ contract MevEthShareVaultTest is MevEthTest {
 
         // Expect ZeroValue error
         vm.prank(SamBacha);
-        vm.expectRevert(MevEthErrors.NotEnoughEth.selector);
+        vm.expectRevert();
         mevEthShareVault.payValidatorWithdraw();
 
         // Configure MevEth elastic and base to uint128 max
