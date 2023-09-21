@@ -333,6 +333,56 @@
           '';
         }
         {
+          category = "operator";
+          name = "PayStakerValidatorWithdraw";
+          help = "Pay MevEth contract for validator withdraw from Wagyu staker";
+          command = ''
+            forge cast send \
+              --rpc-url $RPC_MAINNET \
+              --private-key $PRIVATE_KEY \
+              $STAKER_ADDRESS \
+              "payValidatorWithdraw()"
+          '';
+        }
+        {
+          category = "operator";
+          name = "PayStakerRewards";
+          help = "Pay MevEth contract rewards from Wagyu staker";
+          command = ''
+            forge cast send \
+              --rpc-url $RPC_MAINNET \
+              --private-key $PRIVATE_KEY \
+              $STAKER_ADDRESS \
+              "payRewards(uint256)" \
+              $REWARDS
+          '';
+        }
+        {
+          category = "operator";
+          name = "PayShareVaultValidatorWithdraw";
+          help = "Pay MevEth contract for validator withdraw from Share Vault";
+          command = ''
+            forge cast send \
+              --rpc-url $RPC_MAINNET \
+              --private-key $PRIVATE_KEY \
+              $SHARE_VAULT_ADDRESS \
+              "payValidatorWithdraw()"
+          '';
+        }
+        {
+          category = "operator";
+          name = "PayShareVaultRewards";
+          help = "Pay MevEth contract rewards from Share Vault";
+          command = ''
+            forge cast send \
+              --rpc-url $RPC_MAINNET \
+              --private-key $PRIVATE_KEY \
+              $SHARE_VAULT_ADDRESS \
+              "payRewards(uint256)" \
+              $REWARDS
+          '';
+        }
+        {
           category = "tests";
           name = "tests";
           help = "Test the Smart Contracts";
