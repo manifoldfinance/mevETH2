@@ -19,18 +19,16 @@ contract MevRewardsTest is MevEthTest {
         vm.assume(amount > 10_000);
         address mevShare = mevEth.mevEthShareVault();
 
-        vm.deal(address(mevShare), amount);
+        vm.deal(address(this), amount);
+        mevShare.call{ value: amount }("");
 
         bytes memory data = abi.encodeWithSelector(ITinyMevEth.grantRewards.selector);
-        emit log_bytes(data);
 
-        vm.expectEmit();
-        emit Rewards(mevShare, amount);
+        (uint256 elastic, uint256 base) = mevEth.fraction();
         SafeTestLib.execTransaction(multisigSafeInstance, address(mevEth), amount, data);
 
-        uint256 elastic = mevEth.totalAssets();
-        uint256 base = mevEth.totalSupply();
+        (uint256 elastic2, uint256 base2) = mevEth.fraction();
 
-        assertGt(elastic, base);
+        assertEq(elastic2, elastic + amount);
     }
 }
