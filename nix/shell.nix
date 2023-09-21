@@ -270,6 +270,119 @@
           '';
         }
         {
+          category = "admin";
+          name = "init";
+          help = "Initialise mevETH with the share vault and staking module addresses";
+          command = ''
+            cast send \
+              --rpc-url $RPC_MAINNET \
+              --private-key $PRIVATE_KEY \
+              $MEV_ETH_ADDRESS \
+              "init(address,address)" \
+              $SHARE_VAULT_ADDRESS $STAKER_ADDRESS
+          '';
+        }
+        {
+          category = "admin";
+          name = "PauseStaking";
+          help = "Pause Staking";
+          command = ''
+            cast send \
+              --rpc-url $RPC_MAINNET \
+              --private-key $PRIVATE_KEY \
+              $MEV_ETH_ADDRESS \
+              "pauseStaking()"
+          '';
+        }
+        {
+          category = "admin";
+          name = "UnpauseStaking";
+          help = "Unpause Staking";
+          command = ''
+            cast send \
+              --rpc-url $RPC_MAINNET \
+              --private-key $PRIVATE_KEY \
+              $MEV_ETH_ADDRESS \
+              "unpauseStaking()"
+          '';
+        }
+        {
+          category = "operator";
+          name = "CreateValidator";
+          help = "Create a Validator";
+          command = ''
+            cast send \
+              --rpc-url $RPC_MAINNET \
+              --private-key $PRIVATE_KEY \
+              $MEV_ETH_ADDRESS \
+              "createValidator((address,bytes,bytes32,bytes,bytes32),bytes32)" \
+              "($OPERATOR,$PUBLIC_KEY,$WITHDRAW_CREDS,$SIGNATURE,$DEPOSIT_DATA_ROOT)" $LAST_DEPOSIT_ROOT
+          '';
+        }
+        {
+          category = "operator";
+          name = "ProcessQueue";
+          help = "Process withdraw queue";
+          command = ''
+            cast send \
+              --rpc-url $RPC_MAINNET \
+              --private-key $PRIVATE_KEY \
+              $MEV_ETH_ADDRESS \
+              "processWithdrawalQueue(uint256)" \
+              $WITHDRAW_QUEUE_LENGTH
+          '';
+        }
+        {
+          category = "operator";
+          name = "PayStakerValidatorWithdraw";
+          help = "Pay MevEth contract for validator withdraw from Wagyu staker";
+          command = ''
+            cast send \
+              --rpc-url $RPC_MAINNET \
+              --private-key $PRIVATE_KEY \
+              $STAKER_ADDRESS \
+              "payValidatorWithdraw()"
+          '';
+        }
+        {
+          category = "operator";
+          name = "PayStakerRewards";
+          help = "Pay MevEth contract rewards from Wagyu staker";
+          command = ''
+            cast send \
+              --rpc-url $RPC_MAINNET \
+              --private-key $PRIVATE_KEY \
+              $STAKER_ADDRESS \
+              "payRewards(uint256)" \
+              $REWARDS
+          '';
+        }
+        {
+          category = "operator";
+          name = "PayShareVaultValidatorWithdraw";
+          help = "Pay MevEth contract for validator withdraw from Share Vault";
+          command = ''
+            cast send \
+              --rpc-url $RPC_MAINNET \
+              --private-key $PRIVATE_KEY \
+              $SHARE_VAULT_ADDRESS \
+              "payValidatorWithdraw()"
+          '';
+        }
+        {
+          category = "operator";
+          name = "PayShareVaultRewards";
+          help = "Pay MevEth contract rewards from Share Vault";
+          command = ''
+            cast send \
+              --rpc-url $RPC_MAINNET \
+              --private-key $PRIVATE_KEY \
+              $SHARE_VAULT_ADDRESS \
+              "payRewards(uint256)" \
+              $REWARDS
+          '';
+        }
+        {
           category = "tests";
           name = "tests";
           help = "Test the Smart Contracts";
