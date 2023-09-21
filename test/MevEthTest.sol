@@ -76,6 +76,8 @@ contract MevEthTest is Test {
 
     LZEndpointMock internal layerZeroEndpoint;
 
+    address safe;
+
     //Events
     event StakingPaused();
     event StakingUnpaused();
@@ -133,9 +135,9 @@ contract MevEthTest is Test {
         SafeInstance memory safeInstance = safeTestTools._setupSafe(ownerPKs, 5);
         multisigSafeInstance = safeInstance;
 
-        address initialShareVault = address(safeInstance.safe);
-        // re-assign share vault as proxy
-        initialShareVault = address(new TransparentUpgradeableProxy(initialShareVault, SamBacha, ""));
+        safe = address(safeInstance.safe);
+        // assign share vault as proxy to multisig
+        address initialShareVault = address(new TransparentUpgradeableProxy(safe, SamBacha, ""));
 
         address initialStakingModule = address(IStakingModule(address(new WagyuStaker(SamBacha, address(depositContract), address(mevEth)))));
 
