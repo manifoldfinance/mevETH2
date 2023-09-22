@@ -55,7 +55,8 @@ contract DeployScript is Script {
         AuthManager authManager = new AuthManager(authority, address(mevEth), address(initialShareVault), address(initialStakingModule));
         // set AuthManager as admin
         IAuth(address(mevEth)).addAdmin(address(authManager));
-        IAuth(address(initialShareVault)).addAdmin(address(authManager));
+        // initial share vault is a multisig. If upgraded, this will need to be done manually
+        // IAuth(address(initialShareVault)).addAdmin(address(authManager));
         IAuth(address(initialStakingModule)).addAdmin(address(authManager));
 
         vm.stopBroadcast();
