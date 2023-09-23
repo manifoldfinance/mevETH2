@@ -54,12 +54,15 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
     /// @param _mevEth The address of the WETH contract to use for deposits.
     /// @param _protocolFeeTo The address that protocol fees are sent to.
     constructor(address authority, address _mevEth, address _protocolFeeTo) Auth(authority) {
-        if (_protocolFeeTo == address(0) || authority == address(0)) {
+        if (_protocolFeeTo == address(0) || authority == address(0) || _mevEth == address(0)) {
             revert MevEthErrors.ZeroAddress();
         }
 
         mevEth = _mevEth;
         protocolFeeTo = _protocolFeeTo;
+
+        emit MevEthUpdated(_mevEth);
+        emit ProtocolFeeToUpdated(_protocolFeeTo);
     }
 
     /// @notice Function to pay rewards to the MevEth contract
