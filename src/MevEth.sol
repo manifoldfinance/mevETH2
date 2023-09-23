@@ -607,9 +607,10 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
             });
             emit WithdrawalQueueOpened(receiver, queueLength, uint256(amountOwed));
             assets = availableBalance;
+            shares = shares - convertToShares(amountOwed);
         }
         if (!_isZero(assets)) {
-            emit Withdraw(msg.sender, owner, receiver, assets, convertToShares(assets));
+            emit Withdraw(msg.sender, owner, receiver, assets, shares);
             WETH9.deposit{ value: assets }();
             WETH9.safeTransfer(receiver, assets);
         }
