@@ -493,6 +493,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
 
         // Update last deposit block for the user recorded for sandwich protection
         lastDeposit[msg.sender] = block.number;
+        lastDeposit[receiver] = block.number;
 
         if (_isZero(msg.value)) {
             WETH9.safeTransferFrom(msg.sender, address(this), assets);
@@ -582,7 +583,9 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         if (assets < MIN_DEPOSIT) revert MevEthErrors.WithdrawTooSmall();
         // Sandwich protection
         uint256 blockNumber = block.number;
-        if (_isZero(blockNumber - lastDeposit[msg.sender]) && _isZero(blockNumber - lastRewards)) revert MevEthErrors.SandwichProtection();
+        if ((_isZero(blockNumber - lastDeposit[msg.sender]) || _isZero(blockNumber - lastDeposit[owner])) && _isZero(blockNumber - lastRewards)) {
+            revert MevEthErrors.SandwichProtection();
+        }
 
         _updateAllowance(owner, shares);
 
@@ -752,5 +755,21 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// via grantValidatorWithdraw.
     receive() external payable {
         if (msg.sender != address(WETH9)) revert MevEthErrors.InvalidSender();
+    }
+
+    function transfer(address to, uint256 amount) public virtual override returns (bool) {
+        uint256 lastDepositFrom = lastDeposit[msg.sender];
+        if (lastDepositFrom > lastDeposit[to]) {
+            lastDeposit[to] = lastDepositFrom;
+        }
+        super.transfer(to, amount);
+    }
+
+    function transferFrom(address from, address to, uint256 amount) public virtual override returns (bool) {
+        uint256 lastDepositFrom = lastDeposit[from];
+        if (lastDepositFrom > lastDeposit[to]) {
+            lastDeposit[to] = lastDepositFrom;
+        }
+        super.transferFrom(from, to, amount);
     }
 }
