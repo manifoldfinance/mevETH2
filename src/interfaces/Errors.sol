@@ -31,4 +31,5 @@ interface MevEthErrors {
     error DepositWasFrontrun();
     error SandwichProtection();
     error NonZeroVaultBalance();
+    error IncorrectWithdrawalCredentials();
 }
