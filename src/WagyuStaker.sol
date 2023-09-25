@@ -10,7 +10,6 @@
  * @custom:org.preferred-languages="en"
  */
 
-
 pragma solidity 0.8.19;
 
 import { ITinyMevEth } from "./interfaces/ITinyMevEth.sol";

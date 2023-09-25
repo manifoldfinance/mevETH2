@@ -10,7 +10,6 @@
  * @custom:org.preferred-languages="en"
  */
 
-
 /*
  * @title Solidity Bytes Arrays Utils
  * @author Gonçalo Sá <goncalo.sa@consensys.net>
