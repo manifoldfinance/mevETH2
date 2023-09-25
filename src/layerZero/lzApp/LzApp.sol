@@ -205,7 +205,6 @@ abstract contract LzApp is Auth, ILayerZeroReceiver, ILayerZeroUserApplicationCo
      * @param _dstChainId The ID of the destination chain.
      * @param _packetType The type of packet.
      * @param _minGas The minimum gas for the packet type.
-     * @return None.
      */
     function setMinDstGas(uint16 _dstChainId, uint16 _packetType, uint256 _minGas) external onlyAdmin {
         if (_minGas == 0) revert InvalidMinGas();
