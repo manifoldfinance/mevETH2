@@ -10,7 +10,7 @@
  * @custom:org.preferred-languages="en"
  */
 
-pragma solidity 0.8.19;
+pragma solidity ^0.8.19;
 
 // Also a superset of ERC20 but due to some solmate <-> OZ IERC20 nastiness this interface doesn't include it
 interface IERC4626 {

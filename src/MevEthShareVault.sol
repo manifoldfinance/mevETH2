@@ -10,7 +10,7 @@
  * @custom:org.preferred-languages="en"
  */
 
-pragma solidity 0.8.19;
+pragma solidity ^0.8.19;
 
 import { Auth } from "./libraries/Auth.sol";
 import { SafeTransferLib } from "solmate/utils/SafeTransferLib.sol";
