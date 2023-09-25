@@ -233,6 +233,7 @@ contract MevEthShareVaultTest is MevEthTest {
 
     function testPayValidatorWithdrawGt32Ether(uint128 amount) public {
         vm.assume(amount > 32 ether);
+        vm.assume(amount < 100_000_000 ether);
 
         vm.deal(address(mevEthShareVault), amount);
         vm.deal(address(this), amount);
@@ -247,29 +248,31 @@ contract MevEthShareVaultTest is MevEthTest {
         vm.expectEmit(true, true, false, false, address(mevEthShareVault));
         emit ValidatorWithdraw(SamBacha, amount);
         vm.prank(SamBacha);
-        mevEthShareVault.payValidatorWithdraw();
+        mevEthShareVault.payValidatorWithdraw(amount);
 
         (uint128 elasticAfter, uint128 baseAfter) = mevEth.fraction();
-        assertEq(elasticAfter, elasticBefore);
+        assertEq(elasticAfter, elasticBefore + amount - 32 ether);
         assertEq(baseAfter, baseBefore);
-        assertEq(address(mevEthShareVault).balance, amount - 32 ether);
-        assertGt(address(mevEth).balance, 32 ether);
+        assertEq(address(mevEthShareVault).balance, 0);
+        assertGt(address(mevEth).balance, amount);
     }
 
     function testPayValidatorWithdrawLt32Ether(uint128 amount) public {
         amount = uint128(bound(amount, mevEth.MIN_DEPOSIT(), 32 ether - 1));
 
         vm.deal(address(mevEthShareVault), amount);
-        vm.deal(address(this), amount);
+        vm.deal(address(this), amount + 32 ether);
 
-        _mockMevEthDeposit(amount, address(this));
+        _mockMevEthDeposit(amount + 32 ether, address(this));
         (uint128 elasticBefore, uint128 baseBefore) = mevEth.fraction();
-        assertEq(elasticBefore, amount);
-        assertEq(baseBefore, amount);
+        assertEq(elasticBefore, amount + 32 ether);
+        assertEq(baseBefore, amount + 32 ether);
 
         vm.prank(SamBacha);
-        vm.expectRevert(MevEthErrors.NotEnoughEth.selector);
-        mevEthShareVault.payValidatorWithdraw();
+        mevEthShareVault.payValidatorWithdraw(amount);
+        (uint128 elasticAfter, uint128 baseAfter) = mevEth.fraction();
+        assertEq(elasticAfter, elasticBefore + amount - 32 ether);
+        assertEq(baseAfter, baseBefore);
     }
 
     function testPayValidatorWithdrawEq32Ether() public {
@@ -283,7 +286,7 @@ contract MevEthShareVaultTest is MevEthTest {
         vm.expectEmit(true, true, false, false, address(mevEthShareVault));
         emit ValidatorWithdraw(SamBacha, amount);
         vm.prank(SamBacha);
-        mevEthShareVault.payValidatorWithdraw();
+        mevEthShareVault.payValidatorWithdraw(amount);
 
         (uint256 elasticAfter, uint256 baseAfter) = mevEth.fraction();
 
@@ -294,12 +297,12 @@ contract MevEthShareVaultTest is MevEthTest {
     function testNegativePayValidatorWithdraw() public {
         // Expect Unauthorized
         vm.expectRevert(Auth.Unauthorized.selector);
-        mevEthShareVault.payValidatorWithdraw();
+        mevEthShareVault.payValidatorWithdraw(32 ether);
 
         // Expect ZeroValue error
         vm.prank(SamBacha);
         vm.expectRevert(MevEthErrors.NotEnoughEth.selector);
-        mevEthShareVault.payValidatorWithdraw();
+        mevEthShareVault.payValidatorWithdraw(32 ether);
 
         // Configure MevEth elastic and base to uint128 max
         uint256 amount = type(uint128).max;

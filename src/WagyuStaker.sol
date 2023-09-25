@@ -102,16 +102,16 @@ contract WagyuStaker is Auth, IStakingModule {
         emit RewardsPaid(rewards);
     }
 
-    function registerExit() external {
+    function registerExit(uint256 exitSize) external {
         // Only the MevEth contract can call this function
         if (msg.sender != mevEth) {
             revert MevEthErrors.UnAuthorizedCaller();
         }
-        uint128 exitSize = uint128(VALIDATOR_DEPOSIT_SIZE);
+
         unchecked {
-            record.totalValidatorExitsPaid += exitSize;
+            record.totalValidatorExitsPaid += uint128(exitSize);
             // lagging withdrawn indicator, as including in receive can cause transfer out of gas
-            record.totalWithdrawn += exitSize;
+            record.totalWithdrawn += uint128(exitSize);
         }
         if (validators > 0) {
             unchecked {
@@ -122,8 +122,8 @@ contract WagyuStaker is Auth, IStakingModule {
 
     /// @notice Function to pay MevEth when withdrawing funds from a validator
     /// @dev This function is only callable by an admin and emits an event for offchain validator registry tracking.
-    function payValidatorWithdraw() external onlyOperator {
-        uint256 exitSize = VALIDATOR_DEPOSIT_SIZE;
+    /// @param exitSize validator balance on exit (~32 ether)
+    function payValidatorWithdraw(uint256 exitSize) external onlyOperator {
         if (exitSize > address(this).balance) revert MevEthErrors.NotEnoughEth();
         ITinyMevEth(mevEth).grantValidatorWithdraw{ value: exitSize }();
         emit ValidatorWithdraw(msg.sender, exitSize);

@@ -151,8 +151,8 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
 
     /// @notice Function to pay MevEth when withdrawing funds from a validator
     /// @dev This function is only callable by an admin and emits an event for offchain validator registry tracking.
-    function payValidatorWithdraw() external onlyOperator {
-        uint256 exitSize = 32 ether;
+    /// @param exitSize validator balance on exit (~32 ether)
+    function payValidatorWithdraw(uint256 exitSize) external onlyOperator {
         if (exitSize > address(this).balance) revert MevEthErrors.NotEnoughEth();
         ITinyMevEth(mevEth).grantValidatorWithdraw{ value: exitSize }();
         emit ValidatorWithdraw(msg.sender, exitSize);

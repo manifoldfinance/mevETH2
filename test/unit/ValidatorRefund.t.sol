@@ -1,4 +1,4 @@
-/// SPDX: License-Identifier: GPL-3.0-only
+// SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 
 import "../MevEthTest.sol";
@@ -18,7 +18,7 @@ contract MevValidatorRefundTest is MevEthTest {
         vm.expectEmit();
         emit ValidatorWithdraw(staker, amount);
         vm.prank(SamBacha);
-        IStakingModule(staker).payValidatorWithdraw();
+        IStakingModule(staker).payValidatorWithdraw(amount);
 
         assertEq(elastic, mevEth.totalAssets());
         assertEq(base, mevEth.totalSupply());

@@ -343,19 +343,30 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @dev Before updating the fraction, the withdrawal queue is processed, which pays out any pending withdrawals.
     /// @dev This function is only callable by the MevEthShareVault or the staking module.
     function grantValidatorWithdraw() external payable {
+        uint256 validatorWithdrawBalance = msg.value;
         // Check that the sender is the staking module or the MevEthShareVault.
         if (!(msg.sender == address(stakingModule) || msg.sender == mevEthShareVault)) revert MevEthErrors.InvalidSender();
 
-        // Check that the value is not zero
-        if (msg.value != 32 ether) {
-            revert MevEthErrors.WrongWithdrawAmount();
+        // If the msg.value is less than 32 ether, the elastic should be reduced.
+        if (validatorWithdrawBalance < 32 ether) {
+            /// @dev Elastic will always be at least equal to base. Base will always be at least equal to the MIN_DEPOSIT amount.
+            // assume slashed value so reduce elastic balance accordingly
+            fraction.elastic -= uint128(32 ether - validatorWithdrawBalance);
+            // update last rewards timestamp for sandwich protection
+            lastRewards = block.number;
+        } else if (validatorWithdrawBalance > 32 ether) {
+            // If the msg.value is greater than 32 ether, the elastic should be increased.
+            // account for any unclaimed rewards
+            fraction.elastic += uint128(validatorWithdrawBalance - 32 ether);
+            // update last rewards timestamp for sandwich protection
+            lastRewards = block.number;
         }
 
         // Emit an event to notify offchain listeners that a validator has withdrawn funds.
-        emit ValidatorWithdraw(msg.sender, msg.value);
+        emit ValidatorWithdraw(msg.sender, validatorWithdrawBalance);
 
         // Register our exit with the staking module
-        stakingModule.registerExit();
+        stakingModule.registerExit(validatorWithdrawBalance);
     }
 
     /*//////////////////////////////////////////////////////////////

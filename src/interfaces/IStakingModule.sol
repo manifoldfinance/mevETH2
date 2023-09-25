@@ -28,10 +28,10 @@ interface IStakingModule {
 
     // onlyAdmin Functions
     function payRewards(uint256 rewards) external;
-    function payValidatorWithdraw() external;
+    function payValidatorWithdraw(uint256 exitSize) external;
     function recoverToken(address token, address recipient, uint256 amount) external;
     function record() external returns (uint128, uint128, uint128, uint128);
-    function registerExit() external;
+    function registerExit(uint256 exitSize) external;
 
     function batchMigrate(IStakingModule.ValidatorData[] calldata batchData) external;
 }
