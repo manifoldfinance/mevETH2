@@ -20,6 +20,10 @@ contract Auth {
     // Keeps track of all admins
     mapping(address => bool) public admins;
 
+    /**
+     * @notice This constructor sets the initialAdmin address as an admin and operator.
+     * @dev The adminsCounter is incremented unchecked.
+     */
     constructor(address initialAdmin) {
         admins[initialAdmin] = true;
         unchecked {
@@ -49,6 +53,11 @@ contract Auth {
     /*//////////////////////////////////////////////////////////////
                            Maintenance Functions
     //////////////////////////////////////////////////////////////*/
+    /**
+     * @notice addAdmin() function allows an admin to add a new admin to the contract.
+     * @dev This function is only accessible to the existing admins and requires the address of the new admin. 
+     * If the new admin is already set, the function will revert. Otherwise, the adminsCounter will be incremented and the new admin will be added to the admins mapping. An AdminAdded event will be emitted. 
+     */
     function addAdmin(address newAdmin) external onlyAdmin {
         if (admins[newAdmin]) revert AlreadySet();
         ++adminsCounter;
@@ -56,6 +65,10 @@ contract Auth {
         emit AdminAdded(newAdmin);
     }
 
+    /**
+     * @notice Deletes an admin from the list of admins.
+     * @dev Only admins can delete other admins. If the adminsCounter is 0, the transaction will revert.
+     */
     function deleteAdmin(address oldAdmin) external onlyAdmin {
         if (!admins[oldAdmin]) revert AlreadySet();
         --adminsCounter;
@@ -64,6 +77,11 @@ contract Auth {
         emit AdminDeleted(oldAdmin);
     }
 
+    /**
+     * @notice Adds a new operator to the list of operators
+     * @dev Only the admin can add a new operator
+     * @param newOperator The address of the new operator
+     */
     function addOperator(address newOperator) external onlyAdmin {
         if (operators[newOperator]) revert AlreadySet();
         operators[newOperator] = true;

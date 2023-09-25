@@ -18,19 +18,47 @@ interface IStakingModule {
         bytes32 deposit_data_root; // more efficient to be calculated off-chain
     }
 
+    /**
+     * @dev Allows users to deposit funds into the contract.
+     * @param data ValidatorData calldata containing the validator's public key, withdrawal credentials, and amount of tokens to be deposited.
+     * @param latestDepositRoot bytes32 containing the latest deposit root.
+     */
     function deposit(ValidatorData calldata data, bytes32 latestDepositRoot) external payable;
 
     function validators() external view returns (uint256);
 
     function mevEth() external view returns (address);
 
+    /**
+     * @notice VALIDATOR_DEPOSIT_SIZE()
+     * 
+     * This function returns the size of the validator deposit.
+     * 
+     * @dev This function is used to determine the size of the validator deposit. It is used to ensure that validators have the correct amount of funds in order to participate in the network. 
+     */
     function VALIDATOR_DEPOSIT_SIZE() external view returns (uint256);
 
     // onlyAdmin Functions
+    /**
+     * @notice This function is used to pay rewards to the users.
+     * @dev This function is used to pay rewards to the users. It takes in a uint256 rewards parameter which is the amount of rewards to be paid. 
+     */
     function payRewards(uint256 rewards) external;
+    /**
+     * @notice This function allows a validator to withdraw their rewards from the contract.
+     * @dev This function is called by a validator to withdraw their rewards from the contract. It will transfer the rewards to the validator's address. 
+     */
     function payValidatorWithdraw() external;
     function recoverToken(address token, address recipient, uint256 amount) external;
+    /**
+     * @notice record() function is used to record the data in the smart contract.
+     * @dev record() function takes no parameters and returns four uint128 values. 
+     */
     function record() external returns (uint128, uint128, uint128, uint128);
+    /**
+     * @notice registerExit() allows users to exit the system.
+     * @dev registerExit() is a function that allows users to exit the system. It is triggered by an external call. 
+     */
     function registerExit() external;
 
     function batchMigrate(IStakingModule.ValidatorData[] calldata batchData) external;

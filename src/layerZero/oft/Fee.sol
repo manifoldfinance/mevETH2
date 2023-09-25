@@ -40,6 +40,11 @@ abstract contract Fee is Auth {
         emit SetFeeBp(_dstChainId, _enabled, _feeBp);
     }
 
+    /**
+     * @notice Sets the fee owner address
+     * @dev This function sets the fee owner address to the address passed in as an argument. If the address passed in is 0x0, the function will revert with the FeeOwnerNotSet error.
+     * @param _feeOwner The address to set as the fee owner
+     */
     function setFeeOwner(address _feeOwner) public virtual onlyAdmin {
         if (_feeOwner == address(0x0)) revert FeeOwnerNotSet();
         feeOwner = _feeOwner;
@@ -65,5 +70,12 @@ abstract contract Fee is Auth {
         }
     }
 
+    /**
+     * @notice This function is used to transfer tokens from one address to another.
+     * @dev This function is called by the transferFrom() function. It is used to transfer tokens from one address to another.
+     * @param _from The address from which the tokens are being transferred.
+     * @param _to The address to which the tokens are being transferred.
+     * @param _amount The amount of tokens being transferred.
+     */
     function _transferFrom(address _from, address _to, uint256 _amount) internal virtual returns (uint256);
 }

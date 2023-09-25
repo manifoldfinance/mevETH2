@@ -41,6 +41,11 @@ contract AuthManager {
         _;
     }
 
+    /**
+     * @notice Updates the mevEth address
+     * @dev This function is only callable by the authorized address
+     * @param newMevEth The new mevEth address
+     */
     function updateMevEth(address newMevEth) external onlyAuth {
         mevEth = newMevEth;
     }
@@ -56,6 +61,10 @@ contract AuthManager {
     /*//////////////////////////////////////////////////////////////
                            Maintenance Functions
     //////////////////////////////////////////////////////////////*/
+    /**
+     * @notice Adds a new admin to the MevEth, WagyuStaker, and MevEthShareVault contracts.
+     * @dev If the MevEthShareVault is a multisig, the `MevEthShareVaultAuthUpdateMissed` event is emitted.
+     */
     function addAdmin(address newAdmin) external onlyAuth {
         IAuth(mevEth).addAdmin(newAdmin);
         IAuth(wagyuStaker).addAdmin(newAdmin);
