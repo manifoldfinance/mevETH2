@@ -63,7 +63,8 @@ abstract contract BaseOFTWithFee is OFTCoreV2, Fee, ERC165, IOFTWithFee {
 
     /**
      * @notice This function returns the circulating supply of a token.
-     * @dev This function is used to get the circulating supply of a token. It is an override of the virtual function and is public and viewable. It returns a uint256 value. 
+     * @dev This function is used to get the circulating supply of a token. It is an override of the virtual function and is public and viewable. It returns a
+     * uint256 value.
      */
     function circulatingSupply() public view virtual override returns (uint256);
 
@@ -75,7 +76,9 @@ abstract contract BaseOFTWithFee is OFTCoreV2, Fee, ERC165, IOFTWithFee {
 
     /**
      * @notice This function is used to transfer tokens from one address to another.
-     * @dev This function is used to transfer tokens from one address to another. It takes three parameters: _from, _to, and _amount. _from is the address from which the tokens are being transferred, _to is the address to which the tokens are being transferred, and _amount is the amount of tokens being transferred. This function is internal and virtual, and it overrides the Fee and OFTCoreV2 contracts. It returns the amount of tokens transferred. 
+     * @dev This function is used to transfer tokens from one address to another. It takes three parameters: _from, _to, and _amount. _from is the address from
+     * which the tokens are being transferred, _to is the address to which the tokens are being transferred, and _amount is the amount of tokens being
+     * transferred. This function is internal and virtual, and it overrides the Fee and OFTCoreV2 contracts. It returns the amount of tokens transferred.
      */
     function _transferFrom(address _from, address _to, uint256 _amount) internal virtual override(Fee, OFTCoreV2) returns (uint256);
 }

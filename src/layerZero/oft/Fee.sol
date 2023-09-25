@@ -42,7 +42,8 @@ abstract contract Fee is Auth {
 
     /**
      * @notice Sets the fee owner address
-     * @dev This function sets the fee owner address to the address passed in as an argument. If the address passed in is 0x0, the function will revert with the FeeOwnerNotSet error.
+     * @dev This function sets the fee owner address to the address passed in as an argument. If the address passed in is 0x0, the function will revert with the
+     * FeeOwnerNotSet error.
      * @param _feeOwner The address to set as the fee owner
      */
     function setFeeOwner(address _feeOwner) public virtual onlyAdmin {

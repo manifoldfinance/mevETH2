@@ -74,7 +74,8 @@ library BytesLib {
 
     /**
      * @notice toAddress() is a pure function that takes in two parameters, bytes memory _bytes and uint256 _start, and returns an address.
-     * @dev The function first checks if the length of _bytes is greater than or equal to _start + 20. If not, it reverts with an OutOfBounds error. Otherwise, it loads the address from the memory and returns it.
+     * @dev The function first checks if the length of _bytes is greater than or equal to _start + 20. If not, it reverts with an OutOfBounds error. Otherwise,
+     * it loads the address from the memory and returns it.
      */
     function toAddress(bytes memory _bytes, uint256 _start) internal pure returns (address) {
         if (_bytes.length < _start + 20) revert OutOfBounds();

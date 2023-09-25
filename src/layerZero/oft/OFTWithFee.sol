@@ -40,7 +40,7 @@ contract OFTWithFee is BaseOFTWithFee, ERC20 {
 
     /**
      * @notice This function returns the address of the token contract.
-     * @dev This function is used to return the address of the token contract. It is a public view virtual override function. 
+     * @dev This function is used to return the address of the token contract. It is a public view virtual override function.
      */
     function token() public view virtual override returns (address) {
         return address(this);

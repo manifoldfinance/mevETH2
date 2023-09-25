@@ -10,8 +10,8 @@ interface ILayerZeroReceiver {
     // @param _payload - the signed payload is the UA bytes has encoded to be sent
     /**
      * @notice This function is used to receive data from a different chain.
-     * 
-     * @dev This function takes in four parameters: 
+     *
+     * @dev This function takes in four parameters:
      *  - _srcChainId: The ID of the source chain.
      *  - _srcAddress: The address of the source chain.
      *  - _nonce: A unique identifier for the transaction.

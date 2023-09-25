@@ -52,7 +52,8 @@ abstract contract NonblockingLzApp is LzApp {
     //@notice override this function
     /**
      * @notice This function is used to receive a non-blocking LZ message from a source chain.
-     * @dev This function is used to receive a non-blocking LZ message from a source chain. It takes in the source chain ID, source address, nonce, and payload as parameters. It then verifies the source chain ID, source address, and nonce, and if they are valid, it stores the payload in the contract storage. 
+     * @dev This function is used to receive a non-blocking LZ message from a source chain. It takes in the source chain ID, source address, nonce, and payload
+     * as parameters. It then verifies the source chain ID, source address, and nonce, and if they are valid, it stores the payload in the contract storage.
      */
     function _nonblockingLzReceive(uint16 _srcChainId, bytes memory _srcAddress, uint64 _nonce, bytes memory _payload) internal virtual;
 

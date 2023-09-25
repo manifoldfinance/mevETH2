@@ -64,7 +64,8 @@ interface ILayerZeroEndpoint is ILayerZeroUserApplicationConfig {
     // @param _srcAddress - the source chain contract address
     /**
      * @notice getInboundNonce() is a function that returns the inbound nonce of a given source chain and address.
-     * @dev getInboundNonce() takes two parameters: _srcChainId and _srcAddress. The _srcChainId is a uint16 representing the source chain ID and the _srcAddress is a bytes calldata representing the source address. The function returns a uint64 representing the inbound nonce. 
+     * @dev getInboundNonce() takes two parameters: _srcChainId and _srcAddress. The _srcChainId is a uint16 representing the source chain ID and the
+     * _srcAddress is a bytes calldata representing the source address. The function returns a uint64 representing the inbound nonce.
      */
     function getInboundNonce(uint16 _srcChainId, bytes calldata _srcAddress) external view returns (uint64);
 
@@ -80,7 +81,8 @@ interface ILayerZeroEndpoint is ILayerZeroUserApplicationConfig {
     // @param _adapterParam - parameters for the adapter service, e.g. send some dust native token to dstChain
     /**
      * @notice This function estimates the fees for a cross-chain transaction.
-     * @dev The function takes in the destination chain ID, user application address, payload, boolean value for whether to pay in ZRO, and adapter parameter as input. It returns the native fee and ZRO fee as output.
+     * @dev The function takes in the destination chain ID, user application address, payload, boolean value for whether to pay in ZRO, and adapter parameter as
+     * input. It returns the native fee and ZRO fee as output.
      */
     function estimateFees(
         uint16 _dstChainId,
@@ -96,9 +98,9 @@ interface ILayerZeroEndpoint is ILayerZeroUserApplicationConfig {
     // @notice get this Endpoint's immutable source identifier
     /**
      * getChainId()
-     * 
+     *
      * @dev Returns the chain ID of the current blockchain.
-     * 
+     *
      * @return uint16 - The chain ID of the current blockchain.
      */
     function getChainId() external view returns (uint16);
@@ -132,7 +134,7 @@ interface ILayerZeroEndpoint is ILayerZeroUserApplicationConfig {
     // @return true if the guard is on. false otherwise
     /**
      * @notice This function checks if a payload is being sent.
-     * @dev This function is used to check if a payload is being sent. It returns a boolean value. 
+     * @dev This function is used to check if a payload is being sent. It returns a boolean value.
      */
     function isSendingPayload() external view returns (bool);
 
@@ -147,7 +149,7 @@ interface ILayerZeroEndpoint is ILayerZeroUserApplicationConfig {
     // @param _configType - type of configuration. every messaging library has its own convention.
     /**
      * @notice getConfig() is a function that allows users to retrieve a configuration from the contract.
-     * @dev getConfig() takes four parameters: _version, _chainId, _userApplication, and _configType. It returns a bytes memory containing the configuration. 
+     * @dev getConfig() takes four parameters: _version, _chainId, _userApplication, and _configType. It returns a bytes memory containing the configuration.
      */
     function getConfig(uint16 _version, uint16 _chainId, address _userApplication, uint256 _configType) external view returns (bytes memory);
 
@@ -155,7 +157,7 @@ interface ILayerZeroEndpoint is ILayerZeroUserApplicationConfig {
     // @param _userApplication - the contract address of the user application
     /**
      * @notice getSendVersion() is a function that returns the version of the user application.
-     * @dev getSendVersion() takes in an address of the user application and returns a uint16 value representing the version of the user application. 
+     * @dev getSendVersion() takes in an address of the user application and returns a uint16 value representing the version of the user application.
      */
     function getSendVersion(address _userApplication) external view returns (uint16);
 
@@ -163,7 +165,8 @@ interface ILayerZeroEndpoint is ILayerZeroUserApplicationConfig {
     // @param _userApplication - the contract address of the user application
     /**
      * @notice This function returns the version of the user application.
-     * @dev This function is used to get the version of the user application. It takes in an address of the user application and returns a uint16 representing the version of the user application. 
+     * @dev This function is used to get the version of the user application. It takes in an address of the user application and returns a uint16 representing
+     * the version of the user application.
      */
     function getReceiveVersion(address _userApplication) external view returns (uint16);
 }

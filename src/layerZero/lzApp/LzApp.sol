@@ -59,7 +59,9 @@ abstract contract LzApp is Auth, ILayerZeroReceiver, ILayerZeroUserApplicationCo
     // abstract function - the default behaviour of LayerZero is blocking. See: NonblockingLzApp if you dont need to enforce ordered messaging
     /**
      * @notice This function is used to receive a payload from a different chain.
-     * @dev This function is used to receive a payload from a different chain. It is triggered when a payload is sent from a different chain. The payload is stored in the _payload parameter. The _srcChainId parameter is used to identify the chain the payload is coming from. The _srcAddress parameter is used to identify the address the payload is coming from. The _nonce parameter is used to identify the payload. 
+     * @dev This function is used to receive a payload from a different chain. It is triggered when a payload is sent from a different chain. The payload is
+     * stored in the _payload parameter. The _srcChainId parameter is used to identify the chain the payload is coming from. The _srcAddress parameter is used
+     * to identify the address the payload is coming from. The _nonce parameter is used to identify the payload.
      */
     function _blockingLzReceive(uint16 _srcChainId, bytes memory _srcAddress, uint64 _nonce, bytes memory _payload) internal virtual;
 
@@ -89,7 +91,8 @@ abstract contract LzApp is Auth, ILayerZeroReceiver, ILayerZeroUserApplicationCo
 
     /**
      * @notice This function is used to get the gas limit from the adapter parameters.
-     * @dev The function requires the adapter parameters to be at least 34 bytes long. If the adapter parameters are shorter than 34 bytes, the function will revert with an InvalidAdapterParams error. The gas limit is then loaded from the memory address of the adapter parameters plus 34 bytes.
+     * @dev The function requires the adapter parameters to be at least 34 bytes long. If the adapter parameters are shorter than 34 bytes, the function will
+     * revert with an InvalidAdapterParams error. The gas limit is then loaded from the memory address of the adapter parameters plus 34 bytes.
      */
     function _getGasLimit(bytes memory _adapterParams) internal pure virtual returns (uint256 gasLimit) {
         if (_adapterParams.length < 34) revert InvalidAdapterParams();
@@ -110,7 +113,7 @@ abstract contract LzApp is Auth, ILayerZeroReceiver, ILayerZeroUserApplicationCo
     //---------------------------UserApplication config----------------------------------------
     /**
      * @notice getConfig() is a function that retrieves the configuration data from the lzEndpoint.
-     * @dev getConfig() takes in four parameters: _version, _chainId, address, and _configType. It returns a bytes memory. 
+     * @dev getConfig() takes in four parameters: _version, _chainId, address, and _configType. It returns a bytes memory.
      */
     function getConfig(uint16 _version, uint16 _chainId, address, uint256 _configType) external view returns (bytes memory) {
         return lzEndpoint.getConfig(_version, _chainId, address(this), _configType);
@@ -119,11 +122,11 @@ abstract contract LzApp is Auth, ILayerZeroReceiver, ILayerZeroUserApplicationCo
     // generic config for LayerZero user Application
     /**
      * @notice This function is used to set the configuration of the contract.
-     * @dev This function is only accessible to the admin of the contract. It takes in four parameters: 
-     * _version, _chainId, _configType, and _config. The _version and _chainId parameters are used to 
-     * identify the version and chainId of the contract. The _configType parameter is used to specify 
-     * the type of configuration being set. The _config parameter is used to pass in the configuration 
-     * data. The lzEndpoint.setConfig() function is then called to set the configuration. 
+     * @dev This function is only accessible to the admin of the contract. It takes in four parameters:
+     * _version, _chainId, _configType, and _config. The _version and _chainId parameters are used to
+     * identify the version and chainId of the contract. The _configType parameter is used to specify
+     * the type of configuration being set. The _config parameter is used to pass in the configuration
+     * data. The lzEndpoint.setConfig() function is then called to set the configuration.
      */
     function setConfig(uint16 _version, uint16 _chainId, uint256 _configType, bytes calldata _config) external override onlyAdmin {
         lzEndpoint.setConfig(_version, _chainId, _configType, _config);
@@ -155,7 +158,8 @@ abstract contract LzApp is Auth, ILayerZeroReceiver, ILayerZeroUserApplicationCo
     // this function set the trusted path for the cross-chain communication
     /**
      * @notice This function allows an admin to set a trusted remote chain.
-     * @dev This function sets a trusted remote chain by taking in a chain ID and a path. It then stores the path in the trustedRemoteLookup mapping and emits an event. 
+     * @dev This function sets a trusted remote chain by taking in a chain ID and a path. It then stores the path in the trustedRemoteLookup mapping and emits
+     * an event.
      */
     function setTrustedRemote(uint16 _remoteChainId, bytes calldata _path) external onlyAdmin {
         trustedRemoteLookup[_remoteChainId] = _path;

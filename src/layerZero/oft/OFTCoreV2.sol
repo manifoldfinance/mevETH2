@@ -83,7 +83,8 @@ abstract contract OFTCoreV2 is NonblockingLzApp {
 
     /**
      * @notice This function allows the admin to set whether or not to use custom adapter parameters.
-     * @dev This function sets the boolean value of useCustomAdapterParams to the value of _useCustomAdapterParams. It also emits an event to notify that the value has been changed.
+     * @dev This function sets the boolean value of useCustomAdapterParams to the value of _useCustomAdapterParams. It also emits an event to notify that the
+     * value has been changed.
      */
     function setUseCustomAdapterParams(bool _useCustomAdapterParams) public virtual onlyAdmin {
         useCustomAdapterParams = _useCustomAdapterParams;
@@ -114,7 +115,8 @@ abstract contract OFTCoreV2 is NonblockingLzApp {
 
     /**
      * @notice This function is used to receive a packet from a source chain and process it.
-     * @dev The packet type is checked and if it is a PT_SEND packet, an acknowledgement is sent. If the packet type is not recognised, the transaction is reverted.
+     * @dev The packet type is checked and if it is a PT_SEND packet, an acknowledgement is sent. If the packet type is not recognised, the transaction is
+     * reverted.
      */
     function _nonblockingLzReceive(uint16 _srcChainId, bytes memory _srcAddress, uint64 _nonce, bytes memory _payload) internal virtual override {
         uint8 packetType = _payload.toUint8(0);
@@ -173,7 +175,8 @@ abstract contract OFTCoreV2 is NonblockingLzApp {
 
     /**
      * @notice This function converts a given amount of LD to SD.
-     * @dev The function takes a uint256 _amount as an argument and returns a uint64 amountSD. The amountSD is calculated by dividing the _amount by the _ld2sdRate(). If the amountSD is greater than the maximum value of a uint64, the function will revert with an AmountSDOverflow() error.
+     * @dev The function takes a uint256 _amount as an argument and returns a uint64 amountSD. The amountSD is calculated by dividing the _amount by the
+     * _ld2sdRate(). If the amountSD is greater than the maximum value of a uint64, the function will revert with an AmountSDOverflow() error.
      */
     function _ld2sd(uint256 _amount) internal view virtual returns (uint64) {
         uint256 amountSD = _amount / _ld2sdRate();
@@ -183,7 +186,8 @@ abstract contract OFTCoreV2 is NonblockingLzApp {
 
     /**
      * @notice _sd2ld() function converts an amount of SD (Solidity Dollars) to LD (Lumens Dollars)
-     * @dev _sd2ld() function takes a uint64 _amountSD as an argument and returns a uint256 LD amount. The conversion rate is determined by the _ld2sdRate() function. 
+     * @dev _sd2ld() function takes a uint64 _amountSD as an argument and returns a uint256 LD amount. The conversion rate is determined by the _ld2sdRate()
+     * function.
      */
     function _sd2ld(uint64 _amountSD) internal view virtual returns (uint256) {
         return _amountSD * _ld2sdRate();
@@ -191,7 +195,8 @@ abstract contract OFTCoreV2 is NonblockingLzApp {
 
     /**
      * @notice _removeDust() removes dust from an amount of tokens.
-     * @dev _removeDust() takes an amount of tokens and removes the dust from it. The dust is calculated by taking the remainder of the amount divided by the ld2sdRate. The amountAfter is the amount of tokens minus the dust.
+     * @dev _removeDust() takes an amount of tokens and removes the dust from it. The dust is calculated by taking the remainder of the amount divided by the
+     * ld2sdRate. The amountAfter is the amount of tokens minus the dust.
      */
     function _removeDust(uint256 _amount) internal view virtual returns (uint256 amountAfter, uint256 dust) {
         dust = _amount % _ld2sdRate();
@@ -200,7 +205,8 @@ abstract contract OFTCoreV2 is NonblockingLzApp {
 
     /**
      * @notice _encodeSendPayload() is a function that encodes the payload for a send transaction.
-     * @dev _encodeSendPayload() takes two parameters, a bytes32 _toAddress and a uint64 _amountSD. It returns a bytes memory. It uses the abi.encodePacked() function to encode the payload. The payload consists of the PT_SEND constant, the _toAddress and the _amountSD. 
+     * @dev _encodeSendPayload() takes two parameters, a bytes32 _toAddress and a uint64 _amountSD. It returns a bytes memory. It uses the abi.encodePacked()
+     * function to encode the payload. The payload consists of the PT_SEND constant, the _toAddress and the _amountSD.
      */
     function _encodeSendPayload(bytes32 _toAddress, uint64 _amountSD) internal view virtual returns (bytes memory) {
         return abi.encodePacked(PT_SEND, _toAddress, _amountSD);
@@ -222,12 +228,12 @@ abstract contract OFTCoreV2 is NonblockingLzApp {
     /**
      * @notice Debit an amount from a given address on a given chain
      * @dev This function debits an amount from a given address on a given chain.
-     * 
+     *
      * @param _from The address from which the amount is to be debited
      * @param _dstChainId The chain ID of the chain from which the amount is to be debited
      * @param _toAddress The address to which the amount is to be credited
      * @param _amount The amount to be debited
-     * 
+     *
      * @return The amount debited
      */
     function _debitFrom(address _from, uint16 _dstChainId, bytes32 _toAddress, uint256 _amount) internal virtual returns (uint256);

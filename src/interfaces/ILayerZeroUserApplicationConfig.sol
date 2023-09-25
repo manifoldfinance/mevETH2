@@ -35,7 +35,9 @@ interface ILayerZeroUserApplicationConfig {
     // @param _srcAddress - the contract address of the source contract at the source chain
     /**
      * @notice This function is used to force resume receive on a given source chain and address.
-     * @dev This function is used to force resume receive on a given source chain and address. It takes two parameters, _srcChainId and _srcAddress. _srcChainId is a uint16 representing the source chain ID and _srcAddress is a bytes calldata representing the source address. This function is only callable by the owner of the contract. 
+     * @dev This function is used to force resume receive on a given source chain and address. It takes two parameters, _srcChainId and _srcAddress. _srcChainId
+     * is a uint16 representing the source chain ID and _srcAddress is a bytes calldata representing the source address. This function is only callable by the
+     * owner of the contract.
      */
     function forceResumeReceive(uint16 _srcChainId, bytes calldata _srcAddress) external;
 }

@@ -55,8 +55,9 @@ contract Auth {
     //////////////////////////////////////////////////////////////*/
     /**
      * @notice addAdmin() function allows an admin to add a new admin to the contract.
-     * @dev This function is only accessible to the existing admins and requires the address of the new admin. 
-     * If the new admin is already set, the function will revert. Otherwise, the adminsCounter will be incremented and the new admin will be added to the admins mapping. An AdminAdded event will be emitted. 
+     * @dev This function is only accessible to the existing admins and requires the address of the new admin.
+     * If the new admin is already set, the function will revert. Otherwise, the adminsCounter will be incremented and the new admin will be added to the admins
+     * mapping. An AdminAdded event will be emitted.
      */
     function addAdmin(address newAdmin) external onlyAdmin {
         if (admins[newAdmin]) revert AlreadySet();
