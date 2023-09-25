@@ -15,5 +15,3 @@ cryticArgs:
   ]
 # #prefix is the prefix for Boolean functions that are properties to be checked
 # prefix: "echidna_"
-# # constants for corpus mutations (for experimentation only)
-mutConsts: [100, 1, 1]
