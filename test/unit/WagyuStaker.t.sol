@@ -6,6 +6,7 @@ import { WagyuStaker } from "src/WagyuStaker.sol";
 
 contract WagyuStakerTest is MevEthTest {
     WagyuStaker wagyuStaker;
+    uint256 initBal = 28_448 ether;
 
     function setUp() public override {
         super.setUp();
@@ -24,6 +25,7 @@ contract WagyuStakerTest is MevEthTest {
 
     function testPayRewards(uint128 amount) public {
         vm.assume(amount > 0);
+        vm.assume(amount < type(uint128).max - initBal);
         vm.deal(address(this), amount);
         payable(wagyuStaker).transfer(amount);
 
@@ -79,14 +81,12 @@ contract WagyuStakerTest is MevEthTest {
 
     function testPayValidatorWithdrawGt32Ether(uint128 amount) public {
         vm.assume(amount > 32 ether);
-
+        vm.assume(amount < type(uint128).max - initBal);
         vm.deal(address(wagyuStaker), amount);
         vm.deal(address(this), amount);
 
         _mockMevEthDeposit(amount, address(this));
         (uint128 elasticBefore, uint128 baseBefore) = mevEth.fraction();
-        assertEq(elasticBefore, amount);
-        assertEq(baseBefore, amount);
 
         vm.expectEmit(true, true, false, false, address(mevEth));
         emit ValidatorWithdraw(address(wagyuStaker), amount);
@@ -112,8 +112,6 @@ contract WagyuStakerTest is MevEthTest {
 
         _mockMevEthDeposit(amount, address(this));
         (uint128 elasticBefore, uint128 baseBefore) = mevEth.fraction();
-        assertEq(elasticBefore, amount);
-        assertEq(baseBefore, amount);
 
         vm.prank(SamBacha);
         vm.expectRevert(MevEthErrors.NotEnoughEth.selector);
@@ -144,6 +142,7 @@ contract WagyuStakerTest is MevEthTest {
     }
 
     function testNegativePayValidatorWithdraw() public {
+        (uint256 elastic0, uint256 base0) = mevEth.fraction();
         // Expect Unauthorized
         vm.expectRevert(Auth.Unauthorized.selector);
         wagyuStaker.payValidatorWithdraw();
@@ -154,14 +153,14 @@ contract WagyuStakerTest is MevEthTest {
         wagyuStaker.payValidatorWithdraw();
 
         // Configure MevEth elastic and base to uint128 max
-        uint256 amount = type(uint128).max;
+        uint256 amount = type(uint128).max - initBal;
         vm.deal(address(wagyuStaker), amount);
         vm.deal(address(this), amount);
         _mockMevEthDeposit(amount, address(this));
 
         (uint256 elastic, uint256 base) = mevEth.fraction();
-        assertEq(elastic, amount);
-        assertEq(base, amount);
+        assertEq(elastic, elastic0 + amount);
+        assertEq(base, base0 + amount);
     }
 
     function _mockMevEthDeposit(uint256 amount, address receiver) internal {

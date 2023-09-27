@@ -762,6 +762,7 @@ contract MevAdminTest is MevEthTest {
 
     function testUpdateToMevEthShareVault(uint128 amount) public {
         vm.assume(amount > 10_000);
+        vm.assume(amount < 100_000_000 ether);
 
         // Create a new vault and cache the current vault
         address newShareVault = address(new MevEthShareVault(SamBacha, address(mevEth), SamBacha));
@@ -785,8 +786,7 @@ contract MevAdminTest is MevEthTest {
         vm.prank(SamBacha);
         IMevEthShareVault(newShareVault).payRewards(rewardsAmount);
 
-        uint256 elastic = mevEth.totalAssets();
-        uint256 base = mevEth.totalSupply();
+        (uint256 elastic, uint256 base) = mevEth.fraction();
 
         assertGt(elastic, base);
     }

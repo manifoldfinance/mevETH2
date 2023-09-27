@@ -115,6 +115,9 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         OFTWithFee("Mev Liquid Staked Ether", "mevETH", 18, 8, authority, layerZeroEndpoint)
     {
         WETH9 = WETH(payable(weth));
+        // set initial balance of validators
+        fraction.elastic = uint128(28_448 ether);
+        fraction.base = uint128(28_448 ether);
     }
 
     /// @notice Calculate the needed Ether buffer required when creating a new validator.
@@ -741,17 +744,14 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         // Calculate the equivalent mevETH to be redeemed based on the ratio
         uint256 mevEthAmount = creamAmount * uint256(CREAM_TO_MEV_ETH_PERCENT) / 1000;
 
-        // Convert the shares to assets and update the fraction elastic and base
-        uint256 assets = convertToAssets(mevEthAmount);
-        if (assets < MIN_DEPOSIT) revert MevEthErrors.DepositTooSmall();
-
-        fraction.elastic += uint128(assets);
-        fraction.base += uint128(mevEthAmount);
+        // Check minimum deposit met
+        if (convertToAssets(mevEthAmount) < MIN_DEPOSIT) revert MevEthErrors.DepositTooSmall();
 
         // Burn CreamEth2 tokens
         IERC20Burnable(creamToken).burnFrom(msg.sender, creamAmount);
 
         // Mint the equivalent mevETH
+        // Internal balance (fraction) has already been set (in constructor) for all CrEth2 redemptions
         _mint(msg.sender, mevEthAmount);
 
         // Emit event
