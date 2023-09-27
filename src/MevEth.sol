@@ -19,10 +19,10 @@ pragma solidity 0.8.19;
 import { SafeTransferLib } from "solmate/utils/SafeTransferLib.sol";
 import { FixedPointMathLib } from "solmate/utils/FixedPointMathLib.sol";
 import { IERC4626 } from "./interfaces/IERC4626.sol";
-import { ERC20 } from "solmate/tokens/ERC20.sol";
 import { WETH } from "solmate/tokens/WETH.sol";
 import { MevEthErrors } from "./interfaces/Errors.sol";
 import { IStakingModule } from "./interfaces/IStakingModule.sol";
+import { IERC20Burnable } from "./interfaces/IERC20Burnable.sol";
 import { MevEthShareVault } from "./MevEthShareVault.sol";
 import { ITinyMevEth } from "./interfaces/ITinyMevEth.sol";
 import { WagyuStaker } from "./WagyuStaker.sol";
@@ -34,7 +34,6 @@ import { OFTWithFee } from "./layerZero/oft/OFTWithFee.sol";
 /// @dev LSR is represented through an ERC4626 token and interface.
 contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     using SafeTransferLib for WETH;
-    using SafeTransferLib for ERC20;
     using FixedPointMathLib for uint256;
 
     /*//////////////////////////////////////////////////////////////
@@ -75,7 +74,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @notice Taken from https://twitter.com/dcfgod/status/1682295466774634496 , should likely be updated before prod
     uint256 public constant CREAM_TO_MEV_ETH_PERCENT = 1130;
     /// @notice The canonical address of the crETH2 address
-    ERC20 public constant creamToken = ERC20(0x49D72e3973900A195A155a46441F0C08179FdB64);
+    address public constant creamToken = 0x49D72e3973900A195A155a46441F0C08179FdB64;
     /// @notice Sandwich protection mapping of last user deposits by block number
     mapping(address => uint256) lastDeposit;
 
@@ -496,6 +495,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
 
         // Update last deposit block for the user recorded for sandwich protection
         lastDeposit[msg.sender] = block.number;
+        lastDeposit[receiver] = block.number;
 
         if (_isZero(msg.value)) {
             WETH9.safeTransferFrom(msg.sender, address(this), assets);
@@ -585,7 +585,9 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         if (assets < MIN_DEPOSIT) revert MevEthErrors.WithdrawTooSmall();
         // Sandwich protection
         uint256 blockNumber = block.number;
-        if (_isZero(blockNumber - lastDeposit[msg.sender]) && _isZero(blockNumber - lastRewards)) revert MevEthErrors.SandwichProtection();
+        if ((_isZero(blockNumber - lastDeposit[msg.sender]) || _isZero(blockNumber - lastDeposit[owner])) && _isZero(blockNumber - lastRewards)) {
+            revert MevEthErrors.SandwichProtection();
+        }
 
         _updateAllowance(owner, shares);
 
@@ -610,9 +612,10 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
             });
             emit WithdrawalQueueOpened(receiver, queueLength, uint256(amountOwed));
             assets = availableBalance;
+            shares = shares - convertToShares(amountOwed);
         }
         if (!_isZero(assets)) {
-            emit Withdraw(msg.sender, owner, receiver, assets, convertToShares(assets));
+            emit Withdraw(msg.sender, owner, receiver, assets, shares);
             WETH9.deposit{ value: assets }();
             WETH9.safeTransfer(receiver, assets);
         }
@@ -724,20 +727,21 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @notice Redeem Cream staked eth tokens for mevETH at a fixed ratio
     /// @param creamAmount The amount of Cream tokens to redeem
     function redeemCream(uint256 creamAmount) external {
+        _stakingUnpaused();
         if (_isZero(creamAmount)) revert MevEthErrors.ZeroValue();
 
         // Calculate the equivalent mevETH to be redeemed based on the ratio
         uint256 mevEthAmount = creamAmount * uint256(CREAM_TO_MEV_ETH_PERCENT) / 1000;
 
-        // Transfer Cream tokens from the sender to the burn address
-        // safeTransferFrom not needed as we know the exact implementation
-        creamToken.safeTransferFrom(msg.sender, address(0), creamAmount);
-
         // Convert the shares to assets and update the fraction elastic and base
         uint256 assets = convertToAssets(mevEthAmount);
+        if (assets < MIN_DEPOSIT) revert MevEthErrors.DepositTooSmall();
 
         fraction.elastic += uint128(assets);
         fraction.base += uint128(mevEthAmount);
+
+        // Burn CreamEth2 tokens
+        IERC20Burnable(creamToken).burnFrom(msg.sender, creamAmount);
 
         // Mint the equivalent mevETH
         _mint(msg.sender, mevEthAmount);
@@ -753,5 +757,21 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// via grantValidatorWithdraw.
     receive() external payable {
         if (msg.sender != address(WETH9)) revert MevEthErrors.InvalidSender();
+    }
+
+    function transfer(address to, uint256 amount) public virtual override returns (bool) {
+        uint256 lastDepositFrom = lastDeposit[msg.sender];
+        if (lastDepositFrom > lastDeposit[to]) {
+            lastDeposit[to] = lastDepositFrom;
+        }
+        super.transfer(to, amount);
+    }
+
+    function transferFrom(address from, address to, uint256 amount) public virtual override returns (bool) {
+        uint256 lastDepositFrom = lastDeposit[from];
+        if (lastDepositFrom > lastDeposit[to]) {
+            lastDeposit[to] = lastDepositFrom;
+        }
+        super.transferFrom(from, to, amount);
     }
 }
