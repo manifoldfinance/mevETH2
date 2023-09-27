@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.19;
+pragma solidity ^0.8.19;
 
 import { ERC20 } from "solmate/tokens/ERC20.sol";
 
@@ -11,6 +11,10 @@ contract MockERC20 is ERC20 {
     }
 
     function burn(address from, uint256 amount) external {
+        _burn(from, amount);
+    }
+
+    function burnFrom(address from, uint256 amount) external {
         _burn(from, amount);
     }
 }

@@ -1,5 +1,16 @@
-// SPDX-License-Identifier: AGPL-3.0-only
-pragma solidity 0.8.19;
+/// SPDX-License-Identifier: SSPL-1.-0
+
+/**
+ * @custom:org.protocol='mevETH LST Protocol'
+ * @custom:org.security='mailto:security@manifoldfinance.com'
+ * @custom:org.vcs-commit=$GIT_COMMIT_SHA
+ * @custom:org.vendor='CommodityStream, Inc'
+ * @custom:org.schema-version="1.0"
+ * @custom.org.encryption="manifoldfinance.com/.well-known/pgp-key.asc"
+ * @custom:org.preferred-languages="en"
+ */
+
+pragma solidity ^0.8.19;
 
 /*///////////// Manifold Mev Ether /////////////                   
                 ,,,         ,,,
@@ -19,11 +30,11 @@ pragma solidity 0.8.19;
 import { SafeTransferLib } from "solmate/utils/SafeTransferLib.sol";
 import { FixedPointMathLib } from "solmate/utils/FixedPointMathLib.sol";
 import { IERC4626 } from "./interfaces/IERC4626.sol";
-import { ERC20 } from "solmate/tokens/ERC20.sol";
 import { WETH } from "solmate/tokens/WETH.sol";
 import { MevEthErrors } from "./interfaces/Errors.sol";
 import { IStakingModule } from "./interfaces/IStakingModule.sol";
-import { MevEthShareVault } from "./MevEthShareVault.sol";
+import { IMevEthShareVault } from "./interfaces/IMevEthShareVault.sol";
+import { IERC20Burnable } from "./interfaces/IERC20Burnable.sol";
 import { ITinyMevEth } from "./interfaces/ITinyMevEth.sol";
 import { WagyuStaker } from "./WagyuStaker.sol";
 import { OFTWithFee } from "./layerZero/oft/OFTWithFee.sol";
@@ -34,7 +45,6 @@ import { OFTWithFee } from "./layerZero/oft/OFTWithFee.sol";
 /// @dev LSR is represented through an ERC4626 token and interface.
 contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     using SafeTransferLib for WETH;
-    using SafeTransferLib for ERC20;
     using FixedPointMathLib for uint256;
 
     /*//////////////////////////////////////////////////////////////
@@ -59,11 +69,11 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     uint128 public constant MIN_DEPOSIT = 0.01 ether; // 0.01 eth
     /// @notice The address of the MevEthShareVault.
     address public mevEthShareVault;
-    /// @notice The address of the pending MevEthShareVault when a new vault has been comitted but not finalized.
+    /// @notice The address of the pending MevEthShareVault when a new vault has been committed but not finalized.
     address public pendingMevEthShareVault;
     /// @notice The staking module used to stake Ether.
     IStakingModule public stakingModule;
-    /// @notice The pending staking module when a new module has been comitted but not finalized.
+    /// @notice The pending staking module when a new module has been committed but not finalized.
     IStakingModule public pendingStakingModule;
     /// @notice WETH Implementation used by MevEth.
     WETH public immutable WETH9;
@@ -75,9 +85,11 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @notice Taken from https://twitter.com/dcfgod/status/1682295466774634496 , should likely be updated before prod
     uint256 public constant CREAM_TO_MEV_ETH_PERCENT = 1130;
     /// @notice The canonical address of the crETH2 address
-    ERC20 public constant creamToken = ERC20(0x49D72e3973900A195A155a46441F0C08179FdB64);
+    address public constant creamToken = 0x49D72e3973900A195A155a46441F0C08179FdB64;
     /// @notice Sandwich protection mapping of last user deposits by block number
     mapping(address => uint256) lastDeposit;
+    /// @notice Deposited validators mapping to prevent double deposits
+    mapping(bytes => bool) depositedValidators;
 
     /// @notice Central struct used for share accounting + math.
     /// @custom:field elastic   Represents total amount of staked ether, including rewards accrued / slashed.
@@ -195,7 +207,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     function finalizeUpdateStakingModule() external onlyAdmin {
         // Revert if there is no pending staking module or if the the staking module finalization is premature.
         uint64 committedTimestamp = pendingStakingModuleCommittedTimestamp;
-        if (address(pendingStakingModule) == address(0) || _isZero(committedTimestamp)) {
+        if (address(pendingStakingModule) == address(0) || committedTimestamp == 0) {
             revert MevEthErrors.InvalidPendingStakingModule();
         }
 
@@ -207,7 +219,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         emit StakingModuleUpdateFinalized(address(stakingModule), address(pendingStakingModule));
 
         // Update the staking module
-        stakingModule = IStakingModule(address(pendingStakingModule));
+        stakingModule = pendingStakingModule;
 
         // Set the pending staking module variables to zero.
         pendingStakingModule = IStakingModule(address(0));
@@ -218,7 +230,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @dev This function is only callable by addresses with the admin role.
     function cancelUpdateStakingModule() external onlyAdmin {
         // Revert if there is no pending staking module.
-        if (address(pendingStakingModule) == address(0) || _isZero(pendingStakingModuleCommittedTimestamp)) {
+        if (address(pendingStakingModule) == address(0) || pendingStakingModuleCommittedTimestamp == 0) {
             revert MevEthErrors.InvalidPendingStakingModule();
         }
 
@@ -243,6 +255,9 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @param newMevEthShareVault The new share vault
     /// @dev This function is only callable by addresses with the admin role
     function commitUpdateMevEthShareVault(address newMevEthShareVault) external onlyAdmin {
+        if (newMevEthShareVault == address(0)) {
+            revert MevEthErrors.ZeroAddress();
+        }
         pendingMevEthShareVault = newMevEthShareVault;
         pendingMevEthShareVaultCommittedTimestamp = uint64(block.timestamp);
         emit MevEthShareVaultUpdateCommitted(mevEthShareVault, newMevEthShareVault, uint64(block.timestamp + MODULE_UPDATE_TIME_DELAY));
@@ -250,22 +265,15 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
 
     /// @notice Finalizes the share vault update if a pending share vault exists.
     /// @dev This function is only callable by addresses with the admin role.
-    function finalizeUpdateMevEthShareVault(bool isMultisig) external onlyAdmin {
+    function finalizeUpdateMevEthShareVault() external onlyAdmin {
         // Revert if there is no pending share vault or if the the share vault finalization is premature.
         uint64 committedTimestamp = pendingMevEthShareVaultCommittedTimestamp;
-        if (pendingMevEthShareVault == address(0) || _isZero(committedTimestamp)) {
+        if (pendingMevEthShareVault == address(0) || committedTimestamp == 0) {
             revert MevEthErrors.InvalidPendingMevEthShareVault();
         }
 
         if (uint64(block.timestamp) < committedTimestamp + MODULE_UPDATE_TIME_DELAY) {
             revert MevEthErrors.PrematureMevEthShareVaultUpdateFinalization();
-        }
-
-        if (!isMultisig) {
-            (uint128 fees, uint128 rewards) = MevEthShareVault(payable(mevEthShareVault)).protocolBalance();
-            if (fees != 0 || rewards != 0) {
-                revert MevEthErrors.NonZeroVaultBalance();
-            }
         }
 
         //TODO: we need to do this for both the staking module and the mev share vault
@@ -285,7 +293,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @dev This function is only callable by addresses with the admin role.
     function cancelUpdateMevEthShareVault() external onlyAdmin {
         // Revert if there is no pending share vault.
-        if (pendingMevEthShareVault == address(0) || _isZero(pendingMevEthShareVaultCommittedTimestamp)) {
+        if (pendingMevEthShareVault == address(0) || pendingMevEthShareVaultCommittedTimestamp == 0) {
             revert MevEthErrors.InvalidPendingMevEthShareVault();
         }
         // Emit an event to notify offchain listeners that the share vault has been canceled.
@@ -307,10 +315,16 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @param newData The data needed to create a new validator
     /// @dev This function is only callable by addresses with the operator role and if staking is unpaused
     function createValidator(IStakingModule.ValidatorData calldata newData, bytes32 latestDepositRoot) external onlyOperator {
+        // check if staking is paused
         _stakingUnpaused();
+        // check validator does not already exist
+        if (depositedValidators[newData.pubkey]) revert MevEthErrors.AlreadyDeposited();
+        // set validator deposited to true
+        depositedValidators[newData.pubkey] = true;
         IStakingModule _stakingModule = stakingModule;
+        // check withdrawal address is correct
+        if (address(_stakingModule) != address(uint160(uint256(newData.withdrawal_credentials)))) revert MevEthErrors.IncorrectWithdrawalCredentials();
         // Determine how big deposit is for the validator
-        // *Note this will change if Rocketpool or similar modules are used
         uint256 depositSize = _stakingModule.VALIDATOR_DEPOSIT_SIZE();
 
         if (address(this).balance < depositSize + calculateNeededEtherBuffer()) {
@@ -329,7 +343,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @notice Grants rewards updating the fraction.elastic.
     /// @dev called from validator rewards updates
     function grantRewards() external payable {
-        if (_isZero(msg.value)) revert MevEthErrors.ZeroValue();
+        if (msg.value == 0) revert MevEthErrors.ZeroValue();
 
         fraction.elastic += uint128(msg.value);
         lastRewards = block.number;
@@ -454,7 +468,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     function convertToShares(uint256 assets) public view returns (uint256 shares) {
         // So if there are no shares, then they will mint 1:1 with assets
         // Otherwise, shares will mint proportional to the amount of assets
-        if (_isZero(uint256(fraction.elastic)) || _isZero(uint256(fraction.base))) {
+        if ((uint256(fraction.elastic) == 0) || (uint256(fraction.base) == 0)) {
             shares = assets;
         } else {
             shares = (assets * uint256(fraction.base)) / uint256(fraction.elastic);
@@ -467,7 +481,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     function convertToAssets(uint256 shares) public view returns (uint256 assets) {
         // So if there are no shares, then they will mint 1:1 with assets
         // Otherwise, shares will mint proportional to the amount of assets
-        if (_isZero(uint256(fraction.elastic)) || _isZero(uint256(fraction.base))) {
+        if (uint256(fraction.elastic) == 0 || uint256(fraction.base) == 0) {
             assets = shares;
         } else {
             assets = (shares * uint256(fraction.elastic)) / uint256(fraction.base);
@@ -505,8 +519,9 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
 
         // Update last deposit block for the user recorded for sandwich protection
         lastDeposit[msg.sender] = block.number;
+        lastDeposit[receiver] = block.number;
 
-        if (_isZero(msg.value)) {
+        if (msg.value == 0) {
             WETH9.safeTransferFrom(msg.sender, address(this), assets);
             WETH9.withdraw(assets);
         } else {
@@ -569,7 +584,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @notice Function to indicate the maximum amount of assets that can be withdrawn at the current state.
     /// @param owner The address in question of who would be withdrawing
     /// @return maxAssets The maximum amount of assets that can be withdrawn
-    function maxWithdraw(address owner) public view returns (uint256 maxAssets) {
+    function maxWithdraw(address owner) external view returns (uint256 maxAssets) {
         // Withdrawal is either their maximum balance, or the internal buffer
         maxAssets = min(address(this).balance, convertToAssets(balanceOf[owner]));
     }
@@ -594,7 +609,8 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         if (assets < MIN_DEPOSIT) revert MevEthErrors.WithdrawTooSmall();
         // Sandwich protection
         uint256 blockNumber = block.number;
-        if (_isZero(blockNumber - lastDeposit[msg.sender]) && _isZero(blockNumber - lastRewards)) revert MevEthErrors.SandwichProtection();
+
+        if (((blockNumber - lastDeposit[msg.sender]) == 0 || (blockNumber - lastDeposit[owner] == 0)) && (blockNumber - lastRewards) == 0) revert MevEthErrors.SandwichProtection();
 
         _updateAllowance(owner, shares);
 
@@ -619,9 +635,11 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
             });
             emit WithdrawalQueueOpened(receiver, queueLength, uint256(amountOwed));
             assets = availableBalance;
+            shares = shares - convertToShares(amountOwed);
         }
-        if (!_isZero(assets)) {
-            emit Withdraw(msg.sender, owner, receiver, assets, convertToShares(assets));
+        if (assets != 0) {
+            emit Withdraw(msg.sender, owner, receiver, assets, shares);
+            
             WETH9.deposit{ value: assets }();
             WETH9.safeTransfer(receiver, assets);
         }
@@ -631,10 +649,13 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @param owner owner of tokens
     /// @param shares amount of shares to update
     function _updateAllowance(address owner, uint256 shares) internal {
+        uint256 allowed = allowance[owner][msg.sender];
         if (owner != msg.sender) {
-            if (allowance[owner][msg.sender] < shares) revert MevEthErrors.TransferExceedsAllowance();
-            unchecked {
-                allowance[owner][msg.sender] -= shares;
+            if (allowed < shares) revert MevEthErrors.TransferExceedsAllowance();
+            if (allowed != type(uint256).max) {
+                unchecked {
+                    allowance[owner][msg.sender] -= shares;
+                }
             }
         }
     }
@@ -650,7 +671,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         // Convert the assets to shares and check if the owner has the allowance to withdraw the shares.
         shares = convertToShares(assets + fee);
 
-        // Withdraw the assets from the Mevth contract
+        // Withdraw the assets from the MevEth contract
         _withdraw(false, receiver, owner, assets, shares);
     }
 
@@ -663,11 +684,11 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         // withdraw fee fixed at 0.01%
         uint256 fee = assets / uint256(feeDenominator);
         // last shareholder has no fee
-        if (_isZero(fraction.elastic - assets)) fee = 0;
+        if ((fraction.elastic - assets) == 0) fee = 0;
         // Convert the assets to shares and check if the owner has the allowance to withdraw the shares.
         shares = convertToShares(assets + fee);
 
-        // Withdraw the assets from the Mevth contract
+        // Withdraw the assets from the MevEth contract
         _withdraw(true, receiver, owner, assets, shares);
     }
 
@@ -696,11 +717,11 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         // withdraw fee fixed at 0.01%
         uint256 fee = shares / uint256(feeDenominator);
         // last shareholder has no fee
-        if (_isZero(totalSupply - shares)) fee = 0;
+        if ((totalSupply - shares) == 0) fee = 0;
         // Convert the shares to assets and check if the owner has the allowance to withdraw the shares.
         assets = convertToAssets(shares - fee);
 
-        // Withdraw the assets from the Mevth contract
+        // Withdraw the assets from the MevEth contract
         _withdraw(false, receiver, owner, assets, shares);
     }
 
@@ -718,14 +739,6 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         return a < b ? a : b;
     }
 
-    /// @dev Gas efficient zero check
-    function _isZero(uint256 value) internal pure returns (bool boolValue) {
-        // Stack Only Safety
-        assembly ("memory-safe") {
-            boolValue := iszero(value)
-        }
-    }
-
     /*////////////////////////////////////////////////////////////// 
              Special CreamEth2 redeem (from initial migration) 
      //////////////////////////////////////////////////////////////*/
@@ -733,20 +746,21 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @notice Redeem Cream staked eth tokens for mevETH at a fixed ratio
     /// @param creamAmount The amount of Cream tokens to redeem
     function redeemCream(uint256 creamAmount) external {
-        if (_isZero(creamAmount)) revert MevEthErrors.ZeroValue();
+        _stakingUnpaused();
+        if (creamAmount == 0) revert MevEthErrors.ZeroValue();
 
         // Calculate the equivalent mevETH to be redeemed based on the ratio
         uint256 mevEthAmount = creamAmount * uint256(CREAM_TO_MEV_ETH_PERCENT) / 1000;
 
-        // Transfer Cream tokens from the sender to the burn address
-        // safeTransferFrom not needed as we know the exact implementation
-        creamToken.safeTransferFrom(msg.sender, address(0), creamAmount);
-
         // Convert the shares to assets and update the fraction elastic and base
         uint256 assets = convertToAssets(mevEthAmount);
+        if (assets < MIN_DEPOSIT) revert MevEthErrors.DepositTooSmall();
 
         fraction.elastic += uint128(assets);
         fraction.base += uint128(mevEthAmount);
+
+        // Burn CreamEth2 tokens
+        IERC20Burnable(creamToken).burnFrom(msg.sender, creamAmount);
 
         // Mint the equivalent mevETH
         _mint(msg.sender, mevEthAmount);
@@ -762,5 +776,21 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// via grantValidatorWithdraw.
     receive() external payable {
         if (msg.sender != address(WETH9)) revert MevEthErrors.InvalidSender();
+    }
+
+    function transfer(address to, uint256 amount) public virtual override returns (bool) {
+        uint256 lastDepositFrom = lastDeposit[msg.sender];
+        if (lastDepositFrom > lastDeposit[to]) {
+            lastDeposit[to] = lastDepositFrom;
+        }
+        super.transfer(to, amount);
+    }
+
+    function transferFrom(address from, address to, uint256 amount) public virtual override returns (bool) {
+        uint256 lastDepositFrom = lastDeposit[from];
+        if (lastDepositFrom > lastDeposit[to]) {
+            lastDeposit[to] = lastDepositFrom;
+        }
+        super.transferFrom(from, to, amount);
     }
 }

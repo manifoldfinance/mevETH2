@@ -1,5 +1,16 @@
-// SPDX-License-Identifier: AGPL-3.0-only
-pragma solidity 0.8.19;
+/// SPDX-License-Identifier: SSPL-1.-0
+
+/**
+ * @custom:org.protocol='mevETH LST Protocol'
+ * @custom:org.security='mailto:security@manifoldfinance.com'
+ * @custom:org.vcs-commit=$GIT_COMMIT_SHA
+ * @custom:org.vendor='CommodityStream, Inc'
+ * @custom:org.schema-version="1.0"
+ * @custom.org.encryption="manifoldfinance.com/.well-known/pgp-key.asc"
+ * @custom:org.preferred-languages="en"
+ */
+
+pragma solidity ^0.8.19;
 
 import { ITinyMevEth } from "./interfaces/ITinyMevEth.sol";
 import { IStakingModule } from "./interfaces/IStakingModule.sol";
@@ -8,7 +19,6 @@ import { SafeTransferLib } from "solmate/utils/SafeTransferLib.sol";
 import { Auth } from "./libraries/Auth.sol";
 import { ERC20 } from "solmate/tokens/ERC20.sol";
 import { MevEthErrors } from "./interfaces/Errors.sol";
-import "forge-std/console.sol";
 
 /// @title 🥩 Wagyu Staker 🥩
 /// @dev This contract stakes Ether inside of the BeaconChainDepositContract directly
@@ -83,8 +93,7 @@ contract WagyuStaker is Auth, IStakingModule {
     }
 
     /// @notice Function to pay rewards to the MevEth contract
-    /// @dev Only callable by an operator. Additionally, if there is an issue when granting rewards to the MevEth contract, funds are secured to the
-    ///      beneficiary address for manual allocation to the MevEth contract.
+    /// @dev Only callable by an operator
     /// @param rewards rewards to pay to the MevEth contract
     function payRewards(uint256 rewards) external onlyOperator {
         if (rewards > address(this).balance) revert MevEthErrors.NotEnoughEth();
@@ -155,10 +164,14 @@ contract WagyuStaker is Auth, IStakingModule {
             record.totalDeposited += uint128(length * VALIDATOR_DEPOSIT_SIZE);
             validators += length;
         }
-        for (uint256 i = 0; i < length; ++i) {
-            IStakingModule.ValidatorData memory data = batchData[i];
+
+        for (uint256 i = 0; i < length;) {
+            IStakingModule.ValidatorData calldata data = batchData[i];
             // Emit an event inidicating a new validator has been registered, allowing for offchain listeners to track the validator registry
             emit NewValidator(data.operator, data.pubkey, data.withdrawal_credentials, data.signature, data.deposit_data_root);
+            unchecked {
+                ++i;
+            }
         }
     }
 

@@ -1,5 +1,5 @@
 /// SPDX: License-Identifier: GPL-3.0-only
-pragma solidity 0.8.19;
+pragma solidity ^0.8.19;
 
 import "../MevEthTest.sol";
 import "src/libraries/Auth.sol";
@@ -54,6 +54,7 @@ contract ValidatorTest is MevEthTest {
      * Tests validator creation failure cases. This function should revert when the caller is unauthorized or when the contract does not have enough eth.
      */
     function testNegativeCreateValidator() public {
+        uint256 stakingModuleDepositSize = mevEth.stakingModule().VALIDATOR_DEPOSIT_SIZE();
         IStakingModule.ValidatorData memory validatorData = mockValidatorData(User01, 32 ether / 1 gwei);
 
         bytes32 depositRoot = latestDepositRoot();
@@ -65,6 +66,16 @@ contract ValidatorTest is MevEthTest {
         vm.prank(Operator01);
         vm.expectRevert(MevEthErrors.NotEnoughEth.selector);
         mevEth.createValidator(validatorData, depositRoot);
+
+        //Expect a revert when pubkey already exists
+        vm.deal(User01, stakingModuleDepositSize * 2);
+        vm.prank(User01);
+        mevEth.deposit{ value: stakingModuleDepositSize * 2 }(stakingModuleDepositSize * 2, User01);
+        vm.startPrank(Operator01);
+        mevEth.createValidator(validatorData, depositRoot);
+        vm.expectRevert(MevEthErrors.AlreadyDeposited.selector);
+        mevEth.createValidator(validatorData, depositRoot);
+        vm.stopPrank();
     }
 
     /**

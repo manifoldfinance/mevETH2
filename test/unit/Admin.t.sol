@@ -1,5 +1,5 @@
 /// SPDX: License-Identifier: GPL-3.0-only
-pragma solidity 0.8.19;
+pragma solidity ^0.8.19;
 
 import { IStakingModule } from "../../src/interfaces/IStakingModule.sol";
 import { IMevEthShareVault } from "../../src/interfaces/IMevEthShareVault.sol";
@@ -67,6 +67,7 @@ contract MevAdminTest is MevEthTest {
 
     function testNegativeDeleteAdmin(address newAdmin) public {
         vm.assume(!mevEth.admins(newAdmin));
+        vm.assume(address(this) != newAdmin);
         vm.assume(newAdmin != address(0));
         vm.assume(newAdmin != address(this));
         vm.prank(SamBacha);
@@ -467,7 +468,7 @@ contract MevAdminTest is MevEthTest {
         emit MevEthShareVaultUpdateFinalized(existingVault, newVault);
 
         vm.prank(SamBacha);
-        mevEth.finalizeUpdateMevEthShareVault(true);
+        mevEth.finalizeUpdateMevEthShareVault();
 
         assertEq(address(mevEth.pendingMevEthShareVault()), address(0));
         assertEq(mevEth.pendingMevEthShareVaultCommittedTimestamp(), 0);
@@ -486,7 +487,7 @@ contract MevAdminTest is MevEthTest {
         // Expect a revert when there is no pending mev share vault
         vm.expectRevert(MevEthErrors.InvalidPendingMevEthShareVault.selector);
         vm.prank(SamBacha);
-        mevEth.finalizeUpdateMevEthShareVault(true);
+        mevEth.finalizeUpdateMevEthShareVault();
 
         // Create a new vault and cache the current vault
         address newVault = address(new MevEthShareVault(SamBacha, address(mevEth), SamBacha));
@@ -499,27 +500,21 @@ contract MevAdminTest is MevEthTest {
         // Expect a reversion if the time delay has not elapsed
         vm.expectRevert(MevEthErrors.PrematureMevEthShareVaultUpdateFinalization.selector);
         vm.prank(SamBacha);
-        mevEth.finalizeUpdateMevEthShareVault(true);
+        mevEth.finalizeUpdateMevEthShareVault();
 
         // Warp to the finalization timestamp, expect a reversion when unauthorized
         vm.warp(finalizationTimestamp);
         vm.expectRevert(Auth.Unauthorized.selector);
-        mevEth.finalizeUpdateMevEthShareVault(true);
+        mevEth.finalizeUpdateMevEthShareVault();
 
         // finalise share vault update for real
         vm.prank(SamBacha);
-        mevEth.finalizeUpdateMevEthShareVault(true);
+        mevEth.finalizeUpdateMevEthShareVault();
         // now begin a new update
         address newVault2 = address(new MevEthShareVault(SamBacha, address(mevEth), SamBacha));
         vm.prank(SamBacha);
         mevEth.commitUpdateMevEthShareVault(newVault2);
         vm.warp(finalizationTimestamp + uint64(MODULE_UPDATE_TIME_DELAY));
-
-        // Update the protocol balance and expect a reversion when trying to update the vault while balances are not empty
-        _addToProtocolBalance(newVault, 100, 100);
-        vm.expectRevert(MevEthErrors.NonZeroVaultBalance.selector);
-        vm.prank(SamBacha);
-        mevEth.finalizeUpdateMevEthShareVault(false);
 
         // Check that there are no effects from finalization
         assertEq(address(mevEth.pendingMevEthShareVault()), newVault2);
@@ -527,18 +522,14 @@ contract MevAdminTest is MevEthTest {
         assertEq(address(mevEth.mevEthShareVault()), newVault);
     }
 
-    function _addToProtocolBalance(address mevEthShareVault, uint128 fees, uint128 rewards) internal {
-        uint256 amount = fees + rewards;
+    function _addToProtocolBalance(address mevEthShareVault, uint128 rewards) internal {
+        uint256 amount = rewards;
 
         vm.deal(address(this), amount);
         (bool success,) = mevEthShareVault.call{ value: amount }("");
         if (!success) revert TransferFailed();
 
-        vm.prank(SamBacha);
-        IMevEthShareVault(mevEthShareVault).logRewards(fees);
-
-        assertEq(IMevEthShareVault(mevEthShareVault).fees(), fees);
-        assertEq(IMevEthShareVault(mevEthShareVault).rewards(), rewards);
+        assertEq(mevEthShareVault.balance, rewards);
     }
 
     /**
@@ -784,10 +775,7 @@ contract MevAdminTest is MevEthTest {
         vm.deal(address(this), amount);
         payable(newShareVault).transfer(amount);
 
-        vm.prank(Operator01);
-        IMevEthShareVault(newShareVault).logRewards(0);
-
-        uint256 rewardsAmount = IMevEthShareVault(newShareVault).rewards();
+        uint256 rewardsAmount = newShareVault.balance;
 
         vm.expectEmit(true, true, false, false, address(mevEth));
         emit Rewards(newShareVault, rewardsAmount);
@@ -796,7 +784,7 @@ contract MevAdminTest is MevEthTest {
         emit RewardsPaid(rewardsAmount);
 
         vm.prank(SamBacha);
-        IMevEthShareVault(newShareVault).payRewards();
+        IMevEthShareVault(newShareVault).payRewards(rewardsAmount);
         //TODO: assert balances after rewards are paid on mev eth share vault
 
         uint256 elastic = mevEth.totalAssets();

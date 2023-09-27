@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.19;
+pragma solidity ^0.8.19;
 
 // Test utils
 import "forge-std/Test.sol";
@@ -12,6 +12,7 @@ import "./mocks/WETH9.sol";
 import "./mocks/DepositContract.sol";
 import "./mocks/LZEndpointMock.sol";
 import "../src/MevEthShareVault.sol";
+import { TransparentUpgradeableProxy } from "mev-proxy/TransparentUpgradeableProxy.sol";
 import { IAuth } from "src/interfaces/IAuth.sol";
 import { AuthManager } from "src/libraries/AuthManager.sol";
 import { SafeInstance, SafeTestTools } from "../lib/safe-tools/src/SafeTestTools.sol";
@@ -75,6 +76,8 @@ contract MevEthTest is Test {
 
     LZEndpointMock internal layerZeroEndpoint;
 
+    address safe;
+
     //Events
     event StakingPaused();
     event StakingUnpaused();
@@ -132,7 +135,9 @@ contract MevEthTest is Test {
         SafeInstance memory safeInstance = safeTestTools._setupSafe(ownerPKs, 5);
         multisigSafeInstance = safeInstance;
 
-        address initialShareVault = address(safeInstance.safe);
+        safe = address(safeInstance.safe);
+        // assign share vault as proxy to multisig
+        address initialShareVault = address(new TransparentUpgradeableProxy(safe, SamBacha, ""));
 
         address initialStakingModule = address(IStakingModule(address(new WagyuStaker(SamBacha, address(depositContract), address(mevEth)))));
 
@@ -179,7 +184,7 @@ contract MevEthTest is Test {
         // Warp to the finalization timestamp, finalize the update
         vm.warp(finalizationTimestamp);
         vm.prank(SamBacha);
-        mevEth.finalizeUpdateMevEthShareVault(true);
+        mevEth.finalizeUpdateMevEthShareVault();
 
         assertEq(address(mevEth.pendingMevEthShareVault()), address(0));
         assertEq(mevEth.pendingMevEthShareVaultCommittedTimestamp(), 0);
@@ -190,10 +195,10 @@ contract MevEthTest is Test {
         return depositContract.get_deposit_root();
     }
 
-    function mockValidatorData(address operator, uint256 depositAmount) internal pure returns (IStakingModule.ValidatorData memory) {
+    function mockValidatorData(address operator, uint256 depositAmount) internal view returns (IStakingModule.ValidatorData memory) {
         bytes memory pubkey =
             abi.encodePacked(bytes32(0x1234567890123456789012345678901234567890123456789012345678901234), bytes16(0x12345678901234567890123456789012));
-        bytes32 withdrawalCredentials = bytes32(0x1234567890123456789012345678901234567890123456789012345678901234);
+        bytes32 withdrawalCredentials = bytes32(abi.encodePacked(bytes12(0x010000000000000000000000), address(mevEth.stakingModule())));
 
         bytes memory signatureFirst64Bytes = abi.encodePacked(
             bytes32(0x1234567890123456789012345678901234567890123456789012345678901234),
