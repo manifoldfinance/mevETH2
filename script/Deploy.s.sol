@@ -43,7 +43,6 @@ contract DeployScript is Script {
         MevEth mevEth = new MevEth(authority, weth, layerZeroEndpoint);
 
         // deploy sharevault
-        // TODO: Is the initial share vault a multisig? If so will need to comment this out and sub in multisig address
         // MevEthShareVault initialShareVault = new MevEthShareVault(authority, address(mevEth), authority);
         address initialShareVault = address(new TransparentUpgradeableProxy(safe, authority, ""));
         // deploy staking module

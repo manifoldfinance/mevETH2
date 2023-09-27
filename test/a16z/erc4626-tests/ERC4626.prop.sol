@@ -3,8 +3,6 @@ pragma solidity >=0.8.0 <0.9.0;
 
 import "forge-std/Test.sol";
 
-// TODO: use interface provided by forge-std v1.0.0 or later
-// import {IERC20} from "forge-std/interfaces/IERC20.sol";
 interface IERC20 {
     event Transfer(address indexed from, address indexed to, uint256 value);
     event Approval(address indexed owner, address indexed spender, uint256 value);
@@ -17,8 +15,6 @@ interface IERC20 {
     function transferFrom(address from, address to, uint256 amount) external returns (bool);
 }
 
-// TODO: use interface provided by forge-std v1.0.0 or later
-// import {IERC4626} from "forge-std/interfaces/IERC4626.sol";
 interface IERC4626 is IERC20 {
     event Deposit(address indexed caller, address indexed owner, uint256 assets, uint256 shares);
     event Withdraw(address indexed caller, address indexed receiver, address indexed owner, uint256 assets, uint256 shares);

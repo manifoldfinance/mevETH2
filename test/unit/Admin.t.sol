@@ -784,7 +784,6 @@ contract MevAdminTest is MevEthTest {
 
         vm.prank(SamBacha);
         IMevEthShareVault(newShareVault).payRewards(rewardsAmount);
-        //TODO: assert balances after rewards are paid on mev eth share vault
 
         uint256 elastic = mevEth.totalAssets();
         uint256 base = mevEth.totalSupply();
