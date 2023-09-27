@@ -71,8 +71,8 @@ contract MevEthShareVaultTest is MevEthTest {
         mevEthShareVault.setProtocolFeeTo(newProtocolFeeTo);
 
         vm.prank(SamBacha);
-        vm.expectRevert(MevEthErrors.SendError.selector);
-        mevEthShareVault.sendFees(fees);
+        vm.expectRevert();
+        mevEthShareVault.sendFees();
 
         assertEq(address(mevEthShareVault).balance, fees);
         assertEq(mevEthShareVault.protocolFeeTo().balance, 0);
