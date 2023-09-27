@@ -82,7 +82,6 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @notice Struct used to accounting the ETH staked within MevEth.
     Fraction public fraction;
     /// @notice The percent out of 1000 crETH2 can be redeemed for as mevEth
-    /// @notice Taken from https://twitter.com/dcfgod/status/1682295466774634496 , should likely be updated before prod
     uint256 public constant CREAM_TO_MEV_ETH_PERCENT = 1130;
     /// @notice The canonical address of the crETH2 address
     address public constant creamToken = 0x49D72e3973900A195A155a46441F0C08179FdB64;
@@ -276,7 +275,6 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
             revert MevEthErrors.PrematureMevEthShareVaultUpdateFinalization();
         }
 
-        //TODO: we need to do this for both the staking module and the mev share vault
         /// @custom:: When finalizing the update to the MevEthShareVault, make sure to grant any remaining rewards from the existing share vault.
         // Emit an event to notify offchain listeners that the share vault has been finalized.
         emit MevEthShareVaultUpdateFinalized(mevEthShareVault, address(pendingMevEthShareVault));
@@ -599,7 +597,9 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         // Sandwich protection
         uint256 blockNumber = block.number;
 
-        if (((blockNumber - lastDeposit[msg.sender]) == 0 || (blockNumber - lastDeposit[owner] == 0)) && (blockNumber - lastRewards) == 0) revert MevEthErrors.SandwichProtection();
+        if (((blockNumber - lastDeposit[msg.sender]) == 0 || (blockNumber - lastDeposit[owner] == 0)) && (blockNumber - lastRewards) == 0) {
+            revert MevEthErrors.SandwichProtection();
+        }
 
         _updateAllowance(owner, shares);
 
@@ -628,7 +628,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         }
         if (assets != 0) {
             emit Withdraw(msg.sender, owner, receiver, assets, shares);
-            
+
             WETH9.deposit{ value: assets }();
             WETH9.safeTransfer(receiver, assets);
         }

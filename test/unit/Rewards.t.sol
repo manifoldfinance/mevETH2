@@ -9,7 +9,6 @@ import { IStakingModule } from "../../src/interfaces/IStakingModule.sol";
 import "../../src/interfaces/IMevEthShareVault.sol";
 import "../../lib/safe-tools/src/SafeTestTools.sol";
 
-//TODO: These tests should be bolstered
 contract MevRewardsTest is MevEthTest {
     /**
      * Tests granting rewards when the share vault is a multisig.
