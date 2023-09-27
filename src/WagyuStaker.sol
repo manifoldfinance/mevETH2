@@ -8,7 +8,6 @@ import { SafeTransferLib } from "solmate/utils/SafeTransferLib.sol";
 import { Auth } from "./libraries/Auth.sol";
 import { ERC20 } from "solmate/tokens/ERC20.sol";
 import { MevEthErrors } from "./interfaces/Errors.sol";
-import "forge-std/console.sol";
 
 /// @title 🥩 Wagyu Staker 🥩
 /// @dev This contract stakes Ether inside of the BeaconChainDepositContract directly
