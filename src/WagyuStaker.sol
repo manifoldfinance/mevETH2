@@ -121,7 +121,7 @@ contract WagyuStaker is Auth, IStakingModule {
     }
 
     /// @notice Function to pay MevEth when withdrawing funds from a validator
-    /// @dev This function is only callable by an admin and emits an event for offchain validator registry tracking.
+    /// @dev This function is only callable by an operator and emits an event for offchain validator registry tracking.
     function payValidatorWithdraw() external onlyOperator {
         uint256 exitSize = VALIDATOR_DEPOSIT_SIZE;
         if (exitSize > address(this).balance) revert MevEthErrors.NotEnoughEth();
