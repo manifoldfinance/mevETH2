@@ -1,7 +1,7 @@
 # IBeaconDepositContract
-[Git Source](https://github.com/manifoldfinance/mevETH2/blob/216fe89b4b259aa768c698247b6facac9d08597e/src/interfaces/IBeaconDepositContract.sol)
+[Git Source](https://github.com/manifoldfinance/mevETH2/blob/fb1b10e0f4766c0b96be04b99ddfd379368057c1/src/interfaces/IBeaconDepositContract.sol)
 
-Interface for the Beacon Chain Deposit Contract
+SPDX-License-Identifier: SSPL-1.-0
 
 
 ## Functions

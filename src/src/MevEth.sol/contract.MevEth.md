@@ -1,11 +1,13 @@
 # MevEth
-[Git Source](https://github.com/manifoldfinance/mevETH2/blob/216fe89b4b259aa768c698247b6facac9d08597e/src/MevEth.sol)
+[Git Source](https://github.com/manifoldfinance/mevETH2/blob/fb1b10e0f4766c0b96be04b99ddfd379368057c1/src/MevEth.sol)
 
 **Inherits:**
-[OFTWithFee](/src/layerZero/oft/OFTWithFee.sol/contract.OFTWithFee.md), [IERC4626](/src/interfaces/IERC4626.sol/interface.IERC4626.md), [ITinyMevEth](/src/interfaces/ITinyMevEth.sol/interface.ITinyMevEth.md)
+[OFTWithFee](/gh-pages/src/src/layerZero/oft/OFTWithFee.sol/contract.OFTWithFee.md), [IERC4626](/gh-pages/src/src/interfaces/IERC4626.sol/interface.IERC4626.md), [ITinyMevEth](/gh-pages/src/src/interfaces/ITinyMevEth.sol/interface.ITinyMevEth.md)
 
 **Author:**
 Manifold Finance
+
+SPDX-License-Identifier: SSPL-1.-0
 
 *Contract that allows deposit of ETH, for a Liquid Staking Receipt (LSR) in return.*
 
@@ -95,7 +97,7 @@ address public mevEthShareVault;
 
 
 ### pendingMevEthShareVault
-The address of the pending MevEthShareVault when a new vault has been comitted but not finalized.
+The address of the pending MevEthShareVault when a new vault has been committed but not finalized.
 
 
 ```solidity
@@ -113,7 +115,7 @@ IStakingModule public stakingModule;
 
 
 ### pendingStakingModule
-The pending staking module when a new module has been comitted but not finalized.
+The pending staking module when a new module has been committed but not finalized.
 
 
 ```solidity
@@ -151,8 +153,6 @@ Fraction public fraction;
 ### CREAM_TO_MEV_ETH_PERCENT
 The percent out of 1000 crETH2 can be redeemed for as mevEth
 
-Taken from https://twitter.com/dcfgod/status/1682295466774634496 , should likely be updated before prod
-
 
 ```solidity
 uint256 public constant CREAM_TO_MEV_ETH_PERCENT = 1130;
@@ -164,7 +164,7 @@ The canonical address of the crETH2 address
 
 
 ```solidity
-ERC20 public constant creamToken = ERC20(0x49D72e3973900A195A155a46441F0C08179FdB64);
+address public constant creamToken = 0x49D72e3973900A195A155a46441F0C08179FdB64;
 ```
 
 
@@ -174,6 +174,15 @@ Sandwich protection mapping of last user deposits by block number
 
 ```solidity
 mapping(address => uint256) lastDeposit;
+```
+
+
+### depositedValidators
+Deposited validators mapping to prevent double deposits
+
+
+```solidity
+mapping(bytes => bool) depositedValidators;
 ```
 
 
@@ -367,7 +376,7 @@ Finalizes the share vault update if a pending share vault exists.
 
 
 ```solidity
-function finalizeUpdateMevEthShareVault(bool isMultisig) external onlyAdmin;
+function finalizeUpdateMevEthShareVault() external onlyAdmin;
 ```
 
 ### cancelUpdateMevEthShareVault
@@ -658,7 +667,7 @@ Function to indicate the maximum amount of assets that can be withdrawn at the c
 
 
 ```solidity
-function maxWithdraw(address owner) public view returns (uint256 maxAssets);
+function maxWithdraw(address owner) external view returns (uint256 maxAssets);
 ```
 **Parameters**
 
@@ -858,15 +867,6 @@ function max(uint256 a, uint256 b) internal pure returns (uint256);
 function min(uint256 a, uint256 b) internal pure returns (uint256);
 ```
 
-### _isZero
-
-*Gas efficient zero check*
-
-
-```solidity
-function _isZero(uint256 value) internal pure returns (bool boolValue);
-```
-
 ### redeemCream
 
 Redeem Cream staked eth tokens for mevETH at a fixed ratio
@@ -890,6 +890,20 @@ via grantValidatorWithdraw.*
 
 ```solidity
 receive() external payable;
+```
+
+### transfer
+
+
+```solidity
+function transfer(address to, uint256 amount) public virtual override returns (bool);
+```
+
+### transferFrom
+
+
+```solidity
+function transferFrom(address from, address to, uint256 amount) public virtual override returns (bool);
 ```
 
 ## Events
@@ -1018,8 +1032,8 @@ Central struct used for share accounting + math.
 
 ```solidity
 struct Fraction {
-  uint128 elastic;
-  uint128 base;
+    uint128 elastic;
+    uint128 base;
 }
 ```
 
@@ -1029,10 +1043,10 @@ Struct representing a withdrawal ticket which is added to the withdrawal queue.
 
 ```solidity
 struct WithdrawalTicket {
-  bool claimed;
-  address receiver;
-  uint128 amount;
-  uint128 accumulatedAmount;
+    bool claimed;
+    address receiver;
+    uint128 amount;
+    uint128 accumulatedAmount;
 }
 ```
 

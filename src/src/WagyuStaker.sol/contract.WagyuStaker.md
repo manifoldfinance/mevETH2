@@ -1,8 +1,10 @@
 # WagyuStaker
-[Git Source](https://github.com/manifoldfinance/mevETH2/blob/216fe89b4b259aa768c698247b6facac9d08597e/src/WagyuStaker.sol)
+[Git Source](https://github.com/manifoldfinance/mevETH2/blob/fb1b10e0f4766c0b96be04b99ddfd379368057c1/src/WagyuStaker.sol)
 
 **Inherits:**
-[Auth](/src/libraries/Auth.sol/contract.Auth.md), [IStakingModule](/src/interfaces/IStakingModule.sol/interface.IStakingModule.md)
+[Auth](/gh-pages/src/src/libraries/Auth.sol/contract.Auth.md), [IStakingModule](/gh-pages/src/src/interfaces/IStakingModule.sol/interface.IStakingModule.md)
+
+SPDX-License-Identifier: SSPL-1.-0
 
 *This contract stakes Ether inside of the BeaconChainDepositContract directly*
 
@@ -84,8 +86,7 @@ function deposit(IStakingModule.ValidatorData calldata data, bytes32 latestDepos
 
 Function to pay rewards to the MevEth contract
 
-*Only callable by an operator. Additionally, if there is an issue when granting rewards to the MevEth contract, funds are secured to the
-beneficiary address for manual allocation to the MevEth contract.*
+*Only callable by an operator*
 
 
 ```solidity
@@ -109,7 +110,7 @@ function registerExit() external;
 
 Function to pay MevEth when withdrawing funds from a validator
 
-*This function is only callable by an admin and emits an event for offchain validator registry tracking.*
+*This function is only callable by an operator and emits an event for offchain validator registry tracking.*
 
 
 ```solidity
@@ -208,10 +209,10 @@ event MevEthUpdated(address indexed meveth);
 
 ```solidity
 struct Record {
-  uint128 totalDeposited;
-  uint128 totalWithdrawn;
-  uint128 totalRewardsPaid;
-  uint128 totalValidatorExitsPaid;
+    uint128 totalDeposited;
+    uint128 totalWithdrawn;
+    uint128 totalRewardsPaid;
+    uint128 totalValidatorExitsPaid;
 }
 ```
 

@@ -1,8 +1,10 @@
 # IOFTWithFee
-[Git Source](https://github.com/manifoldfinance/mevETH2/blob/216fe89b4b259aa768c698247b6facac9d08597e/src/interfaces/IOFTWithFee.sol)
+[Git Source](https://github.com/manifoldfinance/mevETH2/blob/fb1b10e0f4766c0b96be04b99ddfd379368057c1/src/interfaces/IOFTWithFee.sol)
 
 **Inherits:**
-[ICommonOFT](/src/interfaces/ICommonOFT.sol/interface.ICommonOFT.md)
+[ICommonOFT](/gh-pages/src/src/interfaces/ICommonOFT.sol/interface.ICommonOFT.md)
+
+SPDX-License-Identifier: SSPL-1.-0
 
 *Interface of the IOFT core standard*
 
@@ -23,14 +25,14 @@
 
 ```solidity
 function sendFrom(
-  address _from,
-  uint16 _dstChainId,
-  bytes32 _toAddress,
-  uint256 _amount,
-  uint256 _minAmount,
-  LzCallParams calldata _callParams
+    address _from,
+    uint16 _dstChainId,
+    bytes32 _toAddress,
+    uint256 _amount,
+    uint256 _minAmount,
+    LzCallParams calldata _callParams
 )
-  external
-  payable;
+    external
+    payable;
 ```
 

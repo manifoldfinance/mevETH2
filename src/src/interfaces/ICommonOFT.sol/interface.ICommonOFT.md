@@ -1,8 +1,10 @@
 # ICommonOFT
-[Git Source](https://github.com/manifoldfinance/mevETH2/blob/216fe89b4b259aa768c698247b6facac9d08597e/src/interfaces/ICommonOFT.sol)
+[Git Source](https://github.com/manifoldfinance/mevETH2/blob/fb1b10e0f4766c0b96be04b99ddfd379368057c1/src/interfaces/ICommonOFT.sol)
 
 **Inherits:**
 IERC165
+
+SPDX-License-Identifier: SSPL-1.-0
 
 *Interface of the IOFT core standard*
 
@@ -20,15 +22,15 @@ _adapterParam - flexible bytes array to indicate messaging adapter services in L
 
 ```solidity
 function estimateSendFee(
-  uint16 _dstChainId,
-  bytes32 _toAddress,
-  uint256 _amount,
-  bool _useZro,
-  bytes calldata _adapterParams
+    uint16 _dstChainId,
+    bytes32 _toAddress,
+    uint256 _amount,
+    bool _useZro,
+    bytes calldata _adapterParams
 )
-  external
-  view
-  returns (uint256 nativeFee, uint256 zroFee);
+    external
+    view
+    returns (uint256 nativeFee, uint256 zroFee);
 ```
 
 ### circulatingSupply
@@ -54,9 +56,9 @@ function token() external view returns (address);
 
 ```solidity
 struct LzCallParams {
-  address payable refundAddress;
-  address zroPaymentAddress;
-  bytes adapterParams;
+    address payable refundAddress;
+    address zroPaymentAddress;
+    bytes adapterParams;
 }
 ```
 

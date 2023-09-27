@@ -1,34 +1,27 @@
 # IMevEthShareVault
-[Git Source](https://github.com/manifoldfinance/mevETH2/blob/216fe89b4b259aa768c698247b6facac9d08597e/src/interfaces/IMevEthShareVault.sol)
+[Git Source](https://github.com/manifoldfinance/mevETH2/blob/fb1b10e0f4766c0b96be04b99ddfd379368057c1/src/interfaces/IMevEthShareVault.sol)
+
+SPDX-License-Identifier: SSPL-1.-0
 
 
 ## Functions
 ### payRewards
 
+!
+The receive function handles mev/validator payments.
+If if the msg.sender is the block.coinbase, a `ValditorPayment` should be emitted
+The profits (less fees) should be updated based on the median validator payment.
+Otherwise, a MevPayment should be emitted and the fees/profits should be updated based on the medianMevPayment.
+payRewards()
 
-```solidity
-function payRewards() external;
-```
+Function to send rewards to MevEth Contract.
 
-### fees
-
-
-```solidity
-function fees() external view returns (uint128);
-```
-
-### rewards
+*This function is triggered by the owner of the contract and is used to pay rewards to MevETH Contract.
+In the case of failure, this function sends the funds to the Admin as a fallback.*
 
 
 ```solidity
-function rewards() external view returns (uint128);
-```
-
-### logRewards
-
-
-```solidity
-function logRewards(uint128 protocolFeesOwed) external;
+function payRewards(uint256 rewards) external;
 ```
 
 ### recoverToken
@@ -40,9 +33,15 @@ function recoverToken(address token, address recipient, uint256 amount) external
 
 ### sendFees
 
+sendFees()
+
+This function should only be called by the contract owner.
+
+*Function to send fees to the contract owner.*
+
 
 ```solidity
-function sendFees() external;
+function sendFees(uint256 fees) external;
 ```
 
 ### setProtocolFeeTo
@@ -53,6 +52,12 @@ function setProtocolFeeTo(address newFeeTo) external;
 ```
 
 ### setNewMevEth
+
+setNewMevEth()
+
+Sets the newMevEth address
+
+*This function sets the newMevEth address to the address passed in as an argument. This address will be used to store the MEV-ETH tokens.*
 
 
 ```solidity

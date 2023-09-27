@@ -1,11 +1,13 @@
 # MevEthShareVault
-[Git Source](https://github.com/manifoldfinance/mevETH2/blob/216fe89b4b259aa768c698247b6facac9d08597e/src/MevEthShareVault.sol)
+[Git Source](https://github.com/manifoldfinance/mevETH2/blob/fb1b10e0f4766c0b96be04b99ddfd379368057c1/src/MevEthShareVault.sol)
 
 **Inherits:**
-[Auth](/src/libraries/Auth.sol/contract.Auth.md), [IMevEthShareVault](/src/interfaces/IMevEthShareVault.sol/interface.IMevEthShareVault.md)
+[Auth](/gh-pages/src/src/libraries/Auth.sol/contract.Auth.md), [IMevEthShareVault](/gh-pages/src/src/interfaces/IMevEthShareVault.sol/interface.IMevEthShareVault.md)
 
 **Author:**
 Manifold Finance
+
+SPDX-License-Identifier: SSPL-1.-0
 
 This contract controls the ETH Rewards earned by mevEth
 
@@ -64,37 +66,13 @@ Function to pay rewards to the MevEth contract
 
 
 ```solidity
-function payRewards() external onlyOperator;
+function payRewards(uint256 rewards) external onlyOperator;
 ```
-
-### fees
-
-View function to return the fees balance of the protocol
-
-
-```solidity
-function fees() external view returns (uint128);
-```
-**Returns**
+**Parameters**
 
 |Name|Type|Description|
 |----|----|-----------|
-|`<none>`|`uint128`|uint128 fees balance of the protocol|
-
-
-### rewards
-
-View function to return the rewards balance of the protocol
-
-
-```solidity
-function rewards() external view returns (uint128);
-```
-**Returns**
-
-|Name|Type|Description|
-|----|----|-----------|
-|`<none>`|`uint128`|uint128 rewards balance of the protocol|
+|`rewards`|`uint256`|rewards to pay to the MevEth contract|
 
 
 ### sendFees
@@ -103,7 +81,7 @@ Function to collect the fees owed to the prorotocol.
 
 
 ```solidity
-function sendFees() external onlyAdmin;
+function sendFees(uint256 fees) external onlyAdmin;
 ```
 
 ### setProtocolFeeTo
@@ -111,22 +89,6 @@ function sendFees() external onlyAdmin;
 
 ```solidity
 function setProtocolFeeTo(address newProtocolFeeTo) external onlyAdmin;
-```
-
-### logRewards
-
-Function to log rewards, updating the protocol balance. Once all balances are updated, the RewardsCollected event is emitted.
-
-*Operators are tracking the RewardPayment events to calculate the protocolFeesOwed.
-The logRewards function is then called to update the fees and rewards within the protocol balance.
-Validators associated with the MevETH protocol set the block builder's address as the feeRecepient for the block.
-The block builder attaches a transaction to the end of the block sending the MEV rewards to the MevEthShareVault.
-This then emits the RewardPayment event, allowing the offchain operators to track the protocolFeesOwed.
-This approach trusts that the operators are acting honestly and the protocolFeesOwed is accurately calculated.*
-
-
-```solidity
-function logRewards(uint128 protocolFeesOwed) external onlyOperator;
 ```
 
 ### recoverToken
@@ -164,22 +126,12 @@ function payValidatorWithdraw() external onlyOperator;
 
 Function to receive ETH.
 
-*All Ether sent to the contract is handled as a MevPayment.*
-
 
 ```solidity
 receive() external payable;
 ```
 
 ## Events
-### RewardPayment
-Event emitted when a reward payment is made
-
-
-```solidity
-event RewardPayment(uint256 indexed blockNumber, address indexed coinbase, uint256 indexed amount);
-```
-
 ### RewardsCollected
 Event emitted when the protocol balance is updated during logRewards
 
@@ -243,8 +195,10 @@ Struct to account for the protocol fees and rewards.
 
 ```solidity
 struct ProtocolBalance {
-  uint128 fees;
-  uint128 rewards;
+    uint128 feesPaid;
+    uint128 rewardsPaid;
+    uint128 exitsPaid;
+    uint128 totalWithdrawn;
 }
 ```
 

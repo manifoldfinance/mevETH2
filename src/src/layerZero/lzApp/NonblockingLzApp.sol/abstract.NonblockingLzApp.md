@@ -1,8 +1,8 @@
 # NonblockingLzApp
-[Git Source](https://github.com/manifoldfinance/mevETH2/blob/216fe89b4b259aa768c698247b6facac9d08597e/src/layerZero/lzApp/NonblockingLzApp.sol)
+[Git Source](https://github.com/manifoldfinance/mevETH2/blob/fb1b10e0f4766c0b96be04b99ddfd379368057c1/src/layerZero/lzApp/NonblockingLzApp.sol)
 
 **Inherits:**
-[LzApp](/src/layerZero/lzApp/LzApp.sol/abstract.LzApp.md)
+[LzApp](/gh-pages/src/src/layerZero/lzApp/LzApp.sol/abstract.LzApp.md)
 
 
 ## State Variables
@@ -43,6 +43,11 @@ function nonblockingLzReceive(uint16 _srcChainId, bytes calldata _srcAddress, ui
 ```
 
 ### _nonblockingLzReceive
+
+This function is used to receive a non-blocking LZ message from a source chain.
+
+*This function is used to receive a non-blocking LZ message from a source chain. It takes in the source chain ID, source address, nonce, and payload
+as parameters. It then verifies the source chain ID, source address, and nonce, and if they are valid, it stores the payload in the contract storage.*
 
 
 ```solidity

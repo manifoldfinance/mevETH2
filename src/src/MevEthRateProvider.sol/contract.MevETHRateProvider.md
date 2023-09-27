@@ -1,8 +1,10 @@
 # MevETHRateProvider
-[Git Source](https://github.com/manifoldfinance/mevETH2/blob/216fe89b4b259aa768c698247b6facac9d08597e/src/MevEthRateProvider.sol)
+[Git Source](https://github.com/manifoldfinance/mevETH2/blob/fb1b10e0f4766c0b96be04b99ddfd379368057c1/src/MevEthRateProvider.sol)
 
 **Inherits:**
-[IRateProvider](/src/interfaces/IRateProvider.sol/interface.IRateProvider.md)
+[IRateProvider](/gh-pages/src/src/interfaces/IRateProvider.sol/interface.IRateProvider.md)
+
+SPDX-License-Identifier: SSPL-1.-0
 
 Returns the value of mevETH in terms of ETH
 

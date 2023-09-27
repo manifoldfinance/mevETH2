@@ -1,9 +1,19 @@
 # ILayerZeroReceiver
-[Git Source](https://github.com/manifoldfinance/mevETH2/blob/216fe89b4b259aa768c698247b6facac9d08597e/src/interfaces/ILayerZeroReceiver.sol)
+[Git Source](https://github.com/manifoldfinance/mevETH2/blob/fb1b10e0f4766c0b96be04b99ddfd379368057c1/src/interfaces/ILayerZeroReceiver.sol)
+
+SPDX-License-Identifier: SSPL-1.-0
 
 
 ## Functions
 ### lzReceive
+
+This function is used to receive data from a different chain.
+
+*This function takes in four parameters:
+- _srcChainId: The ID of the source chain.
+- _srcAddress: The address of the source chain.
+- _nonce: A unique identifier for the transaction.
+- _payload: The data to be received.*
 
 
 ```solidity

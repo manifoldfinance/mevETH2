@@ -1,5 +1,7 @@
 # AuthManager
-[Git Source](https://github.com/manifoldfinance/mevETH2/blob/216fe89b4b259aa768c698247b6facac9d08597e/src/libraries/AuthManager.sol)
+[Git Source](https://github.com/manifoldfinance/mevETH2/blob/fb1b10e0f4766c0b96be04b99ddfd379368057c1/src/libraries/AuthManager.sol)
+
+SPDX-License-Identifier: SSPL-1.-0
 
 Periphery contract to unify Auth updates across MevEth, MevEthShareVault and WagyuStaker
 
@@ -54,10 +56,20 @@ modifier onlyAuth();
 
 ### updateMevEth
 
+Updates the mevEth address
+
+*This function is only callable by the authorized address*
+
 
 ```solidity
 function updateMevEth(address newMevEth) external onlyAuth;
 ```
+**Parameters**
+
+|Name|Type|Description|
+|----|----|-----------|
+|`newMevEth`|`address`|The new mevEth address|
+
 
 ### updateMevEthShareVault
 
@@ -74,6 +86,10 @@ function updateWagyuStaker(address newWagyuStaker) external onlyAuth;
 ```
 
 ### addAdmin
+
+Adds a new admin to the MevEth, WagyuStaker, and MevEthShareVault contracts.
+
+*If the MevEthShareVault is a multisig, the `MevEthShareVaultAuthUpdateMissed` event is emitted.*
 
 
 ```solidity
@@ -124,10 +140,10 @@ error Unauthorized();
 
 ```solidity
 enum Operation {
-  ADDADMIN,
-  DELETEADMIN,
-  ADDOPERATOR,
-  DELETEOPERATOR
+    ADDADMIN,
+    DELETEADMIN,
+    ADDOPERATOR,
+    DELETEOPERATOR
 }
 ```
 

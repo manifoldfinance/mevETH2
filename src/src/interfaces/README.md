@@ -5,6 +5,7 @@
 - [IAuth](IAuth.sol/interface.IAuth.md)
 - [IBeaconDepositContract](IBeaconDepositContract.sol/interface.IBeaconDepositContract.md)
 - [ICommonOFT](ICommonOFT.sol/interface.ICommonOFT.md)
+- [IERC20Burnable](IERC20Burnable.sol/interface.IERC20Burnable.md)
 - [IERC4626](IERC4626.sol/interface.IERC4626.md)
 - [ILayerZeroEndpoint](ILayerZeroEndpoint.sol/interface.ILayerZeroEndpoint.md)
 - [ILayerZeroReceiver](ILayerZeroReceiver.sol/interface.ILayerZeroReceiver.md)
