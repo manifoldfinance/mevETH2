@@ -1,0 +1,6 @@
+lib/forge-std master
+lib/pigeon main
+lib/properties main 
+lib/safe-tools main 
+lib/solmate main
+lib/openzeppelin-contracts master
