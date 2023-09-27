@@ -12,17 +12,18 @@
 
 pragma solidity ^0.8.19;
 
+import { MevEthShareVault } from "../MevEthShareVault.sol";
+
 /// @title IMevEthShareVault
 interface IMevEthShareVault {
+
     /**!
     * The receive function handles mev/validator payments.
     * If if the msg.sender is the block.coinbase, a `ValditorPayment` should be emitted 
     * The profits (less fees) should be updated based on the median validator payment. 
     * Otherwise, a MevPayment should be emitted and the fees/profits should be updated based on the medianMevPayment.
     */
-    
-    function protocolBalance() external view returns (uint128 feesPaid, uint128 rewardsPaid, uint128 exitsPaid, uint128 totalWithdrawn);
-    
+
     /**
      * payRewards()
      *
@@ -30,7 +31,7 @@ interface IMevEthShareVault {
      * @dev This function is triggered by the owner of the contract and is used to pay rewards to MevETH Contract.
      *      In the case of failure, this function sends the funds to the Admin as a fallback.
      */
-    function payRewards() external;
+    function payRewards(uint256 rewards) external;
 
     //?Getter functions for public variables
 
@@ -40,15 +41,7 @@ interface IMevEthShareVault {
      * @dev This function returns the fees associated with a transaction.
      * @return uint128 The fees associated with a transaction.
      */
-
     function fees() external view returns (uint128);
-    /**
-     * rewards()
-     *
-     * @notice This function allows users to view the rewards they have earned.
-     * @dev Returns the rewards earned by the user. It is an external function and does not modify the state of the contract.
-     */
-    function rewards() external view returns (uint128);
 
     // Function to update the protocol balance, allocating to the fees and rewards
 
@@ -62,7 +55,6 @@ interface IMevEthShareVault {
     function recoverToken(address token, address recipient, uint256 amount) external;
 
     // Send the protocol fees to the `feeTo` address
-
     /**
      * sendFees()
      *
