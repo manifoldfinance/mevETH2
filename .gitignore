@@ -16,6 +16,9 @@ remappings.txt
 # Idea files
 .idea
 
+# macOS
+.DS_Store
+
 # Nix
 **/result*
 

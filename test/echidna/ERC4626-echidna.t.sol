@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.19;
+pragma solidity ^0.8.19;
 
 import { CryticERC4626PropertyTests } from "properties/ERC4626/ERC4626PropertyTests.sol";
 // this token _must_ be the vault's underlying asset

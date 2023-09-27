@@ -1,4 +1,14 @@
-// SPDX-License-Identifier: MIT
+/// SPDX-License-Identifier: SSPL-1.-0
+
+/**
+ * @custom:org.protocol='mevETH LST Protocol'
+ * @custom:org.security='mailto:security@manifoldfinance.com'
+ * @custom:org.vcs-commit=$GIT_COMMIT_SHA
+ * @custom:org.vendor='CommodityStream, Inc'
+ * @custom:org.schema-version="1.0"
+ * @custom.org.encryption="manifoldfinance.com/.well-known/pgp-key.asc"
+ * @custom:org.preferred-languages="en"
+ */
 
 pragma solidity ^0.8.0;
 
@@ -61,9 +71,24 @@ abstract contract BaseOFTWithFee is OFTCoreV2, Fee, ERC165, IOFTWithFee {
         return _estimateSendFee(_dstChainId, _toAddress, _amount, _useZro, _adapterParams);
     }
 
+    /**
+     * @notice This function returns the circulating supply of a token.
+     * @dev This function is used to get the circulating supply of a token. It is an override of the virtual function and is public and viewable. It returns a
+     * uint256 value.
+     */
     function circulatingSupply() public view virtual override returns (uint256);
 
+    /**
+     * @notice This function returns the address of the token associated with the contract.
+     * @dev This function is a virtual override of the token() function.
+     */
     function token() public view virtual override returns (address);
 
+    /**
+     * @notice This function is used to transfer tokens from one address to another.
+     * @dev This function is used to transfer tokens from one address to another. It takes three parameters: _from, _to, and _amount. _from is the address from
+     * which the tokens are being transferred, _to is the address to which the tokens are being transferred, and _amount is the amount of tokens being
+     * transferred. This function is internal and virtual, and it overrides the Fee and OFTCoreV2 contracts. It returns the amount of tokens transferred.
+     */
     function _transferFrom(address _from, address _to, uint256 _amount) internal virtual override(Fee, OFTCoreV2) returns (uint256);
 }

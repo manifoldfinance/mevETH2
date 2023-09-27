@@ -1,4 +1,15 @@
-// SPDX-License-Identifier: Unlicense
+/// SPDX-License-Identifier: SSPL-1.-0
+
+/**
+ * @custom:org.protocol='mevETH LST Protocol'
+ * @custom:org.security='mailto:security@manifoldfinance.com'
+ * @custom:org.vcs-commit=$GIT_COMMIT_SHA
+ * @custom:org.vendor='CommodityStream, Inc'
+ * @custom:org.schema-version="1.0"
+ * @custom.org.encryption="manifoldfinance.com/.well-known/pgp-key.asc"
+ * @custom:org.preferred-languages="en"
+ */
+
 /*
  * @title Solidity Bytes Arrays Utils
  * @author Gonçalo Sá <goncalo.sa@consensys.net>
@@ -72,6 +83,11 @@ library BytesLib {
         return tempBytes;
     }
 
+    /**
+     * @notice toAddress() is a pure function that takes in two parameters, bytes memory _bytes and uint256 _start, and returns an address.
+     * @dev The function first checks if the length of _bytes is greater than or equal to _start + 20. If not, it reverts with an OutOfBounds error. Otherwise,
+     * it loads the address from the memory and returns it.
+     */
     function toAddress(bytes memory _bytes, uint256 _start) internal pure returns (address) {
         if (_bytes.length < _start + 20) revert OutOfBounds();
         address tempAddress;
@@ -83,6 +99,10 @@ library BytesLib {
         return tempAddress;
     }
 
+    /**
+     * @notice This function takes in a bytes memory and a uint256 start and returns a uint8.
+     * @dev This function uses assembly to load the memory and return the uint8.
+     */
     function toUint8(bytes memory _bytes, uint256 _start) internal pure returns (uint8) {
         if (_bytes.length < _start + 1) revert OutOfBounds();
         uint8 tempUint;

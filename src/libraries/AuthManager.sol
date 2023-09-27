@@ -1,5 +1,16 @@
-// SPDX-License-Identifier: MIT
-pragma solidity 0.8.19;
+/// SPDX-License-Identifier: SSPL-1.-0
+
+/**
+ * @custom:org.protocol='mevETH LST Protocol'
+ * @custom:org.security='mailto:security@manifoldfinance.com'
+ * @custom:org.vcs-commit=$GIT_COMMIT_SHA
+ * @custom:org.vendor='CommodityStream, Inc'
+ * @custom:org.schema-version="1.0"
+ * @custom.org.encryption="manifoldfinance.com/.well-known/pgp-key.asc"
+ * @custom:org.preferred-languages="en"
+ */
+
+pragma solidity ^0.8.19;
 
 import { IAuth } from "src/interfaces/IAuth.sol";
 
@@ -41,6 +52,11 @@ contract AuthManager {
         _;
     }
 
+    /**
+     * @notice Updates the mevEth address
+     * @dev This function is only callable by the authorized address
+     * @param newMevEth The new mevEth address
+     */
     function updateMevEth(address newMevEth) external onlyAuth {
         mevEth = newMevEth;
     }
@@ -56,6 +72,10 @@ contract AuthManager {
     /*//////////////////////////////////////////////////////////////
                            Maintenance Functions
     //////////////////////////////////////////////////////////////*/
+    /**
+     * @notice Adds a new admin to the MevEth, WagyuStaker, and MevEthShareVault contracts.
+     * @dev If the MevEthShareVault is a multisig, the `MevEthShareVaultAuthUpdateMissed` event is emitted.
+     */
     function addAdmin(address newAdmin) external onlyAuth {
         IAuth(mevEth).addAdmin(newAdmin);
         IAuth(wagyuStaker).addAdmin(newAdmin);
