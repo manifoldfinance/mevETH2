@@ -94,8 +94,7 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
         uint256 _fees = protocolBalance.fees;
         protocolBalance.fees = 0;
 
-        bool success = payable(protocolFeeTo).send(_fees);
-        if (!success) revert MevEthErrors.SendError();
+        SafeTransferLib.safeTransferETH(protocolFeeTo, _fees);
 
         emit FeesSent(_fees);
     }
