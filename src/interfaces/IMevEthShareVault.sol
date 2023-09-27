@@ -17,8 +17,8 @@ interface IMevEthShareVault {
 
     /**!
     * The receive function handles mev/validator payments.
-    * If if the msg.sender is the block.coinbase, a `ValditorPayment` should be emitted 
-    * The profits (less fees) should be updated based on the median validator payment. 
+    * If if the msg.sender is the block.coinbase, a `ValditorPayment` should be emitted
+    * The profits (less fees) should be updated based on the median validator payment.
     * Otherwise, a MevPayment should be emitted and the fees/profits should be updated based on the medianMevPayment.
     */
 
@@ -31,23 +31,7 @@ interface IMevEthShareVault {
      */
     function payRewards(uint256 rewards) external;
 
-    //?Getter functions for public variables
-
-    /**
-     * fees()
-     *
-     * @dev This function returns the fees associated with a transaction.
-     * @return uint128 The fees associated with a transaction.
-     */
-    function fees() external view returns (uint128);
-
     // Function to update the protocol balance, allocating to the fees and rewards
-
-    /**
-     * @notice This function logs the rewards for the protocol.
-     * @dev This function logs the rewards for the protocol. It takes in the protocol fees owed as an argument.
-     */
-    function logRewards(uint128 protocolFeesOwed) external;
 
     //! Admin controls //
     function recoverToken(address token, address recipient, uint256 amount) external;
@@ -64,7 +48,7 @@ interface IMevEthShareVault {
 
     /**
      * setNewMevEth()
-     * 
+     *
      * @notice Sets the newMevEth address
      * @dev This function sets the newMevEth address to the address passed in as an argument. This address will be used to store the MEV-ETH tokens.
      */
