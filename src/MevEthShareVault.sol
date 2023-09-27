@@ -1,5 +1,16 @@
-// SPDX-License-Identifier: AGPL-3.0-only
-pragma solidity 0.8.19;
+/// SPDX-License-Identifier: SSPL-1.-0
+
+/**
+ * @custom:org.protocol='mevETH LST Protocol'
+ * @custom:org.security='mailto:security@manifoldfinance.com'
+ * @custom:org.vcs-commit=$GIT_COMMIT_SHA
+ * @custom:org.vendor='CommodityStream, Inc'
+ * @custom:org.schema-version="1.0"
+ * @custom.org.encryption="manifoldfinance.com/.well-known/pgp-key.asc"
+ * @custom:org.preferred-languages="en"
+ */
+
+pragma solidity ^0.8.19;
 
 import { Auth } from "./libraries/Auth.sol";
 import { SafeTransferLib } from "solmate/utils/SafeTransferLib.sol";
@@ -99,6 +110,35 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
         }
         protocolFeeTo = newProtocolFeeTo;
         emit ProtocolFeeToUpdated(newProtocolFeeTo);
+    }
+
+
+    /// @notice Function to log rewards, updating the protocol balance. Once all balances are updated, the RewardsCollected event is emitted.
+    /// @dev Operators are tracking the RewardPayment events to calculate the protocolFeesOwed.
+    ///      The logRewards function is then called to update the fees and rewards within the protocol balance.
+    ///      Validators associated with the MevETH protocol set the block builder's address as the feeRecepient for the block.
+    ///      The block builder attaches a transaction to the end of the block sending the MEV rewards to the MevEthShareVault.
+    ///      This then emits the RewardPayment event, allowing the offchain operators to track the protocolFeesOwed.
+    ///      This approach trusts that the operators are acting honestly and the protocolFeesOwed is accurately calculated.
+    function logRewards(uint128 protocolFeesOwed) external onlyOperator {
+        // Cache the protocol balance
+        ProtocolBalance memory balances = protocolBalance;
+
+        // Calculate the rewards earned
+        uint256 rewardsEarned = address(this).balance - (balances.fees + balances.rewards);
+        if (protocolFeesOwed > uint128(rewardsEarned)) {
+            revert MevEthErrors.FeesTooHigh();
+        }
+
+        // Calculate the updated protocol reward balance and update the rewards and fees.
+        uint128 _rewards;
+        unchecked {
+            _rewards = uint128(rewardsEarned) - protocolFeesOwed;
+        }
+        protocolBalance.rewards += _rewards;
+        protocolBalance.fees += protocolFeesOwed;
+
+        emit RewardsCollected(protocolFeesOwed, rewardsEarned - protocolFeesOwed);
     }
 
     /// @notice Function to recover tokens sent to the contract.

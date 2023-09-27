@@ -16,6 +16,9 @@ remappings.txt
 # Idea files
 .idea
 
+# macOS
+.DS_Store
+
 # Nix
 **/result*
 
@@ -25,4 +28,14 @@ remappings.txt
 
 crytic-export/
 test/echidna/echidna-corpus/
+
+# macOS
+.DS_Store
+
+# Nodejs
+node_modules
+build/
+dist/
+.cache/
+.coverage/
 
