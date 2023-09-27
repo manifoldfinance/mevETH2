@@ -8,17 +8,19 @@ import { WagyuStaker } from "src/WagyuStaker.sol";
 import { AuthManager } from "src/libraries/AuthManager.sol";
 import { MevEthShareVault } from "src/MevEthShareVault.sol";
 import { IStakingModule } from "src/interfaces/IStakingModule.sol";
+import { TransparentUpgradeableProxy } from "mev-proxy/TransparentUpgradeableProxy.sol";
 
 contract DeployScript is Script {
     error UnknownChain();
 
-    /// @dev PRIVATE_KEY and SENDER env vars must be set to initial mevETH admin
+    /// @dev MULTISIG_SAFE env var must be set
     function run() public {
         address authority = tx.origin;
         uint256 chainId;
         address beaconDepositContract;
         address weth;
         address layerZeroEndpoint;
+        address safe = vm.envAddress("MULTISIG_SAFE");
         assembly {
             chainId := chainid()
         }
@@ -42,7 +44,8 @@ contract DeployScript is Script {
 
         // deploy sharevault
         // TODO: Is the initial share vault a multisig? If so will need to comment this out and sub in multisig address
-        MevEthShareVault initialShareVault = new MevEthShareVault(authority, address(mevEth), authority);
+        // MevEthShareVault initialShareVault = new MevEthShareVault(authority, address(mevEth), authority);
+        address initialShareVault = address(new TransparentUpgradeableProxy(safe, authority, ""));
         // deploy staking module
         IStakingModule initialStakingModule = new WagyuStaker(authority, beaconDepositContract, address(mevEth));
         // initialise mevETH
@@ -52,7 +55,8 @@ contract DeployScript is Script {
         AuthManager authManager = new AuthManager(authority, address(mevEth), address(initialShareVault), address(initialStakingModule));
         // set AuthManager as admin
         IAuth(address(mevEth)).addAdmin(address(authManager));
-        IAuth(address(initialShareVault)).addAdmin(address(authManager));
+        // initial share vault is a multisig. If upgraded, this will need to be done manually
+        // IAuth(address(initialShareVault)).addAdmin(address(authManager));
         IAuth(address(initialStakingModule)).addAdmin(address(authManager));
 
         vm.stopBroadcast();

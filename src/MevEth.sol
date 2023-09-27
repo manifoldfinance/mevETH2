@@ -33,8 +33,8 @@ import { IERC4626 } from "./interfaces/IERC4626.sol";
 import { WETH } from "solmate/tokens/WETH.sol";
 import { MevEthErrors } from "./interfaces/Errors.sol";
 import { IStakingModule } from "./interfaces/IStakingModule.sol";
+import { IMevEthShareVault } from "./interfaces/IMevEthShareVault.sol";
 import { IERC20Burnable } from "./interfaces/IERC20Burnable.sol";
-import { MevEthShareVault } from "./MevEthShareVault.sol";
 import { ITinyMevEth } from "./interfaces/ITinyMevEth.sol";
 import { WagyuStaker } from "./WagyuStaker.sol";
 import { OFTWithFee } from "./layerZero/oft/OFTWithFee.sol";
@@ -263,7 +263,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
 
     /// @notice Finalizes the share vault update if a pending share vault exists.
     /// @dev This function is only callable by addresses with the admin role.
-    function finalizeUpdateMevEthShareVault(bool isMultisig) external onlyAdmin {
+    function finalizeUpdateMevEthShareVault() external onlyAdmin {
         // Revert if there is no pending share vault or if the the share vault finalization is premature.
         uint64 committedTimestamp = pendingMevEthShareVaultCommittedTimestamp;
         if (pendingMevEthShareVault == address(0) || committedTimestamp == 0) {
@@ -272,13 +272,6 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
 
         if (uint64(block.timestamp) < committedTimestamp + MODULE_UPDATE_TIME_DELAY) {
             revert MevEthErrors.PrematureMevEthShareVaultUpdateFinalization();
-        }
-
-        if (!isMultisig) {
-            (uint128 fees, uint128 rewards) = MevEthShareVault(payable(mevEthShareVault)).protocolBalance();
-            if (fees != 0 || rewards != 0) {
-                revert MevEthErrors.NonZeroVaultBalance();
-            }
         }
 
         //TODO: we need to do this for both the staking module and the mev share vault
@@ -597,6 +590,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         if (assets < MIN_DEPOSIT) revert MevEthErrors.WithdrawTooSmall();
         // Sandwich protection
         uint256 blockNumber = block.number;
+
         if (((blockNumber - lastDeposit[msg.sender]) == 0 || (blockNumber - lastDeposit[owner] == 0)) && (blockNumber - lastRewards) == 0) revert MevEthErrors.SandwichProtection();
 
         _updateAllowance(owner, shares);

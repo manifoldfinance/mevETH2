@@ -12,15 +12,13 @@
 
 pragma solidity ^0.8.19;
 
-import { MevEthShareVault } from "../MevEthShareVault.sol";
-
 /// @title IMevEthShareVault
 interface IMevEthShareVault {
 
     /**!
     * The receive function handles mev/validator payments.
-    * If if the msg.sender is the block.coinbase, a `ValditorPayment` should be emitted 
-    * The profits (less fees) should be updated based on the median validator payment. 
+    * If if the msg.sender is the block.coinbase, a `ValditorPayment` should be emitted
+    * The profits (less fees) should be updated based on the median validator payment.
     * Otherwise, a MevPayment should be emitted and the fees/profits should be updated based on the medianMevPayment.
     */
 
@@ -31,33 +29,9 @@ interface IMevEthShareVault {
      * @dev This function is triggered by the owner of the contract and is used to pay rewards to MevETH Contract.
      *      In the case of failure, this function sends the funds to the Admin as a fallback.
      */
-    function payRewards() external;
-
-    //?Getter functions for public variables
-
-    /**
-     * fees()
-     *
-     * @dev This function returns the fees associated with a transaction.
-     * @return uint128 The fees associated with a transaction.
-     */
-
-    function fees() external view returns (uint128);
-    /**
-     * rewards()
-     *
-     * @notice This function allows users to view the rewards they have earned.
-     * @dev Returns the rewards earned by the user. It is an external function and does not modify the state of the contract.
-     */
-    function rewards() external view returns (uint128);
+    function payRewards(uint256 rewards) external;
 
     // Function to update the protocol balance, allocating to the fees and rewards
-
-    /**
-     * @notice This function logs the rewards for the protocol.
-     * @dev This function logs the rewards for the protocol. It takes in the protocol fees owed as an argument.
-     */
-    function logRewards(uint128 protocolFeesOwed) external;
 
     //! Admin controls //
     function recoverToken(address token, address recipient, uint256 amount) external;
@@ -69,12 +43,12 @@ interface IMevEthShareVault {
      * @dev Function to send fees to the contract owner.
      * @notice This function should only be called by the contract owner.
      */
-    function sendFees() external;
+    function sendFees(uint256 fees) external;
     function setProtocolFeeTo(address newFeeTo) external;
 
     /**
      * setNewMevEth()
-     * 
+     *
      * @notice Sets the newMevEth address
      * @dev This function sets the newMevEth address to the address passed in as an argument. This address will be used to store the MEV-ETH tokens.
      */
