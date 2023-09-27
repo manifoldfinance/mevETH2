@@ -99,7 +99,7 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
             protocolBalance.totalWithdrawn += uint128(fees);
         }
 
-        SafeTransferLib.safeTransferETH(protocolFeeTo, _fees);
+        SafeTransferLib.safeTransferETH(protocolFeeTo, fees);
         
         emit FeesSent(fees);
     }
