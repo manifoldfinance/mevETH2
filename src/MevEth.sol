@@ -308,6 +308,8 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     function createValidator(IStakingModule.ValidatorData calldata newData, bytes32 latestDepositRoot) external onlyOperator {
         _stakingUnpaused();
         IStakingModule _stakingModule = stakingModule;
+        // check withdrawal address is correct
+        if (address(_stakingModule) != address(uint160(uint256(newData.withdrawal_credentials)))) revert MevEthErrors.IncorrectWithdrawalCredentials();
         // Determine how big deposit is for the validator
         // *Note this will change if Rocketpool or similar modules are used
         uint256 depositSize = _stakingModule.VALIDATOR_DEPOSIT_SIZE();
