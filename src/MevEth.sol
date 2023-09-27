@@ -1,5 +1,16 @@
-// SPDX-License-Identifier: AGPL-3.0-only
-pragma solidity 0.8.19;
+/// SPDX-License-Identifier: SSPL-1.-0
+
+/**
+ * @custom:org.protocol='mevETH LST Protocol'
+ * @custom:org.security='mailto:security@manifoldfinance.com'
+ * @custom:org.vcs-commit=$GIT_COMMIT_SHA
+ * @custom:org.vendor='CommodityStream, Inc'
+ * @custom:org.schema-version="1.0"
+ * @custom.org.encryption="manifoldfinance.com/.well-known/pgp-key.asc"
+ * @custom:org.preferred-languages="en"
+ */
+
+pragma solidity ^0.8.19;
 
 /*///////////// Manifold Mev Ether /////////////                   
                 ,,,         ,,,
@@ -19,10 +30,10 @@ pragma solidity 0.8.19;
 import { SafeTransferLib } from "solmate/utils/SafeTransferLib.sol";
 import { FixedPointMathLib } from "solmate/utils/FixedPointMathLib.sol";
 import { IERC4626 } from "./interfaces/IERC4626.sol";
-import { ERC20 } from "solmate/tokens/ERC20.sol";
 import { WETH } from "solmate/tokens/WETH.sol";
 import { MevEthErrors } from "./interfaces/Errors.sol";
 import { IStakingModule } from "./interfaces/IStakingModule.sol";
+import { IERC20Burnable } from "./interfaces/IERC20Burnable.sol";
 import { MevEthShareVault } from "./MevEthShareVault.sol";
 import { ITinyMevEth } from "./interfaces/ITinyMevEth.sol";
 import { WagyuStaker } from "./WagyuStaker.sol";
@@ -34,7 +45,6 @@ import { OFTWithFee } from "./layerZero/oft/OFTWithFee.sol";
 /// @dev LSR is represented through an ERC4626 token and interface.
 contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     using SafeTransferLib for WETH;
-    using SafeTransferLib for ERC20;
     using FixedPointMathLib for uint256;
 
     /*//////////////////////////////////////////////////////////////
@@ -59,11 +69,11 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     uint128 public constant MIN_DEPOSIT = 0.01 ether; // 0.01 eth
     /// @notice The address of the MevEthShareVault.
     address public mevEthShareVault;
-    /// @notice The address of the pending MevEthShareVault when a new vault has been comitted but not finalized.
+    /// @notice The address of the pending MevEthShareVault when a new vault has been committed but not finalized.
     address public pendingMevEthShareVault;
     /// @notice The staking module used to stake Ether.
     IStakingModule public stakingModule;
-    /// @notice The pending staking module when a new module has been comitted but not finalized.
+    /// @notice The pending staking module when a new module has been committed but not finalized.
     IStakingModule public pendingStakingModule;
     /// @notice WETH Implementation used by MevEth.
     WETH public immutable WETH9;
@@ -75,7 +85,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @notice Taken from https://twitter.com/dcfgod/status/1682295466774634496 , should likely be updated before prod
     uint256 public constant CREAM_TO_MEV_ETH_PERCENT = 1130;
     /// @notice The canonical address of the crETH2 address
-    ERC20 public constant creamToken = ERC20(0x49D72e3973900A195A155a46441F0C08179FdB64);
+    address public constant creamToken = 0x49D72e3973900A195A155a46441F0C08179FdB64;
     /// @notice Sandwich protection mapping of last user deposits by block number
     mapping(address => uint256) lastDeposit;
 
@@ -207,7 +217,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         emit StakingModuleUpdateFinalized(address(stakingModule), address(pendingStakingModule));
 
         // Update the staking module
-        stakingModule = IStakingModule(address(pendingStakingModule));
+        stakingModule = pendingStakingModule;
 
         // Set the pending staking module variables to zero.
         pendingStakingModule = IStakingModule(address(0));
@@ -608,9 +618,10 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
             });
             emit WithdrawalQueueOpened(receiver, queueLength, uint256(amountOwed));
             assets = availableBalance;
+            shares = shares - convertToShares(amountOwed);
         }
         if (!_isZero(assets)) {
-            emit Withdraw(msg.sender, owner, receiver, assets, convertToShares(assets));
+            emit Withdraw(msg.sender, owner, receiver, assets, shares);
             WETH9.deposit{ value: assets }();
             WETH9.safeTransfer(receiver, assets);
         }
@@ -620,10 +631,13 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @param owner owner of tokens
     /// @param shares amount of shares to update
     function _updateAllowance(address owner, uint256 shares) internal {
+        uint256 allowed = allowance[owner][msg.sender];
         if (owner != msg.sender) {
-            if (allowance[owner][msg.sender] < shares) revert MevEthErrors.TransferExceedsAllowance();
-            unchecked {
-                allowance[owner][msg.sender] -= shares;
+            if (allowed < shares) revert MevEthErrors.TransferExceedsAllowance();
+            if (allowed != type(uint256).max) {
+                unchecked {
+                    allowance[owner][msg.sender] -= shares;
+                }
             }
         }
     }
@@ -639,7 +653,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         // Convert the assets to shares and check if the owner has the allowance to withdraw the shares.
         shares = convertToShares(assets + fee);
 
-        // Withdraw the assets from the Mevth contract
+        // Withdraw the assets from the MevEth contract
         _withdraw(false, receiver, owner, assets, shares);
     }
 
@@ -656,7 +670,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         // Convert the assets to shares and check if the owner has the allowance to withdraw the shares.
         shares = convertToShares(assets + fee);
 
-        // Withdraw the assets from the Mevth contract
+        // Withdraw the assets from the MevEth contract
         _withdraw(true, receiver, owner, assets, shares);
     }
 
@@ -689,7 +703,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         // Convert the shares to assets and check if the owner has the allowance to withdraw the shares.
         assets = convertToAssets(shares - fee);
 
-        // Withdraw the assets from the Mevth contract
+        // Withdraw the assets from the MevEth contract
         _withdraw(false, receiver, owner, assets, shares);
     }
 
@@ -722,20 +736,21 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @notice Redeem Cream staked eth tokens for mevETH at a fixed ratio
     /// @param creamAmount The amount of Cream tokens to redeem
     function redeemCream(uint256 creamAmount) external {
+        _stakingUnpaused();
         if (_isZero(creamAmount)) revert MevEthErrors.ZeroValue();
 
         // Calculate the equivalent mevETH to be redeemed based on the ratio
         uint256 mevEthAmount = creamAmount * uint256(CREAM_TO_MEV_ETH_PERCENT) / 1000;
 
-        // Transfer Cream tokens from the sender to the burn address
-        // safeTransferFrom not needed as we know the exact implementation
-        creamToken.safeTransferFrom(msg.sender, address(0), creamAmount);
-
         // Convert the shares to assets and update the fraction elastic and base
         uint256 assets = convertToAssets(mevEthAmount);
+        if (assets < MIN_DEPOSIT) revert MevEthErrors.DepositTooSmall();
 
         fraction.elastic += uint128(assets);
         fraction.base += uint128(mevEthAmount);
+
+        // Burn CreamEth2 tokens
+        IERC20Burnable(creamToken).burnFrom(msg.sender, creamAmount);
 
         // Mint the equivalent mevETH
         _mint(msg.sender, mevEthAmount);

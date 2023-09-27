@@ -1,4 +1,14 @@
-// SPDX-License-Identifier: MIT
+/// SPDX-License-Identifier: SSPL-1.-0
+
+/**
+ * @custom:org.protocol='mevETH LST Protocol'
+ * @custom:org.security='mailto:security@manifoldfinance.com'
+ * @custom:org.vcs-commit=$GIT_COMMIT_SHA
+ * @custom:org.vendor='CommodityStream, Inc'
+ * @custom:org.schema-version="1.0"
+ * @custom.org.encryption="manifoldfinance.com/.well-known/pgp-key.asc"
+ * @custom:org.preferred-languages="en"
+ */
 
 pragma solidity ^0.8.0;
 
@@ -38,6 +48,10 @@ contract OFTWithFee is BaseOFTWithFee, ERC20 {
         return totalSupply;
     }
 
+    /**
+     * @notice This function returns the address of the token contract.
+     * @dev This function is used to return the address of the token contract. It is a public view virtual override function.
+     */
     function token() public view virtual override returns (address) {
         return address(this);
     }
@@ -54,11 +68,19 @@ contract OFTWithFee is BaseOFTWithFee, ERC20 {
         return _amount;
     }
 
+    /**
+     * @notice This function is used to credit an amount to a given address.
+     * @dev This function is used to mint a given amount to a given address. It is an internal virtual override function.
+     */
     function _creditTo(uint16, address _toAddress, uint256 _amount) internal virtual override returns (uint256) {
         _mint(_toAddress, _amount);
         return _amount;
     }
 
+    /**
+     * @notice This function transfers tokens from one address to another.
+     * @dev If the transfer is from this contract, no allowance check is necessary. Otherwise, the allowance of the spender is checked.
+     */
     function _transferFrom(address _from, address _to, uint256 _amount) internal virtual override returns (uint256) {
         address spender = msg.sender;
         // if transfer from this contract, no need to check allowance
@@ -67,6 +89,10 @@ contract OFTWithFee is BaseOFTWithFee, ERC20 {
         return _amount;
     }
 
+    /**
+     * @notice This function returns the rate of conversion from LD to SD.
+     * @dev This function is internal and view virtual override.
+     */
     function _ld2sdRate() internal view virtual override returns (uint256) {
         return ld2sdRate;
     }

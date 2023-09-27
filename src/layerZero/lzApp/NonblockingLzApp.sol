@@ -1,4 +1,14 @@
-// SPDX-License-Identifier: MIT
+/// SPDX-License-Identifier: SSPL-1.-0
+
+/**
+ * @custom:org.protocol='mevETH LST Protocol'
+ * @custom:org.security='mailto:security@manifoldfinance.com'
+ * @custom:org.vcs-commit=$GIT_COMMIT_SHA
+ * @custom:org.vendor='CommodityStream, Inc'
+ * @custom:org.schema-version="1.0"
+ * @custom.org.encryption="manifoldfinance.com/.well-known/pgp-key.asc"
+ * @custom:org.preferred-languages="en"
+ */
 
 pragma solidity ^0.8.0;
 
@@ -50,6 +60,11 @@ abstract contract NonblockingLzApp is LzApp {
     }
 
     //@notice override this function
+    /**
+     * @notice This function is used to receive a non-blocking LZ message from a source chain.
+     * @dev This function is used to receive a non-blocking LZ message from a source chain. It takes in the source chain ID, source address, nonce, and payload
+     * as parameters. It then verifies the source chain ID, source address, and nonce, and if they are valid, it stores the payload in the contract storage.
+     */
     function _nonblockingLzReceive(uint16 _srcChainId, bytes memory _srcAddress, uint64 _nonce, bytes memory _payload) internal virtual;
 
     function retryMessage(uint16 _srcChainId, bytes calldata _srcAddress, uint64 _nonce, bytes calldata _payload) public payable virtual {

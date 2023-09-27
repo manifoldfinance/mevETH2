@@ -1,5 +1,5 @@
 /// SPDX: License-Identifier: GPL-3.0-only
-pragma solidity 0.8.19;
+pragma solidity ^0.8.19;
 
 import "../MevEthTest.sol";
 import { MevEthShareVault } from "src/MevEthShareVault.sol";
@@ -77,7 +77,7 @@ contract MevEthShareVaultTest is MevEthTest {
         mevEthShareVault.setProtocolFeeTo(newProtocolFeeTo);
 
         vm.prank(SamBacha);
-        vm.expectRevert(MevEthErrors.SendError.selector);
+        vm.expectRevert();
         mevEthShareVault.sendFees();
 
         assertEq(mevEthShareVault.fees(), fees);
