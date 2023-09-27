@@ -3,12 +3,13 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title></title>
+        <title>mevETH Protocol</title>
         <meta name="robots" content="noindex" />
 
 
         <!-- Custom HTML head -->
         
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff" />
@@ -31,18 +32,19 @@
 
         <!-- Custom theme stylesheets -->
         <link rel="stylesheet" href="book.css">
+        <link rel="stylesheet" href="./theme/catppuccin.css">
+        <link rel="stylesheet" href="./theme/catppuccin-admonish.css">
 
     </head>
     <body>
-    <div id="body-container">
         <!-- Provide site root to javascript -->
-        <script>
+        <script type="text/javascript">
             var path_to_root = "";
             var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
         </script>
 
         <!-- Work around some values being stored in localStorage wrapped in quotes -->
-        <script>
+        <script type="text/javascript">
             try {
                 var theme = localStorage.getItem('mdbook-theme');
                 var sidebar = localStorage.getItem('mdbook-sidebar');
@@ -58,7 +60,7 @@
         </script>
 
         <!-- Set the theme before any content is loaded, prevents flash -->
-        <script>
+        <script type="text/javascript">
             var theme;
             try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
             if (theme === null || theme === undefined) { theme = default_theme; }
@@ -70,14 +72,12 @@
         </script>
 
         <!-- Hide / unhide sidebar before it is displayed -->
-        <script>
+        <script type="text/javascript">
             var html = document.querySelector('html');
-            var sidebar = null;
+            var sidebar = 'hidden';
             if (document.body.clientWidth >= 1080) {
                 try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
                 sidebar = sidebar || 'visible';
-            } else {
-                sidebar = 'hidden';
             }
             html.classList.remove('sidebar-visible');
             html.classList.add("sidebar-" + sidebar);
@@ -90,33 +90,11 @@
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
 
-        <!-- Track and set sidebar scroll position -->
-        <script>
-            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
-            sidebarScrollbox.addEventListener('click', function(e) {
-                if (e.target.tagName === 'A') {
-                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
-                }
-            }, { passive: true });
-            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
-            sessionStorage.removeItem('sidebar-scroll');
-            if (sidebarScrollTop) {
-                // preserve sidebar scroll position when navigating via links within sidebar
-                sidebarScrollbox.scrollTop = sidebarScrollTop;
-            } else {
-                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
-                var activeSection = document.querySelector('#sidebar .active');
-                if (activeSection) {
-                    activeSection.scrollIntoView({ block: 'center' });
-                }
-            }
-        </script>
-
         <div id="page-wrapper" class="page-wrapper">
 
             <div class="page">
                                 <div id="menu-bar-hover-placeholder"></div>
-                <div id="menu-bar" class="menu-bar sticky">
+                <div id="menu-bar" class="menu-bar sticky bordered">
                     <div class="left-buttons">
                         <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
                             <i class="fa fa-bars"></i>
@@ -125,18 +103,22 @@
                             <i class="fa fa-paint-brush"></i>
                         </button>
                         <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
-                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="latte">Latte</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="frappe">Frappé</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="macchiato">Macchiato</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mocha">Mocha</button></li>
                         </ul>
                         <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
                             <i class="fa fa-search"></i>
                         </button>
                     </div>
 
-                    <h1 class="menu-title"></h1>
+                    <h1 class="menu-title">mevETH Protocol</h1>
 
                     <div class="right-buttons">
                         <a href="print.html" title="Print this book" aria-label="Print this book">
@@ -161,7 +143,7 @@
                 </div>
 
                 <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
-                <script>
+                <script type="text/javascript">
                     document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
                     document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
                     Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
@@ -697,7 +679,7 @@ _adapterParam - flexible bytes array to indicate messaging adapter services in L
 <div style="break-before: page; page-break-before: always;"></div><h1 id="ilayerzeroendpoint"><a class="header" href="#ilayerzeroendpoint">ILayerZeroEndpoint</a></h1>
 <p><a href="https://github.com/manifoldfinance/mevETH2/blob/fb1b10e0f4766c0b96be04b99ddfd379368057c1/src/interfaces/ILayerZeroEndpoint.sol">Git Source</a></p>
 <p><strong>Inherits:</strong>
-<a href="src/interfaces/ILayerZeroEndpoint.sol//gh-pages/src/src/interfaces/ILayerZeroUserApplicationConfig.sol/interface.ILayerZeroUserApplicationConfig.html">ILayerZeroUserApplicationConfig</a></p>
+<a href="src/interfaces/ILayerZeroEndpoint.sol//src/interfaces/ILayerZeroUserApplicationConfig.sol/interface.ILayerZeroUserApplicationConfig.html">ILayerZeroUserApplicationConfig</a></p>
 <p>SPDX-License-Identifier: SSPL-1.-0</p>
 <h2 id="functions-5"><a class="header" href="#functions-5">Functions</a></h2>
 <h3 id="send"><a class="header" href="#send">send</a></h3>
@@ -939,7 +921,7 @@ In the case of failure, this function sends the funds to the Admin as a fallback
 </div><div style="break-before: page; page-break-before: always;"></div><h1 id="ioftwithfee"><a class="header" href="#ioftwithfee">IOFTWithFee</a></h1>
 <p><a href="https://github.com/manifoldfinance/mevETH2/blob/fb1b10e0f4766c0b96be04b99ddfd379368057c1/src/interfaces/IOFTWithFee.sol">Git Source</a></p>
 <p><strong>Inherits:</strong>
-<a href="src/interfaces/IOFTWithFee.sol//gh-pages/src/src/interfaces/ICommonOFT.sol/interface.ICommonOFT.html">ICommonOFT</a></p>
+<a href="src/interfaces/IOFTWithFee.sol//src/interfaces/ICommonOFT.sol/interface.ICommonOFT.html">ICommonOFT</a></p>
 <p>SPDX-License-Identifier: SSPL-1.-0</p>
 <p><em>Interface of the IOFT core standard</em></p>
 <h2 id="functions-11"><a class="header" href="#functions-11">Functions</a></h2>
@@ -1071,7 +1053,7 @@ to participate in the network.</em></p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="lzapp"><a class="header" href="#lzapp">LzApp</a></h1>
 <p><a href="https://github.com/manifoldfinance/mevETH2/blob/fb1b10e0f4766c0b96be04b99ddfd379368057c1/src/layerZero/lzApp/LzApp.sol">Git Source</a></p>
 <p><strong>Inherits:</strong>
-<a href="src/layerZero/lzApp/LzApp.sol//gh-pages/src/src/libraries/Auth.sol/contract.Auth.html">Auth</a>, <a href="src/layerZero/lzApp/LzApp.sol//gh-pages/src/src/interfaces/ILayerZeroReceiver.sol/interface.ILayerZeroReceiver.html">ILayerZeroReceiver</a>, <a href="src/layerZero/lzApp/LzApp.sol//gh-pages/src/src/interfaces/ILayerZeroUserApplicationConfig.sol/interface.ILayerZeroUserApplicationConfig.html">ILayerZeroUserApplicationConfig</a></p>
+<a href="src/layerZero/lzApp/LzApp.sol//src/libraries/Auth.sol/contract.Auth.html">Auth</a>, <a href="src/layerZero/lzApp/LzApp.sol//src/interfaces/ILayerZeroReceiver.sol/interface.ILayerZeroReceiver.html">ILayerZeroReceiver</a>, <a href="src/layerZero/lzApp/LzApp.sol//src/interfaces/ILayerZeroUserApplicationConfig.sol/interface.ILayerZeroUserApplicationConfig.html">ILayerZeroUserApplicationConfig</a></p>
 <p>SPDX-License-Identifier: SSPL-1.-0</p>
 <h2 id="state-variables"><a class="header" href="#state-variables">State Variables</a></h2>
 <h3 id="default_payload_size_limit"><a class="header" href="#default_payload_size_limit">DEFAULT_PAYLOAD_SIZE_LIMIT</a></h3>
@@ -1258,7 +1240,7 @@ an event.</em></p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="nonblockinglzapp"><a class="header" href="#nonblockinglzapp">NonblockingLzApp</a></h1>
 <p><a href="https://github.com/manifoldfinance/mevETH2/blob/fb1b10e0f4766c0b96be04b99ddfd379368057c1/src/layerZero/lzApp/NonblockingLzApp.sol">Git Source</a></p>
 <p><strong>Inherits:</strong>
-<a href="src/layerZero/lzApp/NonblockingLzApp.sol//gh-pages/src/src/layerZero/lzApp/LzApp.sol/abstract.LzApp.html">LzApp</a></p>
+<a href="src/layerZero/lzApp/NonblockingLzApp.sol//src/layerZero/lzApp/LzApp.sol/abstract.LzApp.html">LzApp</a></p>
 <h2 id="state-variables-1"><a class="header" href="#state-variables-1">State Variables</a></h2>
 <h3 id="failedmessages"><a class="header" href="#failedmessages">failedMessages</a></h3>
 <pre><code class="language-solidity">mapping(uint16 =&gt; mapping(bytes =&gt; mapping(uint64 =&gt; bytes32))) public failedMessages;
@@ -1309,7 +1291,7 @@ as parameters. It then verifies the source chain ID, source address, and nonce, 
 <div style="break-before: page; page-break-before: always;"></div><h1 id="baseoftwithfee"><a class="header" href="#baseoftwithfee">BaseOFTWithFee</a></h1>
 <p><a href="https://github.com/manifoldfinance/mevETH2/blob/fb1b10e0f4766c0b96be04b99ddfd379368057c1/src/layerZero/oft/BaseOFTWithFee.sol">Git Source</a></p>
 <p><strong>Inherits:</strong>
-<a href="src/layerZero/oft/BaseOFTWithFee.sol//gh-pages/src/src/layerZero/oft/OFTCoreV2.sol/abstract.OFTCoreV2.html">OFTCoreV2</a>, <a href="src/layerZero/oft/BaseOFTWithFee.sol//gh-pages/src/src/layerZero/oft/Fee.sol/abstract.Fee.html">Fee</a>, ERC165, <a href="src/layerZero/oft/BaseOFTWithFee.sol//gh-pages/src/src/interfaces/IOFTWithFee.sol/interface.IOFTWithFee.html">IOFTWithFee</a></p>
+<a href="src/layerZero/oft/BaseOFTWithFee.sol//src/layerZero/oft/OFTCoreV2.sol/abstract.OFTCoreV2.html">OFTCoreV2</a>, <a href="src/layerZero/oft/BaseOFTWithFee.sol//src/layerZero/oft/Fee.sol/abstract.Fee.html">Fee</a>, ERC165, <a href="src/layerZero/oft/BaseOFTWithFee.sol//src/interfaces/IOFTWithFee.sol/interface.IOFTWithFee.html">IOFTWithFee</a></p>
 <p>SPDX-License-Identifier: SSPL-1.-0</p>
 <h2 id="functions-17"><a class="header" href="#functions-17">Functions</a></h2>
 <h3 id="constructor-2"><a class="header" href="#constructor-2">constructor</a></h3>
@@ -1373,7 +1355,7 @@ transferred. This function is internal and virtual, and it overrides the Fee and
 <div style="break-before: page; page-break-before: always;"></div><h1 id="fee"><a class="header" href="#fee">Fee</a></h1>
 <p><a href="https://github.com/manifoldfinance/mevETH2/blob/fb1b10e0f4766c0b96be04b99ddfd379368057c1/src/layerZero/oft/Fee.sol">Git Source</a></p>
 <p><strong>Inherits:</strong>
-<a href="src/layerZero/oft/Fee.sol//gh-pages/src/src/libraries/Auth.sol/contract.Auth.html">Auth</a></p>
+<a href="src/layerZero/oft/Fee.sol//src/libraries/Auth.sol/contract.Auth.html">Auth</a></p>
 <p>SPDX-License-Identifier: SSPL-1.-0</p>
 <h2 id="state-variables-2"><a class="header" href="#state-variables-2">State Variables</a></h2>
 <h3 id="bp_denominator"><a class="header" href="#bp_denominator">BP_DENOMINATOR</a></h3>
@@ -1454,7 +1436,7 @@ FeeOwnerNotSet error.</em></p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="oftcorev2"><a class="header" href="#oftcorev2">OFTCoreV2</a></h1>
 <p><a href="https://github.com/manifoldfinance/mevETH2/blob/fb1b10e0f4766c0b96be04b99ddfd379368057c1/src/layerZero/oft/OFTCoreV2.sol">Git Source</a></p>
 <p><strong>Inherits:</strong>
-<a href="src/layerZero/oft/OFTCoreV2.sol//gh-pages/src/src/layerZero/lzApp/NonblockingLzApp.sol/abstract.NonblockingLzApp.html">NonblockingLzApp</a></p>
+<a href="src/layerZero/oft/OFTCoreV2.sol//src/layerZero/lzApp/NonblockingLzApp.sol/abstract.NonblockingLzApp.html">NonblockingLzApp</a></p>
 <p>SPDX-License-Identifier: SSPL-1.-0</p>
 <h2 id="state-variables-3"><a class="header" href="#state-variables-3">State Variables</a></h2>
 <h3 id="no_extra_gas"><a class="header" href="#no_extra_gas">NO_EXTRA_GAS</a></h3>
@@ -1644,7 +1626,7 @@ This function returns the amount credited.*</li>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="oftwithfee"><a class="header" href="#oftwithfee">OFTWithFee</a></h1>
 <p><a href="https://github.com/manifoldfinance/mevETH2/blob/fb1b10e0f4766c0b96be04b99ddfd379368057c1/src/layerZero/oft/OFTWithFee.sol">Git Source</a></p>
 <p><strong>Inherits:</strong>
-<a href="src/layerZero/oft/OFTWithFee.sol//gh-pages/src/src/layerZero/oft/BaseOFTWithFee.sol/abstract.BaseOFTWithFee.html">BaseOFTWithFee</a>, ERC20</p>
+<a href="src/layerZero/oft/OFTWithFee.sol//src/layerZero/oft/BaseOFTWithFee.sol/abstract.BaseOFTWithFee.html">BaseOFTWithFee</a>, ERC20</p>
 <p>SPDX-License-Identifier: SSPL-1.-0</p>
 <h2 id="state-variables-4"><a class="header" href="#state-variables-4">State Variables</a></h2>
 <h3 id="ld2sdrate"><a class="header" href="#ld2sdrate">ld2sdRate</a></h3>
@@ -1934,7 +1916,7 @@ to memory.</em></p>
 </div><div style="break-before: page; page-break-before: always;"></div><h1 id="meveth-2"><a class="header" href="#meveth-2">MevEth</a></h1>
 <p><a href="https://github.com/manifoldfinance/mevETH2/blob/fb1b10e0f4766c0b96be04b99ddfd379368057c1/src/MevEth.sol">Git Source</a></p>
 <p><strong>Inherits:</strong>
-<a href="src/MevEth.sol//gh-pages/src/src/layerZero/oft/OFTWithFee.sol/contract.OFTWithFee.html">OFTWithFee</a>, <a href="src/MevEth.sol//gh-pages/src/src/interfaces/IERC4626.sol/interface.IERC4626.html">IERC4626</a>, <a href="src/MevEth.sol//gh-pages/src/src/interfaces/ITinyMevEth.sol/interface.ITinyMevEth.html">ITinyMevEth</a></p>
+<a href="src/MevEth.sol//src/layerZero/oft/OFTWithFee.sol/contract.OFTWithFee.html">OFTWithFee</a>, <a href="src/MevEth.sol//src/interfaces/IERC4626.sol/interface.IERC4626.html">IERC4626</a>, <a href="src/MevEth.sol//src/interfaces/ITinyMevEth.sol/interface.ITinyMevEth.html">ITinyMevEth</a></p>
 <p><strong>Author:</strong>
 Manifold Finance</p>
 <p>SPDX-License-Identifier: SSPL-1.-0</p>
@@ -2528,7 +2510,7 @@ finalizeUpdateMevEthShareVault function must be called.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="mevethrateprovider"><a class="header" href="#mevethrateprovider">MevETHRateProvider</a></h1>
 <p><a href="https://github.com/manifoldfinance/mevETH2/blob/fb1b10e0f4766c0b96be04b99ddfd379368057c1/src/MevEthRateProvider.sol">Git Source</a></p>
 <p><strong>Inherits:</strong>
-<a href="src/MevEthRateProvider.sol//gh-pages/src/src/interfaces/IRateProvider.sol/interface.IRateProvider.html">IRateProvider</a></p>
+<a href="src/MevEthRateProvider.sol//src/interfaces/IRateProvider.sol/interface.IRateProvider.html">IRateProvider</a></p>
 <p>SPDX-License-Identifier: SSPL-1.-0</p>
 <p>Returns the value of mevETH in terms of ETH</p>
 <h2 id="state-variables-8"><a class="header" href="#state-variables-8">State Variables</a></h2>
@@ -2552,7 +2534,7 @@ finalizeUpdateMevEthShareVault function must be called.</p>
 </div><div style="break-before: page; page-break-before: always;"></div><h1 id="mevethsharevault-2"><a class="header" href="#mevethsharevault-2">MevEthShareVault</a></h1>
 <p><a href="https://github.com/manifoldfinance/mevETH2/blob/fb1b10e0f4766c0b96be04b99ddfd379368057c1/src/MevEthShareVault.sol">Git Source</a></p>
 <p><strong>Inherits:</strong>
-<a href="src/MevEthShareVault.sol//gh-pages/src/src/libraries/Auth.sol/contract.Auth.html">Auth</a>, <a href="src/MevEthShareVault.sol//gh-pages/src/src/interfaces/IMevEthShareVault.sol/interface.IMevEthShareVault.html">IMevEthShareVault</a></p>
+<a href="src/MevEthShareVault.sol//src/libraries/Auth.sol/contract.Auth.html">Auth</a>, <a href="src/MevEthShareVault.sol//src/interfaces/IMevEthShareVault.sol/interface.IMevEthShareVault.html">IMevEthShareVault</a></p>
 <p><strong>Author:</strong>
 Manifold Finance</p>
 <p>SPDX-License-Identifier: SSPL-1.-0</p>
@@ -2659,7 +2641,7 @@ Manifold Finance</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="wagyustaker-1"><a class="header" href="#wagyustaker-1">WagyuStaker</a></h1>
 <p><a href="https://github.com/manifoldfinance/mevETH2/blob/fb1b10e0f4766c0b96be04b99ddfd379368057c1/src/WagyuStaker.sol">Git Source</a></p>
 <p><strong>Inherits:</strong>
-<a href="src/WagyuStaker.sol//gh-pages/src/src/libraries/Auth.sol/contract.Auth.html">Auth</a>, <a href="src/WagyuStaker.sol//gh-pages/src/src/interfaces/IStakingModule.sol/interface.IStakingModule.html">IStakingModule</a></p>
+<a href="src/WagyuStaker.sol//src/libraries/Auth.sol/contract.Auth.html">Auth</a>, <a href="src/WagyuStaker.sol//src/interfaces/IStakingModule.sol/interface.IStakingModule.html">IStakingModule</a></p>
 <p>SPDX-License-Identifier: SSPL-1.-0</p>
 <p><em>This contract stakes Ether inside of the BeaconChainDepositContract directly</em></p>
 <h2 id="state-variables-10"><a class="header" href="#state-variables-10">State Variables</a></h2>
@@ -2791,28 +2773,27 @@ Manifold Finance</p>
 
 
 
-        <script>
+        <script type="text/javascript">
             window.playground_copyable = true;
         </script>
 
 
-        <script src="elasticlunr.min.js"></script>
-        <script src="mark.min.js"></script>
-        <script src="searcher.js"></script>
+        <script src="elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="searcher.js" type="text/javascript" charset="utf-8"></script>
 
-        <script src="clipboard.min.js"></script>
-        <script src="highlight.js"></script>
-        <script src="book.js"></script>
+        <script src="clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="book.js" type="text/javascript" charset="utf-8"></script>
 
         <!-- Custom JS scripts -->
-        <script src="solidity.min.js"></script>
+        <script type="text/javascript" src="solidity.min.js"></script>
 
-        <script>
+        <script type="text/javascript">
         window.addEventListener('load', function() {
             window.setTimeout(window.print, 100);
         });
         </script>
 
-    </div>
     </body>
 </html>
