@@ -86,7 +86,7 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
         return protocolBalance.rewards;
     }
 
-    /// @notice Function to collect the fees owed to the prorotocol.
+    /// @notice Function to collect the fees owed to the protocol.
     function sendFees() external onlyAdmin {
         uint256 _fees = protocolBalance.fees;
         protocolBalance.fees = 0;
@@ -112,7 +112,7 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
     ///      This then emits the RewardPayment event, allowing the offchain operators to track the protocolFeesOwed.
     ///      This approach trusts that the operators are acting honestly and the protocolFeesOwed is accurately calculated.
     function logRewards(uint128 protocolFeesOwed) external onlyOperator {
-        // Cahce the protocol balance
+        // Cache the protocol balance
         ProtocolBalance memory balances = protocolBalance;
 
         // Calculate the rewards earned
