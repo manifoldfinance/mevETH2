@@ -82,8 +82,7 @@ contract WagyuStaker is Auth, IStakingModule {
     }
 
     /// @notice Function to pay rewards to the MevEth contract
-    /// @dev Only callable by an operator. Additionally, if there is an issue when granting rewards to the MevEth contract, funds are secured to the
-    ///      beneficiary address for manual allocation to the MevEth contract.
+    /// @dev Only callable by an operator
     /// @param rewards rewards to pay to the MevEth contract
     function payRewards(uint256 rewards) external onlyOperator {
         if (rewards > address(this).balance) revert MevEthErrors.NotEnoughEth();
