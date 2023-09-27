@@ -1,5 +1,16 @@
-// SPDX-License-Identifier: AGPL-3.0-only
-pragma solidity 0.8.19;
+/// SPDX-License-Identifier: SSPL-1.-0
+
+/**
+ * @custom:org.protocol='mevETH LST Protocol'
+ * @custom:org.security='mailto:security@manifoldfinance.com'
+ * @custom:org.vcs-commit=$GIT_COMMIT_SHA
+ * @custom:org.vendor='CommodityStream, Inc'
+ * @custom:org.schema-version="1.0"
+ * @custom.org.encryption="manifoldfinance.com/.well-known/pgp-key.asc"
+ * @custom:org.preferred-languages="en"
+ */
+
+pragma solidity ^0.8.19;
 
 import { Auth } from "./libraries/Auth.sol";
 import { SafeTransferLib } from "solmate/utils/SafeTransferLib.sol";
@@ -52,12 +63,15 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
     /// @param _mevEth The address of the WETH contract to use for deposits.
     /// @param _protocolFeeTo The address that protocol fees are sent to.
     constructor(address authority, address _mevEth, address _protocolFeeTo) Auth(authority) {
-        if (_protocolFeeTo == address(0) || authority == address(0)) {
+        if (_protocolFeeTo == address(0) || authority == address(0) || _mevEth == address(0)) {
             revert MevEthErrors.ZeroAddress();
         }
 
         mevEth = _mevEth;
         protocolFeeTo = _protocolFeeTo;
+
+        emit MevEthUpdated(_mevEth);
+        emit ProtocolFeeToUpdated(_protocolFeeTo);
     }
 
     /// @notice Function to pay rewards to the MevEth contract
@@ -86,7 +100,7 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
         return protocolBalance.rewards;
     }
 
-    /// @notice Function to collect the fees owed to the prorotocol.
+    /// @notice Function to collect the fees owed to the protocol.
     function sendFees() external onlyAdmin {
         uint256 _fees = protocolBalance.fees;
         protocolBalance.fees = 0;
@@ -112,7 +126,7 @@ contract MevEthShareVault is Auth, IMevEthShareVault {
     ///      This then emits the RewardPayment event, allowing the offchain operators to track the protocolFeesOwed.
     ///      This approach trusts that the operators are acting honestly and the protocolFeesOwed is accurately calculated.
     function logRewards(uint128 protocolFeesOwed) external onlyOperator {
-        // Cahce the protocol balance
+        // Cache the protocol balance
         ProtocolBalance memory balances = protocolBalance;
 
         // Calculate the rewards earned
