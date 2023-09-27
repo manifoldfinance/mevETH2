@@ -253,6 +253,9 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @param newMevEthShareVault The new share vault
     /// @dev This function is only callable by addresses with the admin role
     function commitUpdateMevEthShareVault(address newMevEthShareVault) external onlyAdmin {
+        if (newMevEthShareVault == address(0)) {
+            revert MevEthErrors.ZeroAddress();
+        }
         pendingMevEthShareVault = newMevEthShareVault;
         pendingMevEthShareVaultCommittedTimestamp = uint64(block.timestamp);
         emit MevEthShareVaultUpdateCommitted(mevEthShareVault, newMevEthShareVault, uint64(block.timestamp + MODULE_UPDATE_TIME_DELAY));
