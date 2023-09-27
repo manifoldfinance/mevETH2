@@ -195,10 +195,10 @@ contract MevEthTest is Test {
         return depositContract.get_deposit_root();
     }
 
-    function mockValidatorData(address operator, uint256 depositAmount) internal pure returns (IStakingModule.ValidatorData memory) {
+    function mockValidatorData(address operator, uint256 depositAmount) internal view returns (IStakingModule.ValidatorData memory) {
         bytes memory pubkey =
             abi.encodePacked(bytes32(0x1234567890123456789012345678901234567890123456789012345678901234), bytes16(0x12345678901234567890123456789012));
-        bytes32 withdrawalCredentials = bytes32(0x1234567890123456789012345678901234567890123456789012345678901234);
+        bytes32 withdrawalCredentials = bytes32(abi.encodePacked(bytes12(0x010000000000000000000000), address(mevEth.stakingModule())));
 
         bytes memory signatureFirst64Bytes = abi.encodePacked(
             bytes32(0x1234567890123456789012345678901234567890123456789012345678901234),

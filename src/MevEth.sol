@@ -88,6 +88,8 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     address public constant creamToken = 0x49D72e3973900A195A155a46441F0C08179FdB64;
     /// @notice Sandwich protection mapping of last user deposits by block number
     mapping(address => uint256) lastDeposit;
+    /// @notice Deposited validators mapping to prevent double deposits
+    mapping(bytes => bool) depositedValidators;
 
     /// @notice Central struct used for share accounting + math.
     /// @custom:field elastic   Represents total amount of staked ether, including rewards accrued / slashed.
@@ -313,10 +315,16 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @param newData The data needed to create a new validator
     /// @dev This function is only callable by addresses with the operator role and if staking is unpaused
     function createValidator(IStakingModule.ValidatorData calldata newData, bytes32 latestDepositRoot) external onlyOperator {
+        // check if staking is paused
         _stakingUnpaused();
+        // check validator does not already exist
+        if (depositedValidators[newData.pubkey]) revert MevEthErrors.AlreadyDeposited();
+        // set validator deposited to true
+        depositedValidators[newData.pubkey] = true;
         IStakingModule _stakingModule = stakingModule;
+        // check withdrawal address is correct
+        if (address(_stakingModule) != address(uint160(uint256(newData.withdrawal_credentials)))) revert MevEthErrors.IncorrectWithdrawalCredentials();
         // Determine how big deposit is for the validator
-        // *Note this will change if Rocketpool or similar modules are used
         uint256 depositSize = _stakingModule.VALIDATOR_DEPOSIT_SIZE();
 
         if (address(this).balance < depositSize + calculateNeededEtherBuffer()) {
