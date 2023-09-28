@@ -772,7 +772,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         if (lastDepositFrom > lastDeposit[to]) {
             lastDeposit[to] = lastDepositFrom;
         }
-        super.transfer(to, amount);
+        return super.transfer(to, amount);
     }
 
     function transferFrom(address from, address to, uint256 amount) public virtual override returns (bool) {
@@ -780,6 +780,6 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         if (lastDepositFrom > lastDeposit[to]) {
             lastDeposit[to] = lastDepositFrom;
         }
-        super.transferFrom(from, to, amount);
+        return super.transferFrom(from, to, amount);
     }
 }
