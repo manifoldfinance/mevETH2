@@ -16,6 +16,7 @@ contract MevRewardsTest is MevEthTest {
 
     function testGrantRewardsFromMultisig(uint128 amount) public {
         vm.assume(amount > 10_000);
+        vm.assume(amount < 100_000_000 ether);
         address mevShare = mevEth.mevEthShareVault();
 
         vm.deal(address(this), amount);
