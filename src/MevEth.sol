@@ -209,6 +209,10 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
     /// @param newModule The new staking module.
     /// @dev This function is only callable by addresses with the admin role.
     function commitUpdateStakingModule(IStakingModule newModule) external onlyAdmin {
+        if (address(newModule) == address(0)) {
+            revert MevEthErrors.InvalidPendingStakingModule();
+        }
+
         pendingStakingModule = newModule;
         pendingStakingModuleCommittedTimestamp = uint64(block.timestamp);
         emit StakingModuleUpdateCommitted(address(stakingModule), address(newModule), uint64(block.timestamp + MODULE_UPDATE_TIME_DELAY));
