@@ -1,18 +1,10 @@
 /// SPDX-License-Identifier: SSPL-1.-0
 
-/**
- * @custom:org.protocol='mevETH LST Protocol'
- * @custom:org.security='mailto:security@manifoldfinance.com'
- * @custom:org.vcs-commit=$GIT_COMMIT_SHA
- * @custom:org.vendor='CommodityStream, Inc'
- * @custom:org.schema-version="1.0"
- * @custom.org.encryption="manifoldfinance.com/.well-known/pgp-key.asc"
- * @custom:org.preferred-languages="en"
- */
+
 
 pragma solidity ^0.8.19;
 
-/*///////////// Manifold Mev Ether /////////////                   
+/*///////////// Manifold Mev Ether /////////////
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⣿⣷⣦⣄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣼⣿⣿⣿⣿⣿⣿⣷⣤⣀⠀⠀⠀⠀⠀⠉⠑⣶⣤⣄⣀⣠⣤⣶⣶⣿⣿⣿⣿⡇⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⣿⣿⣿⣿⣿⡿⠟⠋⠁⠀⠀⠀⣀⠤⠒⠉⠈⢉⡉⠻⢿⣿⣿⣿⣿⣿⣿⣿⠀⠀⠀⠀
@@ -58,7 +50,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     using SafeTransferLib for WETH;
     using FixedPointMathLib for uint256;
 
-    /*//////////////////////////////////////////////////////////////
+
                             Configuration Variables
     //////////////////////////////////////////////////////////////*/
 
@@ -109,7 +101,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         uint128 base;
     }
 
-    /*//////////////////////////////////////////////////////////////
+
                                 Setup
     //////////////////////////////////////////////////////////////*/
 
@@ -139,7 +131,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         }
     }
 
-    /*//////////////////////////////////////////////////////////////
+
                             Admin Control Panel
     //////////////////////////////////////////////////////////////*/
 
@@ -316,7 +308,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         pendingMevEthShareVaultCommittedTimestamp = 0;
     }
 
-    /*//////////////////////////////////////////////////////////////
+
                             Registry For Validators
     //////////////////////////////////////////////////////////////*/
 
@@ -384,7 +376,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         stakingModule.registerExit();
     }
 
-    /*//////////////////////////////////////////////////////////////
+
                             WITHDRAWAL QUEUE
     //////////////////////////////////////////////////////////////*/
 
@@ -447,7 +439,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         withdrawalAmountQueued += delta;
     }
 
-    /*//////////////////////////////////////////////////////////////
+
                             ERC4626 Support
     //////////////////////////////////////////////////////////////*/
     /// @notice The underlying asset of the mevEth contract
@@ -728,7 +720,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         _withdraw(false, receiver, owner, assets, shares);
     }
 
-    /*//////////////////////////////////////////////////////////////
+
                             Utility Functions
     //////////////////////////////////////////////////////////////*/
 
@@ -742,8 +734,8 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         return a < b ? a : b;
     }
 
-    /*////////////////////////////////////////////////////////////// 
-             Special CreamEth2 redeem (from initial migration) 
+
+             Special CreamEth2 redeem (from initial migration)
      //////////////////////////////////////////////////////////////*/
 
     /// @notice Redeem Cream staked eth tokens for mevETH at a fixed ratio
