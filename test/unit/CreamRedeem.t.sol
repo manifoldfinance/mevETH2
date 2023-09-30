@@ -10,7 +10,6 @@ contract CreamRedeemTest is MevEthTest {
 
     address constant mainnetDepositContract = 0x00000000219ab540356cBB839Cbe05303d7705Fa;
     address constant mainnetWeth = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
-    address constant L1_lzEndpoint = 0x66A71Dcef29A0fFBDBE3c6a460a3B5BC225Cd675;
 
     string RPC_ETH_MAINNET = vm.envString("ETH_MAINNET_RPC_URL");
 
@@ -21,7 +20,7 @@ contract CreamRedeemTest is MevEthTest {
 
         vm.selectFork(MAINNET_FORK_ID);
         // deploy mevEth (mainnet)
-        mevEth = new MevEth(SamBacha, mainnetWeth, L1_lzEndpoint);
+        mevEth = new MevEth(SamBacha, mainnetWeth);
     }
 
     function testRedeemCream() public {

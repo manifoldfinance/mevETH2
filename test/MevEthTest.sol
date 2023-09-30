@@ -113,10 +113,8 @@ contract MevEthTest is Test {
         // Deploy the WETH9 contract
         weth = new WETH9();
 
-        layerZeroEndpoint = new LZEndpointMock(ETH_ID);
-
         // Deploy the mevETH contract
-        mevEth = new MevEth(SamBacha, address(weth), address(layerZeroEndpoint));
+        mevEth = new MevEth(SamBacha, address(weth));
 
         // Initialize initial share vault as a multisig
 

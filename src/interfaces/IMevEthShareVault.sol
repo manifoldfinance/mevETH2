@@ -14,13 +14,13 @@ pragma solidity ^0.8.19;
 
 /// @title IMevEthShareVault
 interface IMevEthShareVault {
-
-    /**!
-    * The receive function handles mev/validator payments.
-    * If if the msg.sender is the block.coinbase, a `ValditorPayment` should be emitted
-    * The profits (less fees) should be updated based on the median validator payment.
-    * Otherwise, a MevPayment should be emitted and the fees/profits should be updated based on the medianMevPayment.
-    */
+    /**
+     * !
+     * The receive function handles mev/validator payments.
+     * If if the msg.sender is the block.coinbase, a `ValditorPayment` should be emitted
+     * The profits (less fees) should be updated based on the median validator payment.
+     * Otherwise, a MevPayment should be emitted and the fees/profits should be updated based on the medianMevPayment.
+     */
 
     /**
      * payRewards()

@@ -118,12 +118,7 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
     /// @dev Pending staking module and committed timestamp will both be zero on deployment.
     /// @param authority Address of the controlling admin authority.
     /// @param weth Address of the WETH contract to use for deposits.
-    /// @param layerZeroEndpoint Chain specific endpoint for LayerZero.
-    constructor(
-        address authority,
-        address weth,
-        address layerZeroEndpoint
-    ) Auth(authority) ERC20("Mev Liquid Staking Receipt", "mevETH", 18) {
+    constructor(address authority, address weth) Auth(authority) ERC20("Mev Liquid Staking Receipt", "mevETH", 18) {
         WETH9 = WETH(payable(weth));
         // set initial balance of validators
         fraction.elastic = uint128(28_448 ether);
