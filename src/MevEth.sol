@@ -51,7 +51,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     using FixedPointMathLib for uint256;
 
 
-                            Configuration Variables
+    /*<Configuration Variables>*/
     //////////////////////////////////////////////////////////////*/
 
     /// @notice Inidicates if staking is paused.
@@ -102,8 +102,8 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     }
 
 
-                                Setup
-    //////////////////////////////////////////////////////////////*/
+    /*<Setup>*/
+
 
     /// @notice Construction creates mevETH token, sets authority and weth address.
     /// @dev Pending staking module and committed timestamp will both be zero on deployment.
@@ -132,8 +132,8 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     }
 
 
-                            Admin Control Panel
-    //////////////////////////////////////////////////////////////*/
+    /*<Admin Control Panel>*/
+
 
     /// @notice Event emitted when the MevEth is successfully initialized.
     event MevEthInitialized(address indexed mevEthShareVault, address indexed stakingModule);
@@ -309,8 +309,8 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     }
 
 
-                            Registry For Validators
-    //////////////////////////////////////////////////////////////*/
+      /*<Registry For Validators>*/
+
 
     /// @notice Event emitted when a new validator is created
     event ValidatorCreated(address indexed stakingModule, IStakingModule.ValidatorData newValidator);
@@ -377,8 +377,8 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     }
 
 
-                            WITHDRAWAL QUEUE
-    //////////////////////////////////////////////////////////////*/
+    /*<WITHDRAWAL QUEUE>*/
+
 
     /// @notice Struct representing a withdrawal ticket which is added to the withdrawal queue.
     /// @custom:field claimed               True if this receiver has received ticket funds.
@@ -440,8 +440,8 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     }
 
 
-                            ERC4626 Support
-    //////////////////////////////////////////////////////////////*/
+    /*<ERC4626 Support>*/
+
     /// @notice The underlying asset of the mevEth contract
     /// @return assetTokenAddress The address of the asset token
     function asset() external view returns (address assetTokenAddress) {
@@ -721,8 +721,8 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     }
 
 
-                            Utility Functions
-    //////////////////////////////////////////////////////////////*/
+    /*<Utility Functions>*/
+
 
     /// @dev Returns the largest of two numbers.
     function max(uint256 a, uint256 b) internal pure returns (uint256) {
@@ -735,8 +735,8 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     }
 
 
-             Special CreamEth2 redeem (from initial migration)
-     //////////////////////////////////////////////////////////////*/
+     /*<Special CreamEth2 redeem (from initial migration>*/
+
 
     /// @notice Redeem Cream staked eth tokens for mevETH at a fixed ratio
     /// @param creamAmount The amount of Cream tokens to redeem
