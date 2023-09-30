@@ -12,7 +12,7 @@
 
 pragma solidity ^0.8.19;
 
-/*///////////// Manifold Mev Ether /////////////                   
+/*///////////// Manifold Mev Ether /////////////
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⣿⣷⣦⣄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣼⣿⣿⣿⣿⣿⣿⣷⣤⣀⠀⠀⠀⠀⠀⠉⠑⣶⣤⣄⣀⣠⣤⣶⣶⣿⣿⣿⣿⡇⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⣿⣿⣿⣿⣿⡿⠟⠋⠁⠀⠀⠀⣀⠤⠒⠉⠈⢉⡉⠻⢿⣿⣿⣿⣿⣿⣿⣿⠀⠀⠀⠀
@@ -38,8 +38,10 @@ pragma solidity ^0.8.19;
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 /////////////////////////////////////////////*/
 
+import { Auth } from "./libraries/Auth.sol";
 import { SafeTransferLib } from "solmate/utils/SafeTransferLib.sol";
 import { FixedPointMathLib } from "solmate/utils/FixedPointMathLib.sol";
+import { ERC20 } from "solmate/tokens/ERC20.sol";
 import { IERC4626 } from "./interfaces/IERC4626.sol";
 import { WETH } from "solmate/tokens/WETH.sol";
 import { MevEthErrors } from "./interfaces/Errors.sol";
@@ -48,13 +50,12 @@ import { IMevEthShareVault } from "./interfaces/IMevEthShareVault.sol";
 import { IERC20Burnable } from "./interfaces/IERC20Burnable.sol";
 import { ITinyMevEth } from "./interfaces/ITinyMevEth.sol";
 import { WagyuStaker } from "./WagyuStaker.sol";
-import { OFTWithFee } from "./layerZero/oft/OFTWithFee.sol";
 
 /// @title MevEth
 /// @author Manifold Finance
 /// @dev Contract that allows deposit of ETH, for a Liquid Staking Receipt (LSR) in return.
 /// @dev LSR is represented through an ERC4626 token and interface.
-contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
+contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
     using SafeTransferLib for WETH;
     using FixedPointMathLib for uint256;
 
@@ -122,9 +123,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         address authority,
         address weth,
         address layerZeroEndpoint
-    )
-        OFTWithFee("Mev Liquid Staked Ether", "mevETH", 18, 8, authority, layerZeroEndpoint)
-    {
+    ) Auth(authority) ERC20("Mev Liquid Staking Receipt", "mevETH", 18) {
         WETH9 = WETH(payable(weth));
         // set initial balance of validators
         fraction.elastic = uint128(28_448 ether);
@@ -742,8 +741,8 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         return a < b ? a : b;
     }
 
-    /*////////////////////////////////////////////////////////////// 
-             Special CreamEth2 redeem (from initial migration) 
+    /*//////////////////////////////////////////////////////////////
+             Special CreamEth2 redeem (from initial migration)
      //////////////////////////////////////////////////////////////*/
 
     /// @notice Redeem Cream staked eth tokens for mevETH at a fixed ratio
