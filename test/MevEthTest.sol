@@ -16,6 +16,7 @@ import { TransparentUpgradeableProxy } from "mev-proxy/TransparentUpgradeablePro
 import { IAuth } from "src/interfaces/IAuth.sol";
 import { AuthManager } from "src/libraries/AuthManager.sol";
 import { SafeInstance, SafeTestTools } from "../lib/safe-tools/src/SafeTestTools.sol";
+import "../src/WagyuStaker.sol";
 
 contract MevEthTest is Test {
     // LayerZero Ids
