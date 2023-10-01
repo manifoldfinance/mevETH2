@@ -5,10 +5,6 @@
 	path = lib/solmate
 	url = https://github.com/transmissions11/solmate
 	branch = "main"
-[submodule "lib/pigeon"]
-	path = lib/pigeon
-	url = https://github.com/manifoldfinance/pigeon
-	branch = "OFTV2"
 [submodule "lib/safe-tools"]
 	path = lib/safe-tools
 	url = https://github.com/0xKitsune/safe-tools
