@@ -12,7 +12,7 @@
 
 pragma solidity ^0.8.19;
 
-/*///////////// Manifold Mev Ether /////////////                   
+/*///////////// Manifold Mev Ether /////////////
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⣿⣷⣦⣄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣼⣿⣿⣿⣿⣿⣿⣷⣤⣀⠀⠀⠀⠀⠀⠉⠑⣶⣤⣄⣀⣠⣤⣶⣶⣿⣿⣿⣿⡇⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⣿⣿⣿⣿⣿⡿⠟⠋⠁⠀⠀⠀⣀⠤⠒⠉⠈⢉⡉⠻⢿⣿⣿⣿⣿⣿⣿⣿⠀⠀⠀⠀
@@ -739,8 +739,8 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         return a < b ? a : b;
     }
 
-    /*////////////////////////////////////////////////////////////// 
-             Special CreamEth2 redeem (from initial migration) 
+    /*//////////////////////////////////////////////////////////////
+             Special CreamEth2 redeem (from initial migration)
      //////////////////////////////////////////////////////////////*/
 
     /// @notice Redeem Cream staked eth tokens for mevETH at a fixed ratio
@@ -783,7 +783,8 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         if (lastDepositFrom > lastDeposit[to]) {
             lastDeposit[to] = lastDepositFrom;
         }
-        super.transfer(to, amount);
+
+        return super.transfer(to, amount);
     }
 
     function transferFrom(address from, address to, uint256 amount) public virtual override returns (bool) {
@@ -791,6 +792,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         if (lastDepositFrom > lastDeposit[to]) {
             lastDeposit[to] = lastDepositFrom;
         }
-        super.transferFrom(from, to, amount);
+
+        return super.transferFrom(from, to, amount);
     }
 }
