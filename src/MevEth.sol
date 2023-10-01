@@ -623,27 +623,27 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
         _burn(owner, shares);
 
         uint256 availableBalance = address(this).balance - withdrawalAmountQueued; // available balance will be adjusted
-
+        uint256 amountOwed = assets;
         if (availableBalance < assets) {
             if (!useQueue) revert MevEthErrors.NotEnoughEth();
-            uint128 amountOwed = uint128(assets - availableBalance);
+            amountOwed = assets - availableBalance;
             ++queueLength;
             withdrawalQueue[queueLength] = WithdrawalTicket({
                 claimed: false,
                 receiver: receiver,
-                amount: amountOwed,
-                accumulatedAmount: withdrawalQueue[queueLength - 1].accumulatedAmount + amountOwed
+                amount: uint128(amountOwed),
+                accumulatedAmount: withdrawalQueue[queueLength - 1].accumulatedAmount + uint128(amountOwed)
             });
-            emit WithdrawalQueueOpened(receiver, queueLength, uint256(amountOwed));
-            uint256 assetsOwed = availableBalance;
+            emit WithdrawalQueueOpened(receiver, queueLength, amountOwed);
+            amountOwed = availableBalance;
         }
-        if (assets != 0) {
+        if (amountOwed != 0) {
             // As with ERC4626, we log assets and shares as if there is no queue, and everything has been withdrawn
             // as this most closely resembles what is happened
             emit Withdraw(msg.sender, owner, receiver, assets, shares);
 
-            WETH9.deposit{ value: availableBalance }();
-            WETH9.safeTransfer(receiver, availableBalance);
+            WETH9.deposit{ value: amountOwed }();
+            WETH9.safeTransfer(receiver, amountOwed);
         }
     }
 
