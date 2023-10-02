@@ -351,6 +351,9 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
     /// @notice Grants rewards updating the fraction.elastic.
     /// @dev called from validator rewards updates
     function grantRewards() external payable {
+        if (msg.sender != mevEth) {
+            revert MevEthErrors.UnAuthorizedCaller();
+        }
         if (msg.value == 0) revert MevEthErrors.ZeroValue();
 
         fraction.elastic += uint128(msg.value);
