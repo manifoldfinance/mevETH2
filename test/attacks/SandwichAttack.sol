@@ -19,6 +19,8 @@ contract SandwichAttackTest is MevEthTest {
         vm.deal(address(this), 2 * amount);
 
         mevEth.deposit{ value: amount }(amount, address(this));
+        payable(address(mevEth.stakingModule())).transfer(amount);
+        vm.prank(address(mevEth.stakingModule()));
         mevEth.grantRewards{ value: amount }();
         vm.expectRevert(MevEthErrors.SandwichProtection.selector);
         mevEth.withdraw(amount * 9999 / 10_000, address(this), address(this));
@@ -30,11 +32,13 @@ contract SandwichAttackTest is MevEthTest {
         vm.deal(address(this), 2 * amount);
 
         uint256 shares = mevEth.deposit{ value: amount }(amount, address(this));
+        payable(address(mevEth.stakingModule())).transfer(amount);
+        vm.prank(address(mevEth.stakingModule()));
         mevEth.grantRewards{ value: amount }();
         mevEth.transfer(User03, shares);
         vm.expectRevert(MevEthErrors.SandwichProtection.selector);
         vm.prank(User03);
-        uint256 assets = mevEth.redeem(shares, User03, User03);
+        mevEth.redeem(shares, User03, User03);
     }
 
     function testSandwichApproveAttack(uint128 amount) external payable {
@@ -43,12 +47,14 @@ contract SandwichAttackTest is MevEthTest {
         vm.deal(address(this), 2 * amount);
 
         uint256 shares = mevEth.deposit{ value: amount }(amount, address(this));
+        payable(address(mevEth.stakingModule())).transfer(amount);
+        vm.prank(address(mevEth.stakingModule()));
         mevEth.grantRewards{ value: amount }();
         mevEth.approve(User03, shares);
         vm.expectRevert(MevEthErrors.SandwichProtection.selector);
         address me = address(this);
         vm.prank(User03);
-        uint256 assets = mevEth.redeem(shares, User03, me);
+        mevEth.redeem(shares, User03, me);
     }
 
     function testSandwichRecieveAttack(uint128 amount) external payable {
@@ -57,10 +63,12 @@ contract SandwichAttackTest is MevEthTest {
         vm.deal(address(this), 2 * amount);
 
         uint256 shares = mevEth.deposit{ value: amount }(amount, User03);
+        payable(address(mevEth.stakingModule())).transfer(amount);
+        vm.prank(address(mevEth.stakingModule()));
         mevEth.grantRewards{ value: amount }();
         vm.expectRevert(MevEthErrors.SandwichProtection.selector);
         address me = address(this);
         vm.prank(User03);
-        uint256 assets = mevEth.redeem(shares, me, User03);
+        mevEth.redeem(shares, me, User03);
     }
 }
