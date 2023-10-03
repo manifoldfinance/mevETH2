@@ -45,7 +45,6 @@ import { IERC4626 } from "./interfaces/IERC4626.sol";
 import { WETH } from "solmate/tokens/WETH.sol";
 import { MevEthErrors } from "./interfaces/Errors.sol";
 import { IStakingModule } from "./interfaces/IStakingModule.sol";
-import { IMevEthShareVault } from "./interfaces/IMevEthShareVault.sol";
 import { IERC20Burnable } from "./interfaces/IERC20Burnable.sol";
 import { ITinyMevEth } from "./interfaces/ITinyMevEth.sol";
 
