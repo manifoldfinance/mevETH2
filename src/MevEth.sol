@@ -749,10 +749,10 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
 
         // Calculate the equivalent mevETH to be redeemed based on the ratio
         uint256 mevEthAmount = creamAmount * uint256(CREAM_TO_MEV_ETH_PERCENT) / 1000;
+        if (mevEthAmount < MIN_DEPOSIT) revert MevEthErrors.DepositTooSmall();
 
         // Convert the shares to assets and update the fraction elastic and base
         uint256 shares = convertToShares(mevEthAmount);
-        if (assets < MIN_DEPOSIT) revert MevEthErrors.DepositTooSmall();
 
         fraction.elastic += uint128(mevEthAmount);
         fraction.base += uint128(shares);
