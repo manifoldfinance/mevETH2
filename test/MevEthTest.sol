@@ -12,7 +12,6 @@ import "./mocks/WETH9.sol";
 import "./mocks/DepositContract.sol";
 import "./mocks/LZEndpointMock.sol";
 import "../src/MevEthShareVault.sol";
-import { TransparentUpgradeableProxy } from "mev-proxy/TransparentUpgradeableProxy.sol";
 import { IAuth } from "src/interfaces/IAuth.sol";
 import { AuthManager } from "src/libraries/AuthManager.sol";
 import { SafeInstance, SafeTestTools } from "../lib/safe-tools/src/SafeTestTools.sol";

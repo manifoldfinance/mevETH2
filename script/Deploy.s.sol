@@ -8,7 +8,6 @@ import { WagyuStaker } from "src/WagyuStaker.sol";
 import { AuthManager } from "src/libraries/AuthManager.sol";
 import { MevEthShareVault } from "src/MevEthShareVault.sol";
 import { IStakingModule } from "src/interfaces/IStakingModule.sol";
-import { TransparentUpgradeableProxy } from "mev-proxy/TransparentUpgradeableProxy.sol";
 
 contract DeployScript is Script {
     error UnknownChain();
@@ -41,7 +40,7 @@ contract DeployScript is Script {
 
         // deploy sharevault
         // MevEthShareVault initialShareVault = new MevEthShareVault(authority, address(mevEth), authority);
-        address initialShareVault = address(new TransparentUpgradeableProxy(safe, authority, ""));
+        address initialShareVault = safe;
         // deploy staking module
         IStakingModule initialStakingModule = new WagyuStaker(authority, beaconDepositContract, address(mevEth));
         // initialise mevETH

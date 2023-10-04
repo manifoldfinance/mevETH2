@@ -5,4 +5,3 @@ solmate/=lib/solmate/src/
 safe-contracts/=lib/safe-tools/lib/safe-contracts/contracts/
 safe-tools/=lib/safe-tools/src/
 properties/=lib/properties/contracts/
-mev-proxy/=lib/mev-proxy/src/

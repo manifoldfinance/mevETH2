@@ -109,11 +109,6 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
     /// @param weth Address of the WETH contract to use for deposits.
     constructor(address authority, address weth) Auth(authority) ERC20("Mev Liquid Staking Receipt", "mevETH", 18) {
         WETH9 = WETH(payable(weth));
-        // set initial balance of validators, 32*889 validators
-        fraction.elastic = uint128(28_448 ether);
-        fraction.base = uint128(28_448 ether);
-
-
         MIN_WITHDRAWAL = MIN_DEPOSIT;
     }
 
@@ -183,18 +178,18 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
         emit StakingUnpaused();
     }
 
-    /// @notice Event emitted when a new staking module is committed. 
+    /// @notice Event emitted when a new staking module is committed.
     ///   The MODULE_UPDATE_TIME_DELAY must elapse before the staking module update can be finalized.
     event StakingModuleUpdateCommitted(address indexed oldModule, address indexed pendingModule, uint64 indexed eligibleForFinalization);
-    
+
     /// @notice Event emitted when a new staking module is finalized.
     event StakingModuleUpdateFinalized(address indexed oldModule, address indexed newModule);
-    
+
     /// @notice Event emitted when a new pending module update is canceled.
     event StakingModuleUpdateCanceled(address indexed oldModule, address indexed pendingModule);
 
     /// @notice Starts the process to update the staking module.
-    ///   To finalize the update, the MODULE_UPDATE_TIME_DELAY must elapse 
+    ///   To finalize the update, the MODULE_UPDATE_TIME_DELAY must elapse
     ///   and thefinalizeUpdateStakingModule function must be called.
     /// @param newModule The new staking module.
     /// @dev This function is only callable by addresses with the admin role.
