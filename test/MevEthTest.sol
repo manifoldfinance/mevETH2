@@ -136,7 +136,7 @@ contract MevEthTest is Test {
 
         safe = address(safeInstance.safe);
         // assign share vault as proxy to multisig
-        address initialShareVault = address(new TransparentUpgradeableProxy(safe, SamBacha, ""));
+        address initialShareVault = address(safe);
 
         address initialStakingModule = address(IStakingModule(address(new WagyuStaker(SamBacha, address(depositContract), address(mevEth)))));
 
