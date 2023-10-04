@@ -75,7 +75,9 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
     /// @notice Max amount of ETH that can be deposited.
     uint128 internal constant MAX_DEPOSIT = type(uint128).max;
     /// @notice Min amount of ETH that can be deposited.
-    uint128 public constant MIN_DEPOSIT = 0.01 ether; // 0.01 eth
+    uint128 public constant MIN_DEPOSIT = 0.01 ether;
+    /// @notice Min amount of ETH that can be withdrawn via the queue.
+    uint128 public MIN_WITHDRAWAL;
     /// @notice The address of the MevEthShareVault.
     address public mevEthShareVault;
     /// @notice The address of the pending MevEthShareVault when a new vault has been committed but not finalized.
@@ -120,6 +122,9 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
         // set initial balance of validators
         fraction.elastic = uint128(28_448 ether);
         fraction.base = uint128(28_448 ether);
+
+
+        MIN_WITHDRAWAL = MIN_DEPOSIT;
     }
 
     /// @notice Calculate the needed Ether buffer required when creating a new validator.
@@ -443,6 +448,10 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
         withdrawalAmountQueued += delta;
     }
 
+    function setMinWithdrawal(uint128 newMinimum) public onlyAdmin {
+        MIN_WITHDRAWAL = newMinimum;
+    }
+
     /*//////////////////////////////////////////////////////////////
                             ERC4626 Support
     //////////////////////////////////////////////////////////////*/
@@ -603,7 +612,7 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
     /// @param shares shares that will be burned
     function _withdraw(bool useQueue, address receiver, address owner, uint256 assets, uint256 shares) internal {
         // If withdraw is less than the minimum deposit / withdraw amount, revert
-        if (assets < MIN_DEPOSIT) revert MevEthErrors.WithdrawTooSmall();
+        if (assets < MIN_WITHDRAWAL) revert MevEthErrors.WithdrawTooSmall();
         // Sandwich protection
         uint256 blockNumber = block.number;
 
