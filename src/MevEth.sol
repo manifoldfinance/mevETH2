@@ -748,13 +748,13 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
         if (creamAmount == 0) revert MevEthErrors.ZeroValue();
 
         // Calculate the equivalent mevETH to be redeemed based on the ratio
-        uint256 mevEthAmount = creamAmount * uint256(CREAM_TO_MEV_ETH_PERCENT) / 1000;
-        if (mevEthAmount < MIN_DEPOSIT) revert MevEthErrors.DepositTooSmall();
+        uint256 assets = creamAmount * uint256(CREAM_TO_MEV_ETH_PERCENT) / 1000;
+        if (assets < MIN_DEPOSIT) revert MevEthErrors.DepositTooSmall();
 
         // Convert the shares to assets and update the fraction elastic and base
-        uint256 shares = convertToShares(mevEthAmount);
+        uint256 shares = convertToShares(assets);
 
-        fraction.elastic += uint128(mevEthAmount);
+        fraction.elastic += uint128(assets);
         fraction.base += uint128(shares);
 
         // Burn CreamEth2 tokens
@@ -764,7 +764,7 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
         _mint(msg.sender, shares);
 
         // Emit event
-        emit CreamRedeemed(msg.sender, creamAmount, mevEthAmount);
+        emit CreamRedeemed(msg.sender, creamAmount, shares);
     }
 
     // Event emitted when Cream tokens are redeemed for mevETH
