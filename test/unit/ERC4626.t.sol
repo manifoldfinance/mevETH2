@@ -6,8 +6,6 @@ import "../MevEthTest.sol";
 import "src/interfaces/Errors.sol";
 
 contract ERC4626FullTest is MevEthTest {
-    uint256 initBal = 28_448 ether;
-
     function setUp() public override {
         super.setUp();
     }
@@ -25,18 +23,16 @@ contract ERC4626FullTest is MevEthTest {
     }
 
     function testPreviewDeposit(uint256 amount) public {
-        vm.assume(amount < type(uint128).max - initBal);
         assertEq(mevEth.previewDeposit(amount), amount);
     }
 
     function testPreviewMint(uint256 amount) public {
-        vm.assume(amount < type(uint128).max - initBal);
         assertEq(mevEth.previewMint(amount), amount);
     }
 
     function testPreviewWithdraw(uint128 amount) public {
         vm.assume(amount > mevEth.MIN_DEPOSIT());
-        vm.assume(amount < type(uint128).max - initBal - type(uint128).max / 10_000);
+        vm.assume(amount < type(uint128).max - type(uint128).max / 10_000);
         vm.deal(User01, amount);
         vm.startPrank(User01);
         mevEth.deposit{ value: amount }(amount, User01);
@@ -45,7 +41,6 @@ contract ERC4626FullTest is MevEthTest {
 
     function testPreviewRedeem(uint128 amount) public {
         vm.assume(amount > mevEth.MIN_DEPOSIT());
-        vm.assume(amount < type(uint128).max - initBal);
         vm.deal(User01, amount);
         vm.startPrank(User01);
         mevEth.deposit{ value: amount }(amount, User01);
@@ -54,7 +49,6 @@ contract ERC4626FullTest is MevEthTest {
 
     function testMaxWithdraw(uint128 amount) public {
         vm.assume(amount > mevEth.MIN_DEPOSIT());
-        vm.assume(amount < type(uint128).max - initBal);
         vm.deal(User01, amount);
         vm.startPrank(User01);
         mevEth.deposit{ value: amount }(amount, User01);
@@ -63,7 +57,6 @@ contract ERC4626FullTest is MevEthTest {
 
     function testMaxRedeem(uint128 amount) public {
         vm.assume(amount > mevEth.MIN_DEPOSIT());
-        vm.assume(amount < type(uint128).max - initBal);
         vm.deal(User01, amount);
         vm.startPrank(User01);
         mevEth.deposit{ value: amount }(amount, User01);
@@ -80,7 +73,6 @@ contract ERC4626FullTest is MevEthTest {
     function testSimpleDeposit() public {
         vm.deal(User01, 1 ether);
         vm.startPrank(User01);
-        (uint256 elastic0, uint256 base0) = mevEth.fraction();
 
         // Deposit 1 ETH
         weth.deposit{ value: 1 ether }();
@@ -101,8 +93,8 @@ contract ERC4626FullTest is MevEthTest {
 
         // Check the fraction has updated correctly
         (uint256 elastic, uint256 base) = mevEth.fraction();
-        assertEq(elastic, elastic0 + 1 ether);
-        assertEq(base, base0 + 1 ether);
+        assertEq(elastic, 1 ether);
+        assertEq(base, 1 ether);
     }
 
     function testExcessDeposit() public {
@@ -116,10 +108,9 @@ contract ERC4626FullTest is MevEthTest {
 
     function testFuzzSimpleDeposit(uint256 amount) public {
         vm.assume(amount > mevEth.MIN_DEPOSIT());
-        vm.assume(amount < type(uint128).max - initBal);
+        vm.assume(amount < 2 ** 128 - 1);
         vm.deal(User01, amount);
         vm.startPrank(User01);
-        (uint256 elastic0, uint256 base0) = mevEth.fraction();
 
         // Deposit 1 ETH
         weth.deposit{ value: amount }();
@@ -140,8 +131,8 @@ contract ERC4626FullTest is MevEthTest {
 
         // Check the fraction has updated correctly
         (uint256 elastic, uint256 base) = mevEth.fraction();
-        assertEq(elastic, elastic0 + amount);
-        assertEq(base, base0 + amount);
+        assertEq(elastic, amount);
+        assertEq(base, amount);
     }
 
     function testDepositFailsBelowMinimum(uint64 amount) public {
@@ -165,6 +156,11 @@ contract ERC4626FullTest is MevEthTest {
 
         // Check the user has 0 ETH
         assertEq(address(User01).balance, 0);
+
+        // Check the fraction has updated correctly
+        (uint256 elastic, uint256 base) = mevEth.fraction();
+        assertEq(elastic, 0);
+        assertEq(base, 0);
     }
 
     // Helper function to deposit into mevETH
@@ -188,7 +184,6 @@ contract ERC4626FullTest is MevEthTest {
     function testBasicWithdrawal() public {
         vm.deal(User01, 1 ether);
         vm.startPrank(User01);
-
         _depositOnBehalfOf(1 ether, User01);
 
         assertEq(address(mevEth).balance, 1 ether);
@@ -242,7 +237,6 @@ contract ERC4626FullTest is MevEthTest {
     function fuzzSimpleWithdrawal(uint256 amount) public {
         vm.assume(amount > mevEth.MIN_DEPOSIT());
         vm.assume(amount < 2 ** 128 - 1);
-
         vm.deal(User02, 10_001);
         vm.startPrank(User02);
         _depositOnBehalfOf(10_001, User02);
@@ -289,7 +283,7 @@ contract ERC4626FullTest is MevEthTest {
 
     function testFuzzMint(uint256 amount) public {
         vm.assume(amount > mevEth.MIN_DEPOSIT());
-        vm.assume(amount < type(uint128).max - initBal);
+        vm.assume(amount < 2 ** 128 - 1);
         vm.deal(User01, amount);
         vm.startPrank(User01);
 
@@ -331,6 +325,11 @@ contract ERC4626FullTest is MevEthTest {
 
         // Check the user has 0 ETH
         assertEq(address(User01).balance, 0);
+
+        // Check the fraction has updated correctly
+        (uint256 elastic, uint256 base) = mevEth.fraction();
+        assertEq(elastic, 0);
+        assertEq(base, 0);
     }
 
     /* 
@@ -401,7 +400,6 @@ contract ERC4626FullTest is MevEthTest {
 
     function testFuzzRedeem(uint128 amount) public {
         vm.assume(amount > mevEth.MIN_DEPOSIT() * 4);
-        vm.assume(amount < type(uint128).max - initBal);
         vm.deal(User01, amount);
         vm.startPrank(User01);
 

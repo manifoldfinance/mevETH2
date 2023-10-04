@@ -1,18 +1,8 @@
 /// SPDX-License-Identifier: SSPL-1.-0
 
-/**
- * @custom:org.protocol='mevETH LST Protocol'
- * @custom:org.security='mailto:security@manifoldfinance.com'
- * @custom:org.vcs-commit=$GIT_COMMIT_SHA
- * @custom:org.vendor='CommodityStream, Inc'
- * @custom:org.schema-version="1.0"
- * @custom.org.encryption="manifoldfinance.com/.well-known/pgp-key.asc"
- * @custom:org.preferred-languages="en"
- */
-
 pragma solidity ^0.8.19;
 
-/*///////////// Manifold Mev Ether /////////////
+/*///////////// Mev Protocol ///////////////////////
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⣿⣷⣦⣄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣼⣿⣿⣿⣿⣿⣿⣷⣤⣀⠀⠀⠀⠀⠀⠉⠑⣶⣤⣄⣀⣠⣤⣶⣶⣿⣿⣿⣿⡇⠀⠀⠀
 ⠀⠀⠀⠀⣀⣴⣶⣿⣷⡄⠀⠀⠀⠀⢹⣿⣿⣿⣿⠏⠁⠀⢀⠄⠀⠀⠈⢀⠄⠀⢀⡖⠁⠀⢀⠀⠈⠻⣿⣿⣿⣿⡏⠀⠀⠀⠀
@@ -35,7 +25,7 @@ pragma solidity ^0.8.19;
 ⠀⠀⠀⠀⠀⠀⠀⠇⠀⠣⠀⡗⢣⡀⠘⢄⠀⢧⠀⢳⡟⠛⠙⣧⣧⣠⣄⣀⣠⢿⣶⠁⠀⠸⡀⠀⠓⠚⢴⣋⣠⠔⠀⠀⠀⠀⠁
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠧⡤⠙⢤⡈⣦⡼⠀⠀⠧⢶⠚⡇⠈⠁⠈⠃⠀⡰⢿⣄⠀⠀⠑⢤⣀⠀⠀⠀⠈⠁⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-/////////////////////////////////////////////*/
+///////////////////////////////////////////////////*/
 
 import { Auth } from "./libraries/Auth.sol";
 import { SafeTransferLib } from "solmate/utils/SafeTransferLib.sol";
@@ -49,7 +39,7 @@ import { IERC20Burnable } from "./interfaces/IERC20Burnable.sol";
 import { ITinyMevEth } from "./interfaces/ITinyMevEth.sol";
 
 /// @title MevEth
-/// @author Manifold Finance
+/// @author CommodityStream, Inc.
 /// @dev Contract that allows deposit of ETH, for a Liquid Staking Receipt (LSR) in return.
 /// @dev LSR is represented through an ERC4626 token and interface.
 contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
@@ -119,7 +109,7 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
     /// @param weth Address of the WETH contract to use for deposits.
     constructor(address authority, address weth) Auth(authority) ERC20("Mev Liquid Staking Receipt", "mevETH", 18) {
         WETH9 = WETH(payable(weth));
-        // set initial balance of validators
+        // set initial balance of validators, 32*889 validators
         fraction.elastic = uint128(28_448 ether);
         fraction.base = uint128(28_448 ether);
 
@@ -193,16 +183,19 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
         emit StakingUnpaused();
     }
 
-    /// @notice Event emitted when a new staking module is committed. The MODULE_UPDATE_TIME_DELAY must elapse before the staking module update can be
-    /// finalized.
+    /// @notice Event emitted when a new staking module is committed. 
+    ///   The MODULE_UPDATE_TIME_DELAY must elapse before the staking module update can be finalized.
     event StakingModuleUpdateCommitted(address indexed oldModule, address indexed pendingModule, uint64 indexed eligibleForFinalization);
+    
     /// @notice Event emitted when a new staking module is finalized.
     event StakingModuleUpdateFinalized(address indexed oldModule, address indexed newModule);
+    
     /// @notice Event emitted when a new pending module update is canceled.
     event StakingModuleUpdateCanceled(address indexed oldModule, address indexed pendingModule);
 
-    /// @notice Starts the process to update the staking module. To finalize the update, the MODULE_UPDATE_TIME_DELAY must elapse and the
-    ///         finalizeUpdateStakingModule function must be called.
+    /// @notice Starts the process to update the staking module.
+    ///   To finalize the update, the MODULE_UPDATE_TIME_DELAY must elapse 
+    ///   and thefinalizeUpdateStakingModule function must be called.
     /// @param newModule The new staking module.
     /// @dev This function is only callable by addresses with the admin role.
     function commitUpdateStakingModule(IStakingModule newModule) external onlyAdmin {
@@ -762,14 +755,17 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
         // Calculate the equivalent mevETH to be redeemed based on the ratio
         uint256 mevEthAmount = creamAmount * uint256(CREAM_TO_MEV_ETH_PERCENT) / 1000;
 
-        // Check minimum deposit met
-        if (convertToAssets(mevEthAmount) < MIN_DEPOSIT) revert MevEthErrors.DepositTooSmall();
+        // Convert the shares to assets and update the fraction elastic and base
+        uint256 assets = convertToAssets(mevEthAmount);
+        if (assets < MIN_DEPOSIT) revert MevEthErrors.DepositTooSmall();
+
+        fraction.elastic += uint128(assets);
+        fraction.base += uint128(mevEthAmount);
 
         // Burn CreamEth2 tokens
         IERC20Burnable(creamToken).burnFrom(msg.sender, creamAmount);
 
         // Mint the equivalent mevETH
-        // Internal balance (fraction) has already been set (in constructor) for all CrEth2 redemptions
         _mint(msg.sender, mevEthAmount);
 
         // Emit event
@@ -790,6 +786,7 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
         if (lastDepositFrom > lastDeposit[to]) {
             lastDeposit[to] = lastDepositFrom;
         }
+
         return super.transfer(to, amount);
     }
 
@@ -798,6 +795,7 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
         if (lastDepositFrom > lastDeposit[to]) {
             lastDeposit[to] = lastDepositFrom;
         }
+
         return super.transferFrom(from, to, amount);
     }
 }
