@@ -1,21 +1,10 @@
 /// SPDX-License-Identifier: SSPL-1.-0
 
-/**
- * @custom:org.protocol='mevETH LST Protocol'
- * @custom:org.security='mailto:security@manifoldfinance.com'
- * @custom:org.vcs-commit=$GIT_COMMIT_SHA
- * @custom:org.vendor='CommodityStream, Inc'
- * @custom:org.schema-version="1.0"
- * @custom.org.encryption="manifoldfinance.com/.well-known/pgp-key.asc"
- * @custom:org.preferred-languages="en"
- */
-
 pragma solidity ^0.8.19;
 
-/*///////////// Manifold Mev Ether /////////////
+/*///////////// Mev Protocol ///////////////////////
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⣿⣷⣦⣄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣼⣿⣿⣿⣿⣿⣿⣷⣤⣀⠀⠀⠀⠀⠀⠉⠑⣶⣤⣄⣀⣠⣤⣶⣶⣿⣿⣿⣿⡇⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⣿⣿⣿⣿⣿⡿⠟⠋⠁⠀⠀⠀⣀⠤⠒⠉⠈⢉⡉⠻⢿⣿⣿⣿⣿⣿⣿⣿⠀⠀⠀⠀
 ⠀⠀⠀⠀⣀⣴⣶⣿⣷⡄⠀⠀⠀⠀⢹⣿⣿⣿⣿⠏⠁⠀⢀⠄⠀⠀⠈⢀⠄⠀⢀⡖⠁⠀⢀⠀⠈⠻⣿⣿⣿⣿⡏⠀⠀⠀⠀
 ⠀⠀⢠⣾⣿⣿⣿⣿⡿⠁⠀⠀⠀⠀⢸⣿⣿⠏⠀⠀⢀⡴⠁⠀⠀⣠⠖⠁⢀⠞⠋⠀⢠⡇⢸⡄⠀⠀⠈⢻⣿⣿⠁⠀⠀⠀⠀
 ⠀⣠⣿⣿⣿⣿⣿⠟⠁⠀⠀⠀⠀⠀⢸⡿⠁⠀⠀⢀⡞⠀⠀⢀⡴⠃⠀⣰⠋⠀⠀⣰⡿⠀⡜⢳⡀⠘⣦⠀⢿⡇⠀⠀⠀⠀⠀
@@ -36,25 +25,24 @@ pragma solidity ^0.8.19;
 ⠀⠀⠀⠀⠀⠀⠀⠇⠀⠣⠀⡗⢣⡀⠘⢄⠀⢧⠀⢳⡟⠛⠙⣧⣧⣠⣄⣀⣠⢿⣶⠁⠀⠸⡀⠀⠓⠚⢴⣋⣠⠔⠀⠀⠀⠀⠁
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠧⡤⠙⢤⡈⣦⡼⠀⠀⠧⢶⠚⡇⠈⠁⠈⠃⠀⡰⢿⣄⠀⠀⠑⢤⣀⠀⠀⠀⠈⠁⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-/////////////////////////////////////////////*/
+///////////////////////////////////////////////////*/
 
+import { Auth } from "./libraries/Auth.sol";
 import { SafeTransferLib } from "solmate/utils/SafeTransferLib.sol";
 import { FixedPointMathLib } from "solmate/utils/FixedPointMathLib.sol";
+import { ERC20 } from "solmate/tokens/ERC20.sol";
 import { IERC4626 } from "./interfaces/IERC4626.sol";
 import { WETH } from "solmate/tokens/WETH.sol";
 import { MevEthErrors } from "./interfaces/Errors.sol";
 import { IStakingModule } from "./interfaces/IStakingModule.sol";
-import { IMevEthShareVault } from "./interfaces/IMevEthShareVault.sol";
 import { IERC20Burnable } from "./interfaces/IERC20Burnable.sol";
 import { ITinyMevEth } from "./interfaces/ITinyMevEth.sol";
-import { WagyuStaker } from "./WagyuStaker.sol";
-import { OFTWithFee } from "./layerZero/oft/OFTWithFee.sol";
 
 /// @title MevEth
-/// @author Manifold Finance
+/// @author CommodityStream, Inc.
 /// @dev Contract that allows deposit of ETH, for a Liquid Staking Receipt (LSR) in return.
 /// @dev LSR is represented through an ERC4626 token and interface.
-contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
+contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
     using SafeTransferLib for WETH;
     using FixedPointMathLib for uint256;
 
@@ -77,7 +65,9 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @notice Max amount of ETH that can be deposited.
     uint128 internal constant MAX_DEPOSIT = type(uint128).max;
     /// @notice Min amount of ETH that can be deposited.
-    uint128 public constant MIN_DEPOSIT = 0.01 ether; // 0.01 eth
+    uint128 public constant MIN_DEPOSIT = 0.01 ether;
+    /// @notice Min amount of ETH that can be withdrawn via the queue.
+    uint128 public MIN_WITHDRAWAL;
     /// @notice The address of the MevEthShareVault.
     address public mevEthShareVault;
     /// @notice The address of the pending MevEthShareVault when a new vault has been committed but not finalized.
@@ -117,15 +107,9 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @dev Pending staking module and committed timestamp will both be zero on deployment.
     /// @param authority Address of the controlling admin authority.
     /// @param weth Address of the WETH contract to use for deposits.
-    /// @param layerZeroEndpoint Chain specific endpoint for LayerZero.
-    constructor(
-        address authority,
-        address weth,
-        address layerZeroEndpoint
-    )
-        OFTWithFee("Mev Liquid Staked Ether", "mevETH", 18, 8, authority, layerZeroEndpoint)
-    {
+    constructor(address authority, address weth) Auth(authority) ERC20("Mev Liquid Staking Receipt", "mevETH", 18) {
         WETH9 = WETH(payable(weth));
+        MIN_WITHDRAWAL = MIN_DEPOSIT;
     }
 
     /// @notice Calculate the needed Ether buffer required when creating a new validator.
@@ -194,19 +178,26 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         emit StakingUnpaused();
     }
 
-    /// @notice Event emitted when a new staking module is committed. The MODULE_UPDATE_TIME_DELAY must elapse before the staking module update can be
-    /// finalized.
+    /// @notice Event emitted when a new staking module is committed.
+    ///   The MODULE_UPDATE_TIME_DELAY must elapse before the staking module update can be finalized.
     event StakingModuleUpdateCommitted(address indexed oldModule, address indexed pendingModule, uint64 indexed eligibleForFinalization);
+
     /// @notice Event emitted when a new staking module is finalized.
     event StakingModuleUpdateFinalized(address indexed oldModule, address indexed newModule);
+
     /// @notice Event emitted when a new pending module update is canceled.
     event StakingModuleUpdateCanceled(address indexed oldModule, address indexed pendingModule);
 
-    /// @notice Starts the process to update the staking module. To finalize the update, the MODULE_UPDATE_TIME_DELAY must elapse and the
-    ///         finalizeUpdateStakingModule function must be called.
+    /// @notice Starts the process to update the staking module.
+    ///   To finalize the update, the MODULE_UPDATE_TIME_DELAY must elapse
+    ///   and thefinalizeUpdateStakingModule function must be called.
     /// @param newModule The new staking module.
     /// @dev This function is only callable by addresses with the admin role.
     function commitUpdateStakingModule(IStakingModule newModule) external onlyAdmin {
+        if (address(newModule) == address(0)) {
+            revert MevEthErrors.InvalidPendingStakingModule();
+        }
+
         pendingStakingModule = newModule;
         pendingStakingModuleCommittedTimestamp = uint64(block.timestamp);
         emit StakingModuleUpdateCommitted(address(stakingModule), address(newModule), uint64(block.timestamp + MODULE_UPDATE_TIME_DELAY));
@@ -352,6 +343,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @notice Grants rewards updating the fraction.elastic.
     /// @dev called from validator rewards updates
     function grantRewards() external payable {
+        if (!(msg.sender == address(stakingModule) || msg.sender == mevEthShareVault)) revert MevEthErrors.UnAuthorizedCaller();
         if (msg.value == 0) revert MevEthErrors.ZeroValue();
 
         fraction.elastic += uint128(msg.value);
@@ -442,6 +434,10 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
 
         requestsFinalisedUntil = newRequestsFinalisedUntil;
         withdrawalAmountQueued += delta;
+    }
+
+    function setMinWithdrawal(uint128 newMinimum) public onlyAdmin {
+        MIN_WITHDRAWAL = newMinimum;
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -604,7 +600,7 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
     /// @param shares shares that will be burned
     function _withdraw(bool useQueue, address receiver, address owner, uint256 assets, uint256 shares) internal {
         // If withdraw is less than the minimum deposit / withdraw amount, revert
-        if (assets < MIN_DEPOSIT) revert MevEthErrors.WithdrawTooSmall();
+        if (assets < MIN_WITHDRAWAL) revert MevEthErrors.WithdrawTooSmall();
         // Sandwich protection
         uint256 blockNumber = block.number;
 
@@ -622,26 +618,28 @@ contract MevEth is OFTWithFee, IERC4626, ITinyMevEth {
         _burn(owner, shares);
 
         uint256 availableBalance = address(this).balance - withdrawalAmountQueued; // available balance will be adjusted
-
+        uint256 amountToSend = assets;
         if (availableBalance < assets) {
             if (!useQueue) revert MevEthErrors.NotEnoughEth();
-            uint128 amountOwed = uint128(assets - availableBalance);
+            // Available balance is sent, and the remainder must be withdrawn via the queue
+            uint256 amountOwed = assets - availableBalance;
             ++queueLength;
             withdrawalQueue[queueLength] = WithdrawalTicket({
                 claimed: false,
                 receiver: receiver,
-                amount: amountOwed,
-                accumulatedAmount: withdrawalQueue[queueLength - 1].accumulatedAmount + amountOwed
+                amount: uint128(amountOwed),
+                accumulatedAmount: withdrawalQueue[queueLength - 1].accumulatedAmount + uint128(amountOwed)
             });
-            emit WithdrawalQueueOpened(receiver, queueLength, uint256(amountOwed));
-            assets = availableBalance;
-            shares = shares - convertToShares(amountOwed);
+            emit WithdrawalQueueOpened(receiver, queueLength, amountOwed);
+            amountToSend = availableBalance;
         }
-        if (assets != 0) {
+        if (amountToSend != 0) {
+            // As with ERC4626, we log assets and shares as if there is no queue, and everything has been withdrawn
+            // as this most closely resembles what is happened
             emit Withdraw(msg.sender, owner, receiver, assets, shares);
 
-            WETH9.deposit{ value: assets }();
-            WETH9.safeTransfer(receiver, assets);
+            WETH9.deposit{ value: amountToSend }();
+            WETH9.safeTransfer(receiver, amountToSend);
         }
     }
 

@@ -12,10 +12,10 @@ import "./mocks/WETH9.sol";
 import "./mocks/DepositContract.sol";
 import "./mocks/LZEndpointMock.sol";
 import "../src/MevEthShareVault.sol";
-import { TransparentUpgradeableProxy } from "mev-proxy/TransparentUpgradeableProxy.sol";
 import { IAuth } from "src/interfaces/IAuth.sol";
 import { AuthManager } from "src/libraries/AuthManager.sol";
 import { SafeInstance, SafeTestTools } from "../lib/safe-tools/src/SafeTestTools.sol";
+import "../src/WagyuStaker.sol";
 
 contract MevEthTest is Test {
     // LayerZero Ids
@@ -113,10 +113,8 @@ contract MevEthTest is Test {
         // Deploy the WETH9 contract
         weth = new WETH9();
 
-        layerZeroEndpoint = new LZEndpointMock(ETH_ID);
-
         // Deploy the mevETH contract
-        mevEth = new MevEth(SamBacha, address(weth), address(layerZeroEndpoint));
+        mevEth = new MevEth(SamBacha, address(weth));
 
         // Initialize initial share vault as a multisig
 
@@ -137,7 +135,7 @@ contract MevEthTest is Test {
 
         safe = address(safeInstance.safe);
         // assign share vault as proxy to multisig
-        address initialShareVault = address(new TransparentUpgradeableProxy(safe, SamBacha, ""));
+        address initialShareVault = address(safe);
 
         address initialStakingModule = address(IStakingModule(address(new WagyuStaker(SamBacha, address(depositContract), address(mevEth)))));
 

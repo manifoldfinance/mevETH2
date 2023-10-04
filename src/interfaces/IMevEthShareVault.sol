@@ -1,26 +1,16 @@
 /// SPDX-License-Identifier: SSPL-1.-0
 
-/**
- * @custom:org.protocol='mevETH LST Protocol'
- * @custom:org.security='mailto:security@manifoldfinance.com'
- * @custom:org.vcs-commit=$GIT_COMMIT_SHA
- * @custom:org.vendor='CommodityStream, Inc'
- * @custom:org.schema-version="1.0"
- * @custom.org.encryption="manifoldfinance.com/.well-known/pgp-key.asc"
- * @custom:org.preferred-languages="en"
- */
-
 pragma solidity ^0.8.19;
 
 /// @title IMevEthShareVault
 interface IMevEthShareVault {
-
-    /**!
-    * The receive function handles mev/validator payments.
-    * If if the msg.sender is the block.coinbase, a `ValditorPayment` should be emitted
-    * The profits (less fees) should be updated based on the median validator payment.
-    * Otherwise, a MevPayment should be emitted and the fees/profits should be updated based on the medianMevPayment.
-    */
+    /**
+     * !
+     * The receive function handles mev/validator payments.
+     * If if the msg.sender is the block.coinbase, a `ValditorPayment` should be emitted
+     * The profits (less fees) should be updated based on the median validator payment.
+     * Otherwise, a MevPayment should be emitted and the fees/profits should be updated based on the medianMevPayment.
+     */
 
     /**
      * payRewards()
