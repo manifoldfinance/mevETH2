@@ -307,6 +307,21 @@
           '';
         }
         {
+          category = "admin";
+          name = "batch-migrate";
+          help = "Batch migrate validators records on staker module";
+          command = ''
+            forge script $PRJ_ROOT/script/BatchMigrate.s.sol:BatchMigrateScript \
+              --chain-id 1 \
+              --rpc-url $RPC_MAINNET \
+              --broadcast \
+              --private-key $PRIVATE_KEY \
+              --verify \
+              --etherscan-api-key $ETHERSCAN_API_KEY \
+              -vvvvv
+          '';
+        }
+        {
           category = "operator";
           name = "CreateValidator";
           help = "Create a Validator";
