@@ -69,6 +69,21 @@
         }
         {
           category = "deployments";
+          name = "deploy-rate-provider";
+          help = "Deploy the Rate Provider contract for balancer stable pool";
+          command = ''
+            forge script $PRJ_ROOT/script/DeployRateProvider.s.sol:DeployRateProviderScript \
+              --chain-id 1 \
+              --rpc-url $RPC_MAINNET \
+              --broadcast \
+              --private-key $PRIVATE_KEY \
+              --verify \
+              --etherscan-api-key $ETHERSCAN_API_KEY \
+              -vvvvv
+          '';
+        }
+        {
+          category = "deployments";
           name = "deploy-goerli";
           help = "Deploy the Smart Contracts to goerli";
           command = ''
@@ -211,6 +226,17 @@
               --chain-id 1 \
               --private-key $PRIVATE_KEY \
               --fork-url $RPC_MAINNET \
+              -vvvvv
+          '';
+        }
+        {
+          category = "deployments";
+          name = "deploy-rate-provider-test";
+          help = "Deploy the Rate Provider contract for balancer stable pool";
+          command = ''
+            forge script $PRJ_ROOT/script/DeployRateProvider.s.sol:DeployRateProviderScript \
+              --chain-id 1 \
+              --rpc-url $RPC_MAINNET \
               -vvvvv
           '';
         }

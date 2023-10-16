@@ -32,7 +32,7 @@ import "src/interfaces/IMevEth.sol";
  * @title MevEth Rate Provider
  * @notice Returns the value of mevETH in terms of ETH
  */
-contract MevETHRateProvider is IRateProvider {
+contract MevEthRateProvider is IRateProvider {
     /// @notice The address of the mevETH contract
     IMevEth public immutable mevETH;
 
