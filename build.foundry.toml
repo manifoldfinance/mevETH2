@@ -1,0 +1,129 @@
+# -*- mode: toml; -*-
+[profile.default]
+src = "src"
+test = "test"
+script = "script"
+out = "out"
+libs = ["lib"]
+
+libraries = []
+cache = true
+cache_path = "cache"
+broadcast = "broadcast"
+allow_paths = []
+include_paths = []
+force = false
+remappings = []
+# @see {@link https://github.com/foundry-rs/foundry/issues/4060}
+auto_detect_remappings = false
+# Not all networks support PUSH0 just yet: shanghai
+evm_version = "paris"
+gas_reports = ["*"]
+gas_reports_ignore = []
+auto_detect_solc = true
+solc_version = '0.8.19'
+offline = false
+verbosity = 0
+ignored_error_codes = ["license", "code-size", "init-code-size"]
+deny_warnings = false
+cancun = false
+ffi = false
+sender = "0x1804c8ab1f12e6bbf3894d4083f33e07309d1f38"
+tx_origin = "0x1804c8ab1f12e6bbf3894d4083f33e07309d1f38"
+initial_balance = "0xffffffffffffffffffffffff"
+block_number = 1
+gas_limit = 9223372036854775807
+block_base_fee_per_gas = 0
+block_coinbase = "0x0000000000000000000000000000000000000000"
+block_timestamp = 1
+block_difficulty = 0
+block_prevrandao = "0x0000000000000000000000000000000000000000000000000000000000000000"
+memory_limit = 33554432
+names = false
+sizes = false
+
+#[profile.default.production]
+build_info = true
+# includes the contract's metadata in the contract's json artifact
+extra_output = ['irOptimized', 'evm.assembly']
+# emits the output selection as separate json artifact files
+extra_output_files = ['metadata']
+
+
+optimizer = true
+# This number was derived by running the optimizer runs iteratively until the
+# output bytecode size stopped changing.
+optimizer_runs = 512
+via_ir = true
+no_storage_caching = false
+no_rpc_rate_limit = false
+bytecode_hash = "none"
+cbor_metadata = false
+sparse_mode = false
+
+[profile.default.optimizer_details]
+# constantOptimizer = true
+yul = true
+# this sets the `yulDetails` of the `optimizer_details` for the `default` profile
+[profile.default.optimizer_details.yulDetails]
+stackAllocation = true
+# ACHTUNG! Setting this is extremely dangerous
+# {@see {@link https://soliditylang.org/blog/2023/07/19/full-inliner-non-expression-split-argument-evaluation-order-bug/}}
+# optimizerSteps = 'u:'
+
+[[profile.default.fs_permissions]]
+access = "read"
+path = "out"
+
+[profile.default.rpc_storage_caching]
+chains = "all"
+endpoints = "all"
+
+[fmt]
+line_length = 120
+tab_width = 4
+bracket_spacing = false
+int_types = "long"
+multiline_func_header = "attributes_first"
+quote_style = "double"
+number_underscore = "preserve"
+single_line_statement_blocks = "preserve"
+override_spacing = false
+wrap_comments = false
+ignore = []
+contract_new_lines = false
+
+[fuzz]
+runs = 256
+max_test_rejects = 65536
+dictionary_weight = 40
+include_storage = true
+include_push_bytes = true
+max_fuzz_dictionary_addresses = 15728640
+max_fuzz_dictionary_values = 6553600
+
+[invariant]
+runs = 256
+depth = 15
+fail_on_revert = false
+call_override = false
+dictionary_weight = 80
+include_storage = true
+include_push_bytes = true
+max_fuzz_dictionary_addresses = 15728640
+max_fuzz_dictionary_values = 6553600
+shrink_sequence = true
+
+## @dev The following section is used to configure the `build-docs` command
+
+[doc]
+out = "docs"
+title = ""
+book = "book.toml"
+homepage = "README.md"
+ignore = []
+
+[profile.docs]
+title = 'Protocol docs'
+# root_path variable in build-docs.sh
+src = 'src'

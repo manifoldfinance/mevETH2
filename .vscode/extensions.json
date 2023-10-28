@@ -1,0 +1,8 @@
+{
+    "recommendations": [
+        "praneshasp.vscode-solidity-inspector",
+        "tintinweb.solidity-visual-auditor",
+        "nomicfoundation.hardhat-solidity",
+        "contractshark.solidity-lang"
+    ]
+}
