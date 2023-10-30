@@ -90,4 +90,4 @@ The `MevEth` contract comprises several core modules, each contributing to its c
 - **Role management**: Supports roles management
 - **ERC4626 Integration**: Supports ERC4626 interface for yield source integration, enabling compatibility with Yearn Vault and other protocols.
 - **Withdrawal Queues**: First come, first served queues for withdrawal requests beyond buffer balances
-- **Omni-chain fungible tokens**: Allows `MevEth` tokens to be sent accross chains
+- **Omni-chain fungible tokens**: Allows `MevEth` tokens to be sent across chains
