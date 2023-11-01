@@ -16,6 +16,7 @@ contract DeployStakerScript is Script {
         uint256 chainId;
         address beaconDepositContract;
         address weth;
+        address mevEth = 0x24Ae2dA0f361AA4BE46b48EB19C91e02c5e4f27E;
         assembly {
             chainId := chainid()
         }
@@ -34,7 +35,7 @@ contract DeployStakerScript is Script {
         vm.startBroadcast();
 
         // deploy staking module
-        IStakingModule initialStakingModule = new WagyuStaker(authority, beaconDepositContract, address(mevEth), authority);
+        new WagyuStaker(authority, beaconDepositContract, mevEth, authority);
 
         vm.stopBroadcast();
     }
