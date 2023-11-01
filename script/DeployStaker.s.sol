@@ -6,19 +6,16 @@ import { MevEth } from "src/MevEth.sol";
 import { IAuth } from "src/interfaces/IAuth.sol";
 import { WagyuStaker } from "src/WagyuStaker.sol";
 import { AuthManager } from "src/libraries/AuthManager.sol";
-import { MevEthShareVault } from "src/MevEthShareVault.sol";
 import { IStakingModule } from "src/interfaces/IStakingModule.sol";
 
-contract DeployScript is Script {
+contract DeployStakerScript is Script {
     error UnknownChain();
 
-    /// @dev MULTISIG_SAFE env var must be set
     function run() public {
-        address authority = tx.origin;
+        address authority = 0x617c8dE5BdE54ffbb8d92716CC947858cA38f582;
         uint256 chainId;
         address beaconDepositContract;
         address weth;
-        address safe = vm.envAddress("MULTISIG_SAFE");
         assembly {
             chainId := chainid()
         }
@@ -35,24 +32,9 @@ contract DeployScript is Script {
         }
 
         vm.startBroadcast();
-        // deploy mevETH
-        MevEth mevEth = new MevEth(authority, weth);
 
-        // deploy sharevault
-        // MevEthShareVault initialShareVault = new MevEthShareVault(authority, address(mevEth), authority);
-        address initialShareVault = safe;
         // deploy staking module
         IStakingModule initialStakingModule = new WagyuStaker(authority, beaconDepositContract, address(mevEth), authority);
-        // initialise mevETH
-        mevEth.init(address(initialShareVault), address(initialStakingModule));
-
-        // deploy AuthManager
-        AuthManager authManager = new AuthManager(authority, address(mevEth), address(initialShareVault), address(initialStakingModule));
-        // set AuthManager as admin
-        IAuth(address(mevEth)).addAdmin(address(authManager));
-        // initial share vault is a multisig. If upgraded, this will need to be done manually
-        // IAuth(address(initialShareVault)).addAdmin(address(authManager));
-        IAuth(address(initialStakingModule)).addAdmin(address(authManager));
 
         vm.stopBroadcast();
     }

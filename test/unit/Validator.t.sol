@@ -85,7 +85,7 @@ contract ValidatorTest is MevEthTest {
     function testUpdateToWagyuStakingModule() public {
         // Update the staking module to the WagyuStaker and create a new validator
         address depositContract = address(new DepositContract());
-        IStakingModule wagyuStakingModule = IStakingModule(address(new WagyuStaker(SamBacha, depositContract, address(mevEth))));
+        IStakingModule wagyuStakingModule = IStakingModule(address(new WagyuStaker(SamBacha, depositContract, address(mevEth), SamBacha)));
         _updateStakingModule(wagyuStakingModule);
 
         uint256 depositSize = mevEth.stakingModule().VALIDATOR_DEPOSIT_SIZE();

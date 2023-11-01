@@ -32,12 +32,14 @@ contract WagyuStaker is Auth, IStakingModule {
         uint128 totalValidatorExitsPaid;
     }
 
-    /// @notice Record of total deposits, withdraws, rewards paid and validators exited
+    /// @notice Record of total deposits, withdraws, rewards and fees paid and validators exited
     Record public record;
     /// @notice The number of validators on the consensus layer registered under this contract
     uint256 public validators;
     /// @notice The address of the MevEth contract
     address public mevEth;
+    /// @notice The address that protocol fees are sent to.
+    address public protocolFeeTo;
     /// @notice Validator deposit size.
     uint256 public constant override VALIDATOR_DEPOSIT_SIZE = 32 ether;
     /// @notice The Canonical Address of the BeaconChainDepositContract
@@ -53,14 +55,20 @@ contract WagyuStaker is Auth, IStakingModule {
     event ValidatorWithdraw(address sender, uint256 amount);
     /// @notice Event emitted when the mevEth address is updated.
     event MevEthUpdated(address indexed meveth);
+    /// @notice Event emitted when the protocolFeeTo address is updated.
+    event ProtocolFeeToUpdated(address indexed newProtocolFeeTo);
+    /// @notice Event emitted when the protocol fees are sent to the protocolFeeTo address.
+    event FeesSent(uint256 indexed feesSent);
 
     /// @notice Construction sets authority, MevEth, and deposit contract addresses
     /// @param _authority The address of the controlling admin authority
     /// @param _depositContract The address of the beacon deposit contract
     /// @param _mevEth The address of the mevETH contract
-    constructor(address _authority, address _depositContract, address _mevEth) Auth(_authority) {
+    /// @param _protocolFeeTo The address that protocol fees are sent to.
+    constructor(address _authority, address _depositContract, address _mevEth, address _protocolFeeTo) Auth(_authority) {
         mevEth = _mevEth;
         BEACON_CHAIN_DEPOSIT_CONTRACT = IBeaconDepositContract(_depositContract);
+        protocolFeeTo = _protocolFeeTo;
     }
 
     /// @notice Function to deposit funds into the BEACON_CHAIN_DEPOSIT_CONTRACT, and register a validator
@@ -109,6 +117,25 @@ contract WagyuStaker is Auth, IStakingModule {
 
         // Emit an event to track the rewards paid
         emit RewardsPaid(rewards);
+    }
+
+    /// @notice Function to collect the fees owed to the prorotocol.
+    function sendFees(uint256 fees) external onlyOperator {
+        unchecked {
+            record.totalWithdrawn += uint128(fees);
+        }
+
+        SafeTransferLib.safeTransferETH(protocolFeeTo, fees);
+
+        emit FeesSent(fees);
+    }
+
+    function setProtocolFeeTo(address newProtocolFeeTo) external onlyAdmin {
+        if (newProtocolFeeTo == address(0)) {
+            revert MevEthErrors.ZeroAddress();
+        }
+        protocolFeeTo = newProtocolFeeTo;
+        emit ProtocolFeeToUpdated(newProtocolFeeTo);
     }
 
     function registerExit() external {
