@@ -16,7 +16,7 @@ contract CreamRedeemTest is MevEthTest {
     address constant CRETH2_HOLDER = 0x36cc7B13029B5DEe4034745FB4F24034f3F2ffc6;
 
     function setUp() public override {
-        MAINNET_FORK_ID = vm.createSelectFork(RPC_ETH_MAINNET, 18_368_945);
+        MAINNET_FORK_ID = vm.createSelectFork(RPC_ETH_MAINNET, 18_282_730);
 
         vm.selectFork(MAINNET_FORK_ID);
         // deploy mevEth (mainnet)
