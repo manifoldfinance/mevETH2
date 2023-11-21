@@ -12,7 +12,9 @@ contract DeployStakerScript is Script {
     error UnknownChain();
 
     function run() public {
-        address authority = 0x617c8dE5BdE54ffbb8d92716CC947858cA38f582;
+        address authority = tx.origin; // make deployer initial authority for setup
+        address operator = 0xA0766B65A4f7B1da79a1AF79aC695456eFa28644; // manifoldfinance.eth
+        address multisig = 0x617c8dE5BdE54ffbb8d92716CC947858cA38f582;
         uint256 chainId;
         address beaconDepositContract;
         address weth;
@@ -35,7 +37,19 @@ contract DeployStakerScript is Script {
         vm.startBroadcast();
 
         // deploy staking module
-        new WagyuStaker(authority, beaconDepositContract, mevEth, authority);
+        WagyuStaker wagyu = new WagyuStaker(authority, beaconDepositContract, mevEth, multisig);
+
+        // setup roles
+        // multisig is admin
+        wagyu.addAdmin(multisig);
+        if (authority != operator) {
+            // manifoldfinance.eth is operator
+            wagyu.addOperator(operator);
+            // remove deployer as operator
+            wagyu.deleteOperator(authority);
+        }
+        // remove deployer as admin
+        wagyu.deleteAdmin(authority);
 
         vm.stopBroadcast();
     }
