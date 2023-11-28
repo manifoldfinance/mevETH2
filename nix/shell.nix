@@ -69,6 +69,21 @@
         }
         {
           category = "deployments";
+          name = "deployStaker";
+          help = "Deploy the Staker contract";
+          command = ''
+            forge script $PRJ_ROOT/script/DeployStaker.s.sol:DeployStakerScript \
+              --chain-id 1 \
+              --rpc-url $RPC_MAINNET \
+              --broadcast \
+              --private-key $PRIVATE_KEY \
+              --verify \
+              --etherscan-api-key $ETHERSCAN_API_KEY \
+              -vvvvv
+          '';
+        }
+        {
+          category = "deployments";
           name = "deploy-goerli";
           help = "Deploy the Smart Contracts to goerli";
           command = ''

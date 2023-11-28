@@ -53,6 +53,38 @@ contract WagyuStakerTest is MevEthTest {
         assertEq(address(wagyuStaker).balance - totalDeposited, amount);
     }
 
+    function testSendFees(uint128 fees) public {
+        vm.assume(fees > 0);
+        vm.deal(address(this), fees);
+        payable(wagyuStaker).transfer(fees);
+
+        vm.prank(SamBacha);
+        vm.expectEmit(true, false, false, false, address(wagyuStaker));
+        emit FeesSent(fees);
+        wagyuStaker.sendFees(fees);
+
+        assertEq(address(wagyuStaker).balance, 0);
+        assertEq(wagyuStaker.protocolFeeTo().balance, fees);
+    }
+
+    function testNegativeSendFees(uint128 fees) public {
+        vm.assume(fees > 0);
+        vm.assume(fees < 100_000_000_000_000_000_000_000_000);
+        vm.deal(address(this), fees);
+        payable(wagyuStaker).transfer(fees);
+
+        vm.expectRevert(Auth.Unauthorized.selector);
+        wagyuStaker.sendFees(fees);
+
+        address newProtocolFeeTo = address(0);
+        vm.prank(SamBacha);
+        vm.expectRevert();
+        wagyuStaker.setProtocolFeeTo(newProtocolFeeTo);
+
+        assertEq(address(wagyuStaker).balance, fees);
+        assertEq(wagyuStaker.protocolFeeTo().balance, 0);
+    }
+
     function testSetNewMevEth(address newMevEth) public {
         vm.assume(newMevEth != address(0));
 

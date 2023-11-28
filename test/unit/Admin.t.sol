@@ -597,7 +597,7 @@ contract MevAdminTest is MevEthTest {
 
         // Create new share vault and staking module
         address initialShareVault = address(new MevEthShareVault(SamBacha, address(mevEth), SamBacha));
-        address initialStakingModule = address(IStakingModule(address(new WagyuStaker(SamBacha, address(depositContract), address(mevEth)))));
+        address initialStakingModule = address(IStakingModule(address(new WagyuStaker(SamBacha, address(depositContract), address(mevEth), SamBacha))));
         assert(!mevEth.initialized());
 
         // Initialize the MevEth contract
@@ -623,7 +623,7 @@ contract MevAdminTest is MevEthTest {
 
         // Create new share vault and staking module
         address initialShareVault = address(new MevEthShareVault(SamBacha, address(mevEth), SamBacha));
-        address initialStakingModule = address(IStakingModule(address(new WagyuStaker(SamBacha, address(depositContract), address(mevEth)))));
+        address initialStakingModule = address(IStakingModule(address(new WagyuStaker(SamBacha, address(depositContract), address(mevEth), SamBacha))));
 
         // Expect an unauthorized revert
         vm.expectRevert(Auth.Unauthorized.selector);
