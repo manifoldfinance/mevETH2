@@ -50,7 +50,7 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
                             Configuration Variables
     //////////////////////////////////////////////////////////////*/
 
-    /// @notice Inidicates if staking is paused.
+    /// @notice Indicates if staking is paused.
     bool public stakingPaused;
     /// @notice Indicates if contract is initialized.
     bool public initialized;
@@ -206,7 +206,7 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
     /// @notice Finalizes the staking module update if a pending staking module exists.
     /// @dev This function is only callable by addresses with the admin role.
     function finalizeUpdateStakingModule() external onlyAdmin {
-        // Revert if there is no pending staking module or if the the staking module finalization is premature.
+        // Revert if there is no pending staking module or if the staking module finalization is premature.
         uint64 committedTimestamp = pendingStakingModuleCommittedTimestamp;
         if (address(pendingStakingModule) == address(0) || committedTimestamp == 0) {
             revert MevEthErrors.InvalidPendingStakingModule();
@@ -267,7 +267,7 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
     /// @notice Finalizes the share vault update if a pending share vault exists.
     /// @dev This function is only callable by addresses with the admin role.
     function finalizeUpdateMevEthShareVault() external onlyAdmin {
-        // Revert if there is no pending share vault or if the the share vault finalization is premature.
+        // Revert if there is no pending share vault or if the share vault finalization is premature.
         uint64 committedTimestamp = pendingMevEthShareVaultCommittedTimestamp;
         if (pendingMevEthShareVault == address(0) || committedTimestamp == 0) {
             revert MevEthErrors.InvalidPendingMevEthShareVault();
@@ -311,7 +311,7 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
     /// @notice Event emitted when a new validator is created
     event ValidatorCreated(address indexed stakingModule, IStakingModule.ValidatorData newValidator);
 
-    /// @notice This function passes through the needed Ether to the Staking module, and the assosiated credentials with it
+    /// @notice This function passes through the needed Ether to the Staking module, and the associated credentials with it
     /// @param newData The data needed to create a new validator
     /// @dev This function is only callable by addresses with the operator role and if staking is unpaused
     function createValidator(IStakingModule.ValidatorData calldata newData, bytes32 latestDepositRoot) external onlyOperator {
@@ -525,7 +525,7 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
         // Mint MevEth shares to the receiver
         _mint(receiver, shares);
 
-        // Emit the deposit event to notify offchain listeners that a deposit has occured
+        // Emit the deposit event to notify offchain listeners that a deposit has occurred
         emit Deposit(msg.sender, receiver, assets, shares);
     }
 
@@ -614,7 +614,7 @@ contract MevEth is Auth, ERC20, IERC4626, ITinyMevEth {
         fraction.elastic -= uint128(assets);
         fraction.base -= uint128(shares);
 
-        // Burn the shares and emit a withdraw event for offchain listeners to know that a withdraw has occured
+        // Burn the shares and emit a withdraw event for offchain listeners to know that a withdraw has occurred
         _burn(owner, shares);
 
         uint256 availableBalance = address(this).balance - withdrawalAmountQueued; // available balance will be adjusted
