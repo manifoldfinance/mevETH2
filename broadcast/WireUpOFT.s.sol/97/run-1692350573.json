@@ -1,0 +1,85 @@
+{
+  "transactions": [
+    {
+      "hash": "0xf194c306328c9369207c15ae467a633f3c4261992e1af4015be8947188603817",
+      "transactionType": "CALL",
+      "contractName": "OFTWithFee",
+      "contractAddress": "0x277058D78307F11e590D91eDfF3D4b1C0fAA240c",
+      "function": "setTrustedRemote(uint16,bytes)",
+      "arguments": [
+        "10121",
+        "0xaa64e3d4a718df31829f3f380e888db51c5e00b4277058d78307f11e590d91edff3d4b1c0faa240c"
+      ],
+      "rpc": "https://data-seed-prebsc-1-s1.binance.org:8545/",
+      "transaction": {
+        "type": "0x00",
+        "from": "0xa3a771a7c4afa7f0a3f88cc6512542241851c926",
+        "to": "0x277058d78307f11e590d91edff3d4b1c0faa240c",
+        "gas": "0x2201b",
+        "value": "0x0",
+        "data": "0xeb8d72b7000000000000000000000000000000000000000000000000000000000000278900000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000028aa64e3d4a718df31829f3f380e888db51c5e00b4277058d78307f11e590d91edff3d4b1c0faa240c000000000000000000000000000000000000000000000000",
+        "nonce": "0x1"
+      },
+      "additionalContracts": [],
+      "isFixedGasLimit": false
+    },
+    {
+      "hash": "0x04430d1f9343fca1f5888252bef8aed24024aa622480c1f5c98614434af30a82",
+      "transactionType": "CALL",
+      "contractName": "OFTWithFee",
+      "contractAddress": "0x277058D78307F11e590D91eDfF3D4b1C0fAA240c",
+      "function": "setTrustedRemote(uint16,bytes)",
+      "arguments": [
+        "10109",
+        "0x770e0d7ad4a83ed2a4900e1cc3c3cd4b0b1a8ba5277058d78307f11e590d91edff3d4b1c0faa240c"
+      ],
+      "rpc": "https://data-seed-prebsc-1-s1.binance.org:8545/",
+      "transaction": {
+        "type": "0x00",
+        "from": "0xa3a771a7c4afa7f0a3f88cc6512542241851c926",
+        "to": "0x277058d78307f11e590d91edff3d4b1c0faa240c",
+        "gas": "0x201f1",
+        "value": "0x0",
+        "data": "0xeb8d72b7000000000000000000000000000000000000000000000000000000000000277d00000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000028770e0d7ad4a83ed2a4900e1cc3c3cd4b0b1a8ba5277058d78307f11e590d91edff3d4b1c0faa240c000000000000000000000000000000000000000000000000",
+        "nonce": "0x2"
+      },
+      "additionalContracts": [],
+      "isFixedGasLimit": false
+    },
+    {
+      "hash": "0x6e51a3399cca5abebce4b4d035809f3e58fc2d7e4fb7cd9ab29092bf33eb2dbd",
+      "transactionType": "CALL",
+      "contractName": "OFTWithFee",
+      "contractAddress": "0x277058D78307F11e590D91eDfF3D4b1C0fAA240c",
+      "function": "setDefaultFeeBp(uint16)",
+      "arguments": [
+        "2"
+      ],
+      "rpc": "https://data-seed-prebsc-1-s1.binance.org:8545/",
+      "transaction": {
+        "type": "0x00",
+        "from": "0xa3a771a7c4afa7f0a3f88cc6512542241851c926",
+        "to": "0x277058d78307f11e590d91edff3d4b1c0faa240c",
+        "gas": "0xa2b4",
+        "value": "0x0",
+        "data": "0x5a359dc50000000000000000000000000000000000000000000000000000000000000002",
+        "nonce": "0x3"
+      },
+      "additionalContracts": [],
+      "isFixedGasLimit": false
+    }
+  ],
+  "receipts": [],
+  "libraries": [],
+  "pending": [
+    "0xf194c306328c9369207c15ae467a633f3c4261992e1af4015be8947188603817",
+    "0x04430d1f9343fca1f5888252bef8aed24024aa622480c1f5c98614434af30a82",
+    "0x6e51a3399cca5abebce4b4d035809f3e58fc2d7e4fb7cd9ab29092bf33eb2dbd"
+  ],
+  "path": "/home/sandy/mevETH/broadcast/WireUpOFT.s.sol/97/run-latest.json",
+  "returns": {},
+  "timestamp": 1692350573,
+  "chain": 97,
+  "multi": false,
+  "commit": "76257ec"
+}
