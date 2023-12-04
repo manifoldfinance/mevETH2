@@ -1,0 +1,50 @@
+{
+  "name": "meveth",
+  "version": "1.0.0",
+  "description": "mevETH LST Protocol",
+  "files": [
+    "/dist/**/*",
+    "/src/**/*.sol",
+    "/src/interfaces",
+    "/src/libraries",
+    "/out/**/*.json",
+    "/out/MevEthShareVault.sol/**/*.json",
+    "/out/MevEthRateProvider.sol/**/*.json",
+    "/out/MevEth.sol/**/*.json",
+    "/out/WagyuStaker.sol/**/*.json",
+    "!out/contracts/**/*.dbg.json",
+    "!out/test/**/*",
+    "!out/*.t.sol/**/*",
+    "!out/solidity-files-cache.json"
+  ],
+  "directories": {
+    "src": "src",
+    "doc": "docs",
+    "lib": "lib",
+    "test": "test"
+  },
+  "scripts": {
+    "check": "nix flake check"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/manifoldfinance/mevETH2.git"
+  },
+  "bugs": {
+    "url": "https://github.com/manifoldfinance/mevETH2/issues"
+  },
+  "homepage": "https://github.com/manifoldfinance/mevETH2#readme",
+  "dependencies": {},
+  "keywords": [
+    "Ethereum",
+    "LST",
+    "Staking",
+    "DeFi",
+    "ETH",
+    "MEV",
+    "MEVETH",
+    "Solidity"
+  ],
+  "author": "SEE CONTRIBUTORS",
+  "license": "SEE LICENSE IN LICENSE"
+}
