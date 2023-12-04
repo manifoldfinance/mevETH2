@@ -409,6 +409,28 @@
           '';
         }
         {
+          category = "multisig";
+          name = "GenerateDataPayRewards";
+          help = "Generate data for payRewards";
+          command = ''
+            cast calldata "grantRewards()"
+          '';
+        }
+        {
+          category = "multisig";
+          name = "MultisigPayRewards";
+          help = "Multisig pay MevEth contract rewards";
+          command = ''
+            cast send \
+              --rpc-url $PRIVATE_TX_URL \
+              --private-key $PRIVATE_KEY \
+              $MULTISIG_ADDRESS \
+              "execTransaction(address,uint256,bytes,uint8,uint256,uint256,uint256,address,address,bytes)" \
+              $MEV_ETH_ADDRESS $REWARDS $CALLDATA 0 0 0 0 0x0000000000000000000000000000000000000000 0x0000000000000000000000000000000000000000 \
+              $SIGNATURES
+          '';
+        }
+        {
           category = "tests";
           name = "tests";
           help = "Test the Smart Contracts";
