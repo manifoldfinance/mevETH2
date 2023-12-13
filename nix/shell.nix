@@ -409,6 +409,36 @@
           '';
         }
         {
+          category = "multisig";
+          name = "process-queue-rewards";
+          help = "Construct batch tx to process withdraw queue with rewards and send tx to safe for other signatures";
+          command = ''
+            forge script $PRJ_ROOT/script/ProcessQueueRewards.s.sol:ProcessQueueRewardsScript \
+              --chain-id 1 \
+              --rpc-url $RPC_MAINNET \
+              --broadcast \
+              --private-key $PRIVATE_KEY \
+              --verify \
+              --etherscan-api-key $ETHERSCAN_API_KEY \
+              -vvvvv
+          '';
+        }
+        {
+          category = "multisig";
+          name = "process-queue-exits";
+          help = "Construct batch tx to process withdraw queue with exits and send tx to safe for other signatures";
+          command = ''
+            forge script $PRJ_ROOT/script/ProcessQueueExits.s.sol:ProcessQueueExitsScript \
+              --chain-id 1 \
+              --rpc-url $RPC_MAINNET \
+              --broadcast \
+              --private-key $PRIVATE_KEY \
+              --verify \
+              --etherscan-api-key $ETHERSCAN_API_KEY \
+              -vvvvv
+          '';
+        }
+        {
           category = "tests";
           name = "tests";
           help = "Test the Smart Contracts";
