@@ -45,5 +45,5 @@ jobs:
 
       - name: Run Forge tests
         run: |
-          forge test --deny-warnings -vvv
+          forge test --deny-warnings -vvv --ffi
         id: test
