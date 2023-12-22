@@ -18,8 +18,6 @@ contract ProcessQueueRewardsTest is Test {
 
     function testProcessQueueExits() public virtual {
         vm.selectFork(FORK_ID);
-        // dummy exit 10 validators
-        vm.deal(0x617c8dE5BdE54ffbb8d92716CC947858cA38f582, 320 ether);
         process.run();
     }
 }
