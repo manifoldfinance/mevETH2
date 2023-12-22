@@ -416,10 +416,7 @@
             forge script $PRJ_ROOT/script/ProcessQueueRewards.s.sol:ProcessQueueRewardsScript \
               --chain-id 1 \
               --rpc-url $RPC_MAINNET \
-              --broadcast \
               --private-key $PRIVATE_KEY \
-              --verify \
-              --etherscan-api-key $ETHERSCAN_API_KEY \
               --ffi \
               -vvvvv
           '';
@@ -432,10 +429,7 @@
             forge script $PRJ_ROOT/script/ProcessQueueExits.s.sol:ProcessQueueExitsScript \
               --chain-id 1 \
               --rpc-url $RPC_MAINNET \
-              --broadcast \
               --private-key $PRIVATE_KEY \
-              --verify \
-              --etherscan-api-key $ETHERSCAN_API_KEY \
               --ffi \
               -vvvvv
           '';
