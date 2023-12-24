@@ -83,6 +83,32 @@
         }
         {
           category = "deployments";
+          name = "deploy-auth-manager";
+          help = "Deploy the AuthManager";
+          command = ''
+            forge script $PRJ_ROOT/script/AuthManager.s.sol:AuthManagerDeployScript \
+              --chain-id 1 \
+              --rpc-url $RPC_MAINNET \
+              --broadcast \
+              --private-key $PRIVATE_KEY \
+              --verify \
+              --etherscan-api-key $ETHERSCAN_API_KEY \
+              -vvvvv
+          '';
+        }
+        {
+          category = "deployments";
+          name = "deploy-auth-manager-test";
+          help = "Deploy the AuthManager test";
+          command = ''
+            forge script $PRJ_ROOT/script/AuthManager.s.sol:AuthManagerDeployScript \
+              --chain-id 1 \
+              --fork-url $RPC_MAINNET \
+              -vvvvv
+          '';
+        }
+        {
+          category = "deployments";
           name = "deploy-arbitrum";
           help = "Deploy the mevETH OFT on Arbitrum";
           command = ''
