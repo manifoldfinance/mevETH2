@@ -21,6 +21,7 @@ contract ProcessQueueExitsandRewardsScript is BatchScript {
 
     function run(uint256 numExits) public {
         address safe = 0x617c8dE5BdE54ffbb8d92716CC947858cA38f582;
+        address treasury = 0xe664B134d96fdB0bf7951E0c0557B87Bac5e5277;
         IMevEthQueue mevEth = IMevEthQueue(0x24Ae2dA0f361AA4BE46b48EB19C91e02c5e4f27E);
 
         uint256 exitsBalance = numExits * 32 ether;
@@ -73,6 +74,8 @@ contract ProcessQueueExitsandRewardsScript is BatchScript {
         if (rewardsToProcess > 0) {
             txn = abi.encodeWithSelector(mevEth.grantRewards.selector);
             addToBatch(address(mevEth), rewardsToProcess, txn);
+            // transfer admin fee
+            addToBatch(treasury, rewardsToProcess / 10, new bytes(0));
         }
 
         if (!mevEth.operators(safe)) {
