@@ -12,12 +12,13 @@ contract ProcessQueueRewardsTest is Test {
     ProcessQueueExitsScript process;
 
     function setUp() public virtual {
-        FORK_ID = vm.createSelectFork(RPC_ETH_MAINNET);
+        FORK_ID = vm.createSelectFork(RPC_ETH_MAINNET, 18_977_178);
         process = new ProcessQueueExitsScript();
     }
 
     function testProcessQueueExits() public virtual {
         vm.selectFork(FORK_ID);
+        vm.deal(0x617c8dE5BdE54ffbb8d92716CC947858cA38f582, 4 * 32 ether);
         process.run();
     }
 }
