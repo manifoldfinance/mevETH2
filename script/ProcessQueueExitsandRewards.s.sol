@@ -43,7 +43,7 @@ contract ProcessQueueExitsandRewardsScript is BatchScript {
         uint256 amountToProcess;
         uint256 rewardsToProcess;
         (,,, uint128 initAccumulatedAmount) = mevEth.withdrawalQueue(queueOffset);
-        for (uint256 i = queueOffset + 1; i < queueLen; i++) {
+        for (uint256 i = queueOffset + 1; i < queueLen + 1; i++) {
             (,, uint256 amount, uint128 accumulatedAmount) = mevEth.withdrawalQueue(i);
             if (accumulatedAmount - initAccumulatedAmount > payout) {
                 break;
