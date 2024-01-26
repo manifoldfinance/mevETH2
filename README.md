@@ -83,11 +83,11 @@ The `MevEth` contract serves as a sophisticated platform for Liquid Staking Rece
 
 The `MevEth` contract comprises several core modules, each contributing to its comprehensive functionality:
 
-- **Accounting**: Transparent fractional accounting system
+- **Accounting**: Transparent fractional accounting system.
 - **Admin Control Panel**: Empowers administrators with control over staking, module updates, and share vault management.
 - **Staking Management**: Allows efficient staking of Ether in the Beacon Chain, ensuring validators' registration and interaction with the staking module.
 - **Share Vault Updates**: Facilitates seamless updates to the MevEth share vault, ensuring accurate reward distribution and protocol management.
-- **Role management**: Supports roles management
+- **Role management**: Supports role management.
 - **ERC4626 Integration**: Supports ERC4626 interface for yield source integration, enabling compatibility with Yearn Vault and other protocols.
-- **Withdrawal Queues**: First come, first served queues for withdrawal requests beyond buffer balances
-- **Omni-chain fungible tokens**: Allows `MevEth` tokens to be sent accross chains
+- **Withdrawal Queues**: First come, first served queues for withdrawal requests beyond buffer balances.
+- **Omni-chain fungible tokens**: Allows `MevEth` tokens to be sent across chains.
