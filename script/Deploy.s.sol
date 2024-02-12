@@ -42,7 +42,7 @@ contract DeployScript is Script {
         // MevEthShareVault initialShareVault = new MevEthShareVault(authority, address(mevEth), authority);
         address initialShareVault = safe;
         // deploy staking module
-        IStakingModule initialStakingModule = new WagyuStaker(authority, beaconDepositContract, address(mevEth));
+        IStakingModule initialStakingModule = new WagyuStaker(authority, beaconDepositContract, address(mevEth), authority);
         // initialise mevETH
         mevEth.init(address(initialShareVault), address(initialStakingModule));
 

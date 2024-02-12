@@ -137,7 +137,7 @@ contract MevEthTest is Test {
         // assign share vault as proxy to multisig
         address initialShareVault = address(safe);
 
-        address initialStakingModule = address(IStakingModule(address(new WagyuStaker(SamBacha, address(depositContract), address(mevEth)))));
+        address initialStakingModule = address(IStakingModule(address(new WagyuStaker(SamBacha, address(depositContract), address(mevEth), SamBacha))));
 
         AuthManager authManager = new AuthManager(SamBacha, address(mevEth), address(initialShareVault), address(initialStakingModule));
 
