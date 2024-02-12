@@ -14,7 +14,7 @@ cbor_metadata = false
 sparse_mode = false
 build_info = true
 
-via_ir = true
+via_ir = false
 fuzz_runs = 500
 deny_warnings = false
 
