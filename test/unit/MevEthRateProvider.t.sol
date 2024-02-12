@@ -8,11 +8,11 @@ import "src/MevEthRateProvider.sol";
 import "src/interfaces/IMevEth.sol";
 
 contract MevEthRateProviderTest is MevEthTest {
-    MevETHRateProvider provider;
+    MevEthRateProvider provider;
 
     function setUp() public override {
         super.setUp();
-        provider = new MevETHRateProvider(IMevEth(address(mevEth)));
+        provider = new MevEthRateProvider(IMevEth(address(mevEth)));
     }
 
     function testRate() public {
