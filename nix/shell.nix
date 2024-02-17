@@ -409,6 +409,59 @@
           '';
         }
         {
+          category = "multisig";
+          name = "process-queue-rewards";
+          help = "Construct batch tx to process withdraw queue with rewards and send tx to safe for other signatures";
+          command = ''
+            forge script $PRJ_ROOT/script/ProcessQueueRewards.s.sol:ProcessQueueRewardsScript \
+              --chain-id 1 \
+              --rpc-url $RPC_MAINNET \
+              --private-key $PRIVATE_KEY \
+              --ffi \
+              -vvvvv
+          '';
+        }
+        {
+          category = "multisig";
+          name = "process-queue-exits";
+          help = "Construct batch tx to process withdraw queue with exits and send tx to safe for other signatures";
+          command = ''
+            forge script $PRJ_ROOT/script/ProcessQueueExits.s.sol:ProcessQueueExitsScript \
+              --chain-id 1 \
+              --rpc-url $RPC_MAINNET \
+              --private-key $PRIVATE_KEY \
+              --ffi \
+              -vvvvv
+          '';
+        }
+        {
+          category = "multisig";
+          name = "process-queue-exits-and-rewards";
+          help = "Construct batch tx to process withdraw queue with exits and rewards and send tx to safe for other signatures";
+          command = ''
+            forge script $PRJ_ROOT/script/ProcessQueueExitsandRewards.s.sol:ProcessQueueExitsandRewardsScript \
+              --sig "run(uint256)" $NUM_EXITS\
+              --chain-id 1 \
+              --rpc-url $RPC_MAINNET \
+              --private-key $PRIVATE_KEY \
+              --ffi \
+              -vvvvv
+          '';
+        }
+        {
+          category = "multisig";
+          name = "process-queue-exits-and-rewards-test";
+          help = "Construct batch tx to process withdraw queue with exits and rewards and send tx to safe for other signatures";
+          command = ''
+            forge script $PRJ_ROOT/script/ProcessQueueExitsandRewards.s.sol:ProcessQueueExitsandRewardsScript \
+              --sig "run(uint256)" $NUM_EXITS\
+              --chain-id 1 \
+              --fork-url $RPC_MAINNET \
+              --ffi \
+              -vvvvv
+          '';
+        }
+        {
           category = "tests";
           name = "tests";
           help = "Test the Smart Contracts";

@@ -38,3 +38,7 @@ export POLYGONSCAN_API_KEY=""
 export SNOWSCAN_API_KEY=""
 
 export MULTISIG_SAFE=0x617c8dE5BdE54ffbb8d92716CC947858cA38f582
+
+export CHAIN="mainnet"
+export WALLET_TYPE="local"
+export NUM_EXITS=1

@@ -22,16 +22,6 @@
       };
     };
 
-    config.devshells.default = {
-      commands = let
-        category = "development";
-      in [
-        {
-          inherit category;
-          help = "Run local Ethereum network for development";
-          package = self'.packages.dev-net;
-        }
-      ];
-    };
+    
   };
 }
