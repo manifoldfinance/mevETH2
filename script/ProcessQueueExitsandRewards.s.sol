@@ -28,7 +28,7 @@ contract ProcessQueueExitsandRewardsScript is BatchScript {
         // assuming rewards balance = remaing multisig balance - 10%
         uint256 rewardsBalance = (safe.balance - exitsBalance) * 90 / 100;
 
-        uint256 payout = exitsBalance + rewardsBalance;
+        uint256 payout = exitsBalance + rewardsBalance + address(mevEth).balance;
 
         if (numExits == 0 && rewardsBalance == 0) {
             revert NothingToProcess();
@@ -61,6 +61,11 @@ contract ProcessQueueExitsandRewardsScript is BatchScript {
         } else {
             // numExits stays the max as original
             rewardsToProcess = amountToProcess - exitsBalance;
+            if (address(mevEth).balance >= rewardsToProcess) {
+                rewardsToProcess = 0;
+            } else {
+                rewardsToProcess = rewardsToProcess - address(mevEth).balance;
+            }
         }
 
         // build tx
