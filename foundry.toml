@@ -13,7 +13,9 @@ bytecode_hash = "none"
 cbor_metadata = false
 sparse_mode = false
 build_info = true
-
+# Whether or not to enable `vm.ffi`
+ffi = true
+fs_permissions = [{ access = "read", path = "./"}]
 via_ir = true
 fuzz_runs = 500
 deny_warnings = false

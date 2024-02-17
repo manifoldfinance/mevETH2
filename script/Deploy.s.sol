@@ -30,6 +30,9 @@ contract DeployScript is Script {
             // Goerli
             beaconDepositContract = 0xff50ed3d0ec03aC01D4C79aAd74928BFF48a7b2b;
             weth = 0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6;
+        } else if (chainId == 17_000) {
+            beaconDepositContract = 0x4242424242424242424242424242424242424242;
+            weth = 0x94373a4919B3240D86eA41593D5eBa789FEF3848;
         } else {
             revert UnknownChain();
         }

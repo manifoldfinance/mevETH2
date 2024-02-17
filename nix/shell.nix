@@ -69,6 +69,21 @@
         }
         {
           category = "deployments";
+          name = "deploy-holesky";
+          help = "Deploy the Smart Contracts";
+          command = ''
+            forge script $PRJ_ROOT/script/Deploy.s.sol:DeployScript \
+              --chain-id 17000 \
+              --rpc-url $RPC_HOLESKY \
+              --broadcast \
+              --private-key $PRIVATE_KEY \
+              --verify \
+              --etherscan-api-key $ETHERSCAN_API_KEY \
+              -vvvvv
+          '';
+        }
+        {
+          category = "deployments";
           name = "deploy-goerli";
           help = "Deploy the Smart Contracts to goerli";
           command = ''
